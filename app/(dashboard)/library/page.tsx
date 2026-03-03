@@ -3,32 +3,62 @@
 import { useState, useEffect, useRef } from 'react';
 import { supabase } from '../../../lib/supabase';
 
+interface Exercise {
+  id: number;
+  created_at: string;
+  user_id: string;
+  title: string;
+  file_url: string;
+  technique: string;
+  bpm_initial: number | null;
+  bpm_goal: number | null;
+  difficulty: number;
+  notes: string | null;
+}
+
 const TECHNIQUES = [
   'Alternate Picking', 'Down Picking', 'Legato', 'Tapping',
   'Sweep Picking', 'Rythm', 'Song', 'Solo', 'Hybrid Picking',
   'String Skipping', 'Warm-up', 'Lick', 'Bending', 'Vibrato'
 ];
 
-const DIFFICULTY_LABELS = { 1: 'Principiante', 2: 'Básico', 3: 'Intermedio', 4: 'Avanzado', 5: 'Experto' };
-const DIFFICULTY_COLORS = { 1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171' };
+const DIFFICULTY_LABELS: { [key: number]: string } = { 1: 'Principiante', 2: 'Básico', 3: 'Intermedio', 4: 'Avanzado', 5: 'Experto' };
+const DIFFICULTY_COLORS: { [key: number]: string } = { 1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171' };
 
-const labelStyle = {
+const labelStyle: React.CSSProperties = {
   display: 'block', fontSize: '0.8rem', fontWeight: 700,
   color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase',
   marginBottom: '0.5rem',
 };
-const inputStyle = {
+const inputStyle: React.CSSProperties = {
   width: '100%', padding: '0.7rem 0.9rem', borderRadius: '7px',
   background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
   color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.93rem',
   outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box',
 };
 
-// ─── Shared form fields used by both Upload and Edit modals ──────────────────
-function ExerciseForm({ name, setName, categories, setCategories, bpmInit, setBpmInit,
-  bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes }) {
+interface ExerciseFormProps {
+  name: string;
+  setName: React.Dispatch<React.SetStateAction<string>>;
+  categories: string[];
+  setCategories: React.Dispatch<React.SetStateAction<string[]>>;
+  bpmInit: number | string;
+  setBpmInit: React.Dispatch<React.SetStateAction<number | string>>;
+  bpmGoal: number | string;
+  setBpmGoal: React.Dispatch<React.SetStateAction<number | string>>;
+  difficulty: number;
+  setDifficulty: React.Dispatch<React.SetStateAction<number>>;
+  notes: string;
+  setNotes: React.Dispatch<React.SetStateAction<string>>;
+}
 
-  const toggleCategory = (cat) =>
+// ─── Shared form fields used by both Upload and Edit modals ──────────────────
+function ExerciseForm({ 
+  name, setName, categories, setCategories, bpmInit, setBpmInit,
+  bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes 
+}: ExerciseFormProps) {
+
+  const toggleCategory = (cat: string) =>
     setCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
 
   return (
@@ -121,7 +151,7 @@ function ExerciseForm({ name, setName, categories, setCategories, bpmInit, setBp
 }
 
 // ─── Modal base ───────────────────────────────────────────────────────────────
-function Modal({ title, subtitle, onClose, children }) {
+function Modal({ title, subtitle, onClose, children }: { title: string, subtitle: string, onClose: () => void, children: React.ReactNode }) {
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
@@ -160,26 +190,31 @@ function Modal({ title, subtitle, onClose, children }) {
 }
 
 // ─── Upload Modal ─────────────────────────────────────────────────────────────
-function UploadModal({ onClose, onSuccess }) {
-  const inputRef = useRef(null);
-  const [file,       setFile]       = useState(null);
+function UploadModal({ onClose, onSuccess }: { onClose: () => void, onSuccess: () => void }) {
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [file,       setFile]       = useState<File | null>(null);
   const [name,       setName]       = useState('');
-  const [categories, setCategories] = useState([]);
-  const [bpmInit,    setBpmInit]    = useState('');
-  const [bpmGoal,    setBpmGoal]    = useState('');
+  const [categories, setCategories] = useState<string[]>([]);
+  const [bpmInit,    setBpmInit]    = useState<string | number>('');
+  const [bpmGoal,    setBpmGoal]    = useState<string | number>('');
   const [difficulty, setDifficulty] = useState(3);
   const [notes,      setNotes]      = useState('');
   const [uploading,  setUploading]  = useState(false);
-  const [error,      setError]      = useState(null);
+  const [error,      setError]      = useState<string | null>(null);
   const [dragOver,   setDragOver]   = useState(false);
 
-  const handleFileDrop = (e) => {
+  const handleFileDrop = (e: React.DragEvent<HTMLDivElement> | React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
     setDragOver(false);
-    const f = e.dataTransfer?.files[0] || e.target.files[0];
+    let f: File | undefined;
+    if ('dataTransfer' in e) {
+      f = e.dataTransfer?.files[0];
+    } else {
+      f = e.target.files?.[0];
+    }
     if (!f) return;
-    const ext = f.name.split('.').pop().toLowerCase();
-    if (!['gp','gp3','gp4','gp5','gpx'].includes(ext)) {
+    const ext = f.name.split('.').pop()?.toLowerCase();
+    if (!ext || !['gp','gp3','gp4','gp5','gpx'].includes(ext)) {
       setError('Formato inválido. Usa .gp, .gp3, .gp4, .gp5 o .gpx');
       return;
     }
@@ -204,13 +239,13 @@ function UploadModal({ onClose, onSuccess }) {
       const { error: dbError } = await supabase.from('exercises').insert([{
         user_id: user.id, title: name.trim(), file_url: publicUrl,
         technique: categories.join(', '),
-        bpm_initial: bpmInit ? parseInt(bpmInit) : null,
-        bpm_goal:    bpmGoal ? parseInt(bpmGoal) : null,
+        bpm_initial: bpmInit ? parseInt(String(bpmInit)) : null,
+        bpm_goal:    bpmGoal ? parseInt(String(bpmGoal)) : null,
         difficulty, notes: notes.trim() || null,
       }]);
       if (dbError) throw dbError;
       onSuccess(); onClose();
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(err instanceof Error ? err.message : String(err)); }
     finally { setUploading(false); }
   };
 
@@ -259,15 +294,15 @@ function UploadModal({ onClose, onSuccess }) {
 }
 
 // ─── Edit Modal ───────────────────────────────────────────────────────────────
-function EditModal({ exercise, onClose, onSuccess }) {
+function EditModal({ exercise, onClose, onSuccess }: { exercise: Exercise, onClose: () => void, onSuccess: () => void }) {
   const [name,       setName]       = useState(exercise.title || '');
   const [categories, setCategories] = useState(exercise.technique ? exercise.technique.split(', ') : []);
-  const [bpmInit,    setBpmInit]    = useState(exercise.bpm_initial || '');
-  const [bpmGoal,    setBpmGoal]    = useState(exercise.bpm_goal || '');
+  const [bpmInit,    setBpmInit]    = useState<string | number>(exercise.bpm_initial || '');
+  const [bpmGoal,    setBpmGoal]    = useState<string | number>(exercise.bpm_goal || '');
   const [difficulty, setDifficulty] = useState(exercise.difficulty || 3);
   const [notes,      setNotes]      = useState(exercise.notes || '');
   const [saving,     setSaving]     = useState(false);
-  const [error,      setError]      = useState(null);
+  const [error,      setError]      = useState<string | null>(null);
 
   const handleSubmit = async () => {
     if (!name.trim()) return setError('El nombre es obligatorio.');
@@ -280,15 +315,15 @@ function EditModal({ exercise, onClose, onSuccess }) {
         .update({
           title: name.trim(),
           technique: categories.join(', '),
-          bpm_initial: bpmInit ? parseInt(bpmInit) : null,
-          bpm_goal:    bpmGoal ? parseInt(bpmGoal) : null,
+          bpm_initial: bpmInit ? parseInt(String(bpmInit)) : null,
+          bpm_goal:    bpmGoal ? parseInt(String(bpmGoal)) : null,
           difficulty, notes: notes.trim() || null,
         })
         .eq('id', exercise.id)
         .eq('user_id', user.id);
       if (dbError) throw dbError;
       onSuccess(); onClose();
-    } catch (err) { setError(err.message); }
+    } catch (err) { setError(err instanceof Error ? err.message : String(err)); }
     finally { setSaving(false); }
   };
 
@@ -308,7 +343,7 @@ function EditModal({ exercise, onClose, onSuccess }) {
 }
 
 // ─── Modal action buttons (shared) ───────────────────────────────────────────
-function ModalActions({ onClose, onSubmit, uploading, label }) {
+function ModalActions({ onClose, onSubmit, uploading, label }: { onClose: () => void, onSubmit: () => Promise<void>, uploading: boolean, label: string }) {
   return (
     <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.25rem' }}>
       <button onClick={onClose} style={{
@@ -340,10 +375,10 @@ function ModalActions({ onClose, onSubmit, uploading, label }) {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function LibraryPage() {
-  const [files,       setFiles]       = useState([]);
+  const [files,       setFiles]       = useState<Exercise[]>([]);
   const [showUpload,  setShowUpload]  = useState(false);
-  const [editTarget,  setEditTarget]  = useState(null); // exercise object to edit
-  const [error,       setError]       = useState(null);
+  const [editTarget,  setEditTarget]  = useState<Exercise | null>(null); // exercise object to edit
+  const [error,       setError]       = useState<string | null>(null);
 
   useEffect(() => { fetchExercises(); }, []);
 
@@ -356,10 +391,11 @@ export default function LibraryPage() {
     if (!error) setFiles(data);
   };
 
-  const handleDelete = async (exercise) => {
+  const handleDelete = async (exercise: Exercise) => {
     if (!confirm(`¿Eliminar "${exercise.title}"?`)) return;
     try {
       const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error('User not authenticated');
 
       // FIX: extraer el storage path correctamente desde la URL pública de Supabase
       // La URL tiene forma: .../storage/v1/object/public/guitar_tabs/USER_ID/FILE.gp
@@ -376,7 +412,7 @@ export default function LibraryPage() {
       if (dbError) throw dbError;
 
       fetchExercises();
-    } catch (e) { setError(e.message); }
+    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
   };
 
   return (
