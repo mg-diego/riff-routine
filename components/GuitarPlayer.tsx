@@ -6,8 +6,9 @@ import { supabase } from '../lib/supabase';
 import { Exercise } from '../lib/types';
 import { PlayerHeader } from './player/PlayerHeader';
 import { DropZone } from './player/DropZone';
-import { ExercisePanel } from './player/ExercisePanel';
 import { SidebarControls } from './player/SidebarControls';
+import { ScalesPanel } from './player/ScalesPanel';
+import { ImprovPanel } from './player/ImprovPanel';
 
 export default function GuitarPlayer() {
     const wrapperRef = useRef<HTMLDivElement>(null);
@@ -20,13 +21,10 @@ export default function GuitarPlayer() {
     const [scriptReady, setScriptReady] = useState(false);
     const [fileName, setFileName] = useState<string | null>(null);
 
-    const [mode, setMode] = useState<'free' | 'library' | 'routine'>('free');
+    const [mode, setMode] = useState<'free' | 'library' | 'routine' | 'scales' | 'improvisation'>('free');
     const [routineList, setRoutineList] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
-
-    const [liveBpmCurrent, setLiveBpmCurrent] = useState<number | null>(null);
-    const [liveBpmGoal, setLiveBpmGoal] = useState<number | null>(null);
 
     useEffect(() => {
         if (!scriptReady || !wrapperRef.current) return;
@@ -62,6 +60,7 @@ export default function GuitarPlayer() {
         const params = new URLSearchParams(window.location.search);
         const routineId = params.get('routine');
         const fileUrl = params.get('file');
+        const modeParam = params.get('mode');
 
         if (routineId) {
             setMode('routine');
@@ -90,8 +89,19 @@ export default function GuitarPlayer() {
                 setMode('free');
                 loadUrlIntoApi(decodedUrl, api);
             }
+        } else if (modeParam) {
+            setMode(modeParam as any);
+
+            const reverseMapping: Record<string, string> = {
+                'scales': 'Escalas',
+                'improvisation': 'Improvisación'
+            };
+
+            setActiveExercise({ title: reverseMapping[modeParam] || modeParam } as Exercise);
+
         } else {
             setMode('free');
+            setActiveExercise(null);
         }
     };
 
@@ -104,7 +114,6 @@ export default function GuitarPlayer() {
         if (exercise.file_url) {
             loadUrlIntoApi(exercise.file_url, api);
         }
-        // Si no hay file_url no cargamos nada — el placeholder lo gestiona el JSX
     };
 
     const loadUrlIntoApi = (url: string, api: any) => {
@@ -115,8 +124,6 @@ export default function GuitarPlayer() {
             })
             .then(buffer => {
                 api.load(new Uint8Array(buffer));
-                // FIX: forzar render tras un tick por si el contenedor aún
-                // no tenía dimensiones calculadas cuando load() fue llamado
                 setTimeout(() => api.render(), 50);
             })
             .catch(err => console.error('[GuitarPlayer] Error cargando archivo:', err));
@@ -180,12 +187,24 @@ export default function GuitarPlayer() {
                         currentIndex={currentIndex}
                         onPrev={handlePrevExercise}
                         onNext={handleNextExercise}
-                        exercise={activeExercise}   // ← único prop nuevo, reemplaza bpmInitial/bpmCurrent/bpmGoal/exerciseName
+                        exercise={activeExercise}
                     />
 
                     {mode === 'free' && (
                         <div style={{ padding: '0 2rem' }}>
                             <DropZone fileName={fileName} onFileLoaded={handleFileDrop} />
+                        </div>
+                    )}
+
+                    {mode === 'scales' && (
+                        <div style={{ padding: '0 2rem' }}>
+                            <ScalesPanel />
+                        </div>
+                    )}
+
+                    {mode === 'improvisation' && (
+                        <div style={{ padding: '0 2rem' }}>
+                            <ImprovPanel />
                         </div>
                     )}
 

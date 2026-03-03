@@ -1,13 +1,8 @@
 "use client";
 
+import { PROGRESSIONS } from '@/lib/constants';
 import React, { useState } from 'react';
 
-const PROGRESSIONS = [
-  "I - IV - V (Ej: C - F - G)",
-  "ii - V - I (Ej: Dm - G - C)",
-  "vi - IV - I - V (Ej: Am - F - C - G)",
-  "I - vi - ii - V (Ej: C - Am - Dm - G)"
-];
 
 export function ImprovPanel() {
   const [notes, setNotes] = useState('');

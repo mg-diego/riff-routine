@@ -6,67 +6,69 @@ import { supabase } from '../../lib/supabase';
 import { Exercise } from '../../lib/types';
 
 interface PlayerHeaderProps {
-  mode: 'free' | 'library' | 'routine';
-  routineLength: number;
-  currentIndex: number;
-  onPrev: () => void;
-  onNext: () => void;
-  exercise?: Exercise | null;
+    mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation';
+    routineLength: number;
+    currentIndex: number;
+    onPrev: () => void;
+    onNext: () => void;
+    exercise?: Exercise | null;
 }
 
 const MODE_CONFIG = {
-  free:    { label: 'Práctica Libre',  icon: '🎸', color: '#7dd3fc', back: '/' },
-  library: { label: 'Modo Biblioteca', icon: '📚', color: '#dcb98a', back: '/library' },
-  routine: { label: 'Modo Rutina',     icon: '🔁', color: '#a78bfa', back: '/routines' },
+    free: { label: 'Práctica Libre', icon: '🎸', color: '#7dd3fc', back: '/' },
+    library: { label: 'Modo Biblioteca', icon: '📚', color: '#dcb98a', back: '/library' },
+    routine: { label: 'Modo Rutina', icon: '🔁', color: '#a78bfa', back: '/routines' },
+    scales: { label: 'Escalas', icon: '🔁', color: '#a78bfa', back: '/explore' },
+    improvisation: { label: 'Escalas', icon: '🔁', color: '#a78bfa', back: '/explore' },
 };
 
 const DIFF_COLORS: Record<number, string> = {
-  1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171',
+    1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171',
 };
 
 export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext, exercise }: PlayerHeaderProps) {
-  const router = useRouter();
-  const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
+    const router = useRouter();
+    const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
 
-  const [bpmCurrent, setBpmCurrent] = useState('');
-  const [bpmGoal,    setBpmGoal]    = useState('');
-  const [isSaving,   setIsSaving]   = useState(false);
-  const [saved,      setSaved]      = useState(false);
+    const [bpmCurrent, setBpmCurrent] = useState('');
+    const [bpmGoal, setBpmGoal] = useState('');
+    const [isSaving, setIsSaving] = useState(false);
+    const [saved, setSaved] = useState(false);
 
-  useEffect(() => {
-    setBpmCurrent(exercise?.bpm_current?.toString() || exercise?.bpm_initial?.toString() || '');
-    setBpmGoal(exercise?.bpm_goal?.toString() || '');
-  }, [exercise?.id]);
+    useEffect(() => {
+        setBpmCurrent(exercise?.bpm_current?.toString() || exercise?.bpm_initial?.toString() || '');
+        setBpmGoal(exercise?.bpm_goal?.toString() || '');
+    }, [exercise?.id]);
 
-  const saveBpms = async () => {
-    if (!exercise || exercise.user_id === null) return;
-    setIsSaving(true);
-    await supabase.from('exercises').update({
-      bpm_current: bpmCurrent ? parseInt(bpmCurrent) : null,
-      bpm_goal:    bpmGoal    ? parseInt(bpmGoal)    : null,
-    }).eq('id', exercise.id);
-    setIsSaving(false);
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2000);
-  };
+    const saveBpms = async () => {
+        if (!exercise || exercise.user_id === null) return;
+        setIsSaving(true);
+        await supabase.from('exercises').update({
+            bpm_current: bpmCurrent ? parseInt(bpmCurrent) : null,
+            bpm_goal: bpmGoal ? parseInt(bpmGoal) : null,
+        }).eq('id', exercise.id);
+        setIsSaving(false);
+        setSaved(true);
+        setTimeout(() => setSaved(false), 2000);
+    };
 
-  const isSystem = exercise?.user_id === null;
-  const bpmInitial = exercise?.bpm_initial ?? null;
-  const activeBpm  = bpmCurrent ? parseInt(bpmCurrent) : null;
-  const goalBpm    = bpmGoal    ? parseInt(bpmGoal)    : null;
+    const isSystem = exercise?.user_id === null;
+    const bpmInitial = exercise?.bpm_initial ?? null;
+    const activeBpm = bpmCurrent ? parseInt(bpmCurrent) : null;
+    const goalBpm = bpmGoal ? parseInt(bpmGoal) : null;
 
-  const minBpm = bpmInitial || 20;
-  const maxBpm = goalBpm ? Math.max(goalBpm, minBpm + 10) : Math.max(minBpm + 50, (activeBpm || 0) + 20);
-  const validCurrent = Math.min(Math.max(activeBpm || minBpm, minBpm), maxBpm);
-  const progressPercent = ((validCurrent - minBpm) / (maxBpm - minBpm)) * 100;
+    const minBpm = bpmInitial || 20;
+    const maxBpm = goalBpm ? Math.max(goalBpm, minBpm + 10) : Math.max(minBpm + 50, (activeBpm || 0) + 20);
+    const validCurrent = Math.min(Math.max(activeBpm || minBpm, minBpm), maxBpm);
+    const progressPercent = ((validCurrent - minBpm) / (maxBpm - minBpm)) * 100;
 
-  const showBpm = mode !== 'free' && exercise && (bpmInitial !== null || goalBpm !== null || activeBpm !== null);
-  const cats    = exercise?.technique ? exercise.technique.split(', ') : [];
-  const diff    = exercise?.difficulty;
+    const showBpm = mode !== 'free' && exercise && (bpmInitial !== null || goalBpm !== null || activeBpm !== null);
+    const cats = exercise?.technique ? exercise.technique.split(', ') : [];
+    const diff = exercise?.difficulty;
 
-  return (
-    <>
-      <style>{`
+    return (
+        <>
+            <style>{`
         .ph-root {
           display: flex;
           flex-direction: column;
@@ -267,118 +269,118 @@ export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext
         }
       `}</style>
 
-      <header className="ph-root">
+            <header className="ph-root">
 
-        <div className="ph-top-row">
-          <div className="ph-identity">
-            <div className="ph-badge" style={{ color: cfg.color, borderColor: cfg.color + '40', background: cfg.color + '15' }}>
-              <span>{cfg.icon}</span> {cfg.label}
-            </div>
-            
-            <h1 className="ph-title" style={{ color: cfg.color }} title={exercise?.title ?? 'Modo Libre'}>
-              {exercise?.title ?? 'Sin pista seleccionada'}
-            </h1>
+                <div className="ph-top-row">
+                    <div className="ph-identity">
+                        <div className="ph-badge" style={{ color: cfg.color, borderColor: cfg.color + '40', background: cfg.color + '15' }}>
+                            <span>{cfg.icon}</span> {cfg.label}
+                        </div>
 
-            {(cats.length > 0 || diff) && (
-              <div className="ph-tags">
-                {diff && DIFF_COLORS[diff] && (
-                  <span className="ph-diff" style={{ background: DIFF_COLORS[diff] + '20', color: DIFF_COLORS[diff], border: `1px solid ${DIFF_COLORS[diff]}40` }}>
-                    Nv. {diff}
-                  </span>
-                )}
-                {cats.map(cat => <span key={cat} className="ph-cat">{cat}</span>)}
-              </div>
-            )}
-          </div>
+                        <h1 className="ph-title" style={{ color: cfg.color }} title={exercise?.title ?? 'Modo Libre'}>
+                            {exercise?.title ?? 'Sin pista seleccionada'}
+                        </h1>
 
-          <div className="ph-nav-container">
-            {mode === 'routine' && routineLength > 0 && (
-              <>
-                <div className="ph-dots">
-                  {Array.from({ length: Math.min(routineLength, 8) }).map((_, i) => (
-                    <div key={i} className={`ph-dot ${i === currentIndex ? 'active' : i < currentIndex ? 'done' : ''}`} />
-                  ))}
-                  {routineLength > 8 && <span style={{ color: 'var(--muted)', fontSize: '0.7rem', marginLeft: 4 }}>+{routineLength - 8}</span>}
+                        {(cats.length > 0 || diff) && (
+                            <div className="ph-tags">
+                                {diff && DIFF_COLORS[diff] && (
+                                    <span className="ph-diff" style={{ background: DIFF_COLORS[diff] + '20', color: DIFF_COLORS[diff], border: `1px solid ${DIFF_COLORS[diff]}40` }}>
+                                        Nv. {diff}
+                                    </span>
+                                )}
+                                {cats.map(cat => <span key={cat} className="ph-cat">{cat}</span>)}
+                            </div>
+                        )}
+                    </div>
+
+                    <div className="ph-nav-container">
+                        {mode === 'routine' && routineLength > 0 && (
+                            <>
+                                <div className="ph-dots">
+                                    {Array.from({ length: Math.min(routineLength, 8) }).map((_, i) => (
+                                        <div key={i} className={`ph-dot ${i === currentIndex ? 'active' : i < currentIndex ? 'done' : ''}`} />
+                                    ))}
+                                    {routineLength > 8 && <span style={{ color: 'var(--muted)', fontSize: '0.7rem', marginLeft: 4 }}>+{routineLength - 8}</span>}
+                                </div>
+                                <button className="ph-btn ph-btn-nav" onClick={onPrev} disabled={currentIndex === 0}>← Ant</button>
+                                <button className="ph-btn ph-btn-primary" onClick={onNext} disabled={currentIndex === routineLength - 1}>Siguiente →</button>
+                            </>
+                        )}
+                        <button className="ph-btn ph-btn-close" onClick={() => router.push(cfg.back)}>✕ Cerrar</button>
+                    </div>
                 </div>
-                <button className="ph-btn ph-btn-nav" onClick={onPrev} disabled={currentIndex === 0}>← Ant</button>
-                <button className="ph-btn ph-btn-primary" onClick={onNext} disabled={currentIndex === routineLength - 1}>Siguiente →</button>
-              </>
-            )}
-            <button className="ph-btn ph-btn-close" onClick={() => router.push(cfg.back)}>✕ Cerrar</button>
-          </div>
-        </div>
 
-        <div className="ph-bottom-row">
-          <div className="ph-notes-section">
-            {exercise?.notes ? (
-              <p className="ph-notes-text">{exercise.notes}</p>
-            ) : (
-              <p className="ph-notes-text" style={{ opacity: 0.3, borderLeftColor: 'transparent', fontStyle: 'normal' }}>
-                {mode === 'free' ? 'Arrastra un archivo Guitar Pro para comenzar a tocar.' : 'No hay notas añadidas para este ejercicio.'}
-              </p>
-            )}
-          </div>
+                <div className="ph-bottom-row">
+                    <div className="ph-notes-section">
+                        {exercise?.notes ? (
+                            <p className="ph-notes-text">{exercise.notes}</p>
+                        ) : (
+                            <p className="ph-notes-text" style={{ opacity: 0.3, borderLeftColor: 'transparent', fontStyle: 'normal' }}>
+                                {mode === 'free' ? 'Arrastra un archivo Guitar Pro para comenzar a tocar.' : 'No hay notas añadidas para este ejercicio.'}
+                            </p>
+                        )}
+                    </div>
 
-          {showBpm && (
-            <div className="ph-bpm-section">
-              
-              <div className="ph-bpm-group">
-                <input
-                  type="text"
-                  className="ph-bpm-input start"
-                  value={bpmInitial ?? '—'}
-                  disabled
-                />
-                <span className="ph-bpm-lbl">Inicio</span>
-              </div>
+                    {showBpm && (
+                        <div className="ph-bpm-section">
 
-              <div className="ph-bpm-group">
-                <input
-                  type="number"
-                  className="ph-bpm-input current"
-                  value={bpmCurrent}
-                  placeholder="—"
-                  onChange={e => setBpmCurrent(e.target.value)}
-                  disabled={isSystem}
-                  title={isSystem ? "Solo lectura" : "BPM Actual"}
-                />
-                <span className="ph-bpm-lbl">Actual</span>
-              </div>
+                            <div className="ph-bpm-group">
+                                <input
+                                    type="text"
+                                    className="ph-bpm-input start"
+                                    value={bpmInitial ?? '—'}
+                                    disabled
+                                />
+                                <span className="ph-bpm-lbl">Inicio</span>
+                            </div>
 
-              <div className="ph-bpm-group">
-                <input
-                  type="number"
-                  className="ph-bpm-input goal"
-                  value={bpmGoal}
-                  placeholder="—"
-                  onChange={e => setBpmGoal(e.target.value)}
-                  disabled={isSystem}
-                  title={isSystem ? "Solo lectura" : "BPM Objetivo"}
-                />
-                <span className="ph-bpm-lbl">Objetivo</span>
-              </div>
+                            <div className="ph-bpm-group">
+                                <input
+                                    type="number"
+                                    className="ph-bpm-input current"
+                                    value={bpmCurrent}
+                                    placeholder="—"
+                                    onChange={e => setBpmCurrent(e.target.value)}
+                                    disabled={isSystem}
+                                    title={isSystem ? "Solo lectura" : "BPM Actual"}
+                                />
+                                <span className="ph-bpm-lbl">Actual</span>
+                            </div>
 
-              {isSystem ? (
-                <div className="ph-system-badge">
-                  <span>🔒</span> Ejercicio de sistema (Solo lectura)
+                            <div className="ph-bpm-group">
+                                <input
+                                    type="number"
+                                    className="ph-bpm-input goal"
+                                    value={bpmGoal}
+                                    placeholder="—"
+                                    onChange={e => setBpmGoal(e.target.value)}
+                                    disabled={isSystem}
+                                    title={isSystem ? "Solo lectura" : "BPM Objetivo"}
+                                />
+                                <span className="ph-bpm-lbl">Objetivo</span>
+                            </div>
+
+                            {isSystem ? (
+                                <div className="ph-system-badge">
+                                    <span>🔒</span> Ejercicio de sistema (Solo lectura)
+                                </div>
+                            ) : (
+                                <button className="ph-btn ph-btn-nav" onClick={saveBpms} disabled={isSaving} style={{
+                                    background: saved ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)',
+                                    color: saved ? '#4ade80' : 'var(--gold)',
+                                    borderColor: saved ? 'rgba(74,222,128,0.4)' : 'rgba(220,185,138,0.3)',
+                                    padding: '0.6rem 1rem',
+                                    marginLeft: '0.5rem',
+                                    alignSelf: 'center'
+                                }}>
+                                    {isSaving ? '...' : saved ? '✓ Guardado' : '💾 Guardar'}
+                                </button>
+                            )}
+
+                        </div>
+                    )}
                 </div>
-              ) : (
-                <button className="ph-btn ph-btn-nav" onClick={saveBpms} disabled={isSaving} style={{
-                  background: saved ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)',
-                  color: saved ? '#4ade80' : 'var(--gold)',
-                  borderColor: saved ? 'rgba(74,222,128,0.4)' : 'rgba(220,185,138,0.3)',
-                  padding: '0.6rem 1rem',
-                  marginLeft: '0.5rem',
-                  alignSelf: 'center'
-                }}>
-                  {isSaving ? '...' : saved ? '✓ Guardado' : '💾 Guardar'}
-                </button>
-              )}
-
-            </div>
-          )}
-        </div>
-      </header>
-    </>
-  );
+            </header>
+        </>
+    );
 }
