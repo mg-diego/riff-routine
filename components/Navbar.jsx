@@ -27,7 +27,8 @@ export default function Navbar() {
   const navLinks = [
     { name: 'Inicio', path: '/' },
     { name: 'Mis Rutinas', path: '/routines' },
-    { name: 'Biblioteca', path: '/library' },
+    { name: 'Mi Biblioteca', path: '/library' },
+    { name: 'Explorar', path: '/explore' },
     { name: 'Estadísticas', path: '/stats' },
   ];
 

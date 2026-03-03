@@ -1,0 +1,133 @@
+"use client";
+
+import React from 'react';
+import { TECHNIQUES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from '../../lib/constants';
+
+interface ExerciseFormProps {
+  name: string;
+  setName: React.Dispatch<React.SetStateAction<string>>;
+  categories: string[];
+  setCategories: React.Dispatch<React.SetStateAction<string[]>>;
+  bpmInit: number | string;
+  setBpmInit: React.Dispatch<React.SetStateAction<number | string>>;
+  bpmCurrent: number | string;
+  setBpmCurrent: React.Dispatch<React.SetStateAction<number | string>>;
+  bpmGoal: number | string;
+  setBpmGoal: React.Dispatch<React.SetStateAction<number | string>>;
+  difficulty: number;
+  setDifficulty: React.Dispatch<React.SetStateAction<number>>;
+  notes: string;
+  setNotes: React.Dispatch<React.SetStateAction<string>>;
+}
+
+const labelStyle: React.CSSProperties = {
+  display: 'block', fontSize: '0.8rem', fontWeight: 700,
+  color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase',
+  marginBottom: '0.5rem',
+};
+
+const inputStyle: React.CSSProperties = {
+  width: '100%', padding: '0.7rem 0.9rem', borderRadius: '7px',
+  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
+  color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.93rem',
+  outline: 'none', transition: 'border-color 0.2s', boxSizing: 'border-box',
+};
+
+export function ExerciseForm({ 
+  name, setName, categories, setCategories, bpmInit, setBpmInit,
+  bpmCurrent, setBpmCurrent, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes 
+}: ExerciseFormProps) {
+
+  const toggleCategory = (cat: string) =>
+    setCategories((prev: string[]) => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+
+  return (
+    <>
+      <div>
+        <label style={labelStyle}>Nombre del ejercicio *</label>
+        <input type="text" value={name} onChange={e => setName(e.target.value)}
+          placeholder="Ej: Sweep picking en Am" style={inputStyle}
+          onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+      </div>
+
+      <div>
+        <label style={labelStyle}>
+          Categorías *
+          {categories.length > 0 && <span style={{ color: 'var(--gold)', marginLeft: '0.5rem', fontSize: '0.75rem' }}>{categories.length} seleccionadas</span>}
+        </label>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.45rem', marginTop: '0.5rem' }}>
+          {TECHNIQUES.map(cat => {
+            const active = categories.includes(cat);
+            return (
+              <button key={cat} onClick={() => toggleCategory(cat)} style={{
+                padding: '0.35rem 0.85rem', borderRadius: '20px', cursor: 'pointer',
+                fontSize: '0.8rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 600,
+                transition: 'all 0.15s', border: 'none',
+                background: active ? 'var(--gold)' : 'rgba(255,255,255,0.06)',
+                color: active ? '#111' : 'var(--muted)',
+                boxShadow: active ? '0 2px 8px rgba(220,185,138,0.3)' : 'none',
+                transform: active ? 'scale(1.03)' : 'scale(1)',
+              }}>{cat}</button>
+            );
+          })}
+        </div>
+      </div>
+
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+        <div>
+          <label style={labelStyle}>BPM Inicial</label>
+          <input type="number" min="20" max="300" value={bpmInit} onChange={e => setBpmInit(e.target.value)}
+            placeholder="Ej: 60" style={inputStyle}
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+        </div>
+        <div>
+          <label style={labelStyle}>BPM Actual</label>
+          <input type="number" min="20" max="300" value={bpmCurrent} onChange={e => setBpmCurrent(e.target.value)}
+            placeholder="Ej: 80" style={inputStyle}
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+        </div>
+        <div>
+          <label style={labelStyle}>BPM Objetivo</label>
+          <input type="number" min="20" max="300" value={bpmGoal} onChange={e => setBpmGoal(e.target.value)}
+            placeholder="Ej: 120" style={inputStyle}
+            onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+        </div>
+      </div>
+
+      <div>
+        <label style={labelStyle}>
+          Dificultad
+          <span style={{ marginLeft: '0.6rem', color: DIFFICULTY_COLORS[difficulty], fontWeight: 700 }}>
+            {difficulty} — {DIFFICULTY_LABELS[difficulty]}
+          </span>
+        </label>
+        <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
+          {[1,2,3,4,5].map(n => (
+            <button key={n} onClick={() => setDifficulty(n)} style={{
+              flex: 1, padding: '0.6rem 0', borderRadius: '6px', cursor: 'pointer',
+              border: 'none', fontWeight: 700, fontSize: '1rem',
+              fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s',
+              background: difficulty >= n ? DIFFICULTY_COLORS[n] : 'rgba(255,255,255,0.05)',
+              color: difficulty >= n ? '#111' : 'var(--muted)',
+              transform: difficulty === n ? 'scale(1.08)' : 'scale(1)',
+              boxShadow: difficulty === n ? `0 4px 12px ${DIFFICULTY_COLORS[n]}55` : 'none',
+            }}>{n}</button>
+          ))}
+        </div>
+      </div>
+
+      <div>
+        <label style={labelStyle}>Notas / Observaciones</label>
+        <textarea value={notes} onChange={e => setNotes(e.target.value)}
+          placeholder="Ej: Practicar lento con metrónomo..."
+          rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
+          onFocus={e => e.target.style.borderColor = 'var(--gold)'}
+          onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
+      </div>
+    </>
+  );
+}
