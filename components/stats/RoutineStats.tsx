@@ -143,8 +143,8 @@ export function RoutineStats() {
       </div>
 
       {loading ? (
-        <div style={{ padding: '4rem', textAlign: 'center', color: 'var(--muted)' }}>
-          <span style={{ display: 'inline-block', width: 24, height: 24, border: '3px solid rgba(220,185,138,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+          <span className="loader" />
         </div>
       ) : (
         <>

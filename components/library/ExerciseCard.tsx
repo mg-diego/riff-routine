@@ -4,6 +4,9 @@ import React from 'react';
 import { Exercise } from '../../lib/types';
 import { DIFFICULTY_COLORS } from '../../lib/constants';
 import { useState } from 'react';
+import { DeleteButton } from '../ui/DeleteButton';
+import { EditButton } from '../ui/EditButton';
+import { HistoryButton } from '../ui/HistoryButton';
 
 interface ExerciseCardProps {
   file: Exercise;
@@ -195,83 +198,11 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
           </div>
         )}
 
-        <button
-          onClick={() => onEdit(file)}
-          style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            color: 'var(--muted)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = 'var(--gold)'; e.currentTarget.style.borderColor = 'rgba(220,185,138,0.4)'; e.currentTarget.style.background = 'rgba(220,185,138,0.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-          title="Editar"
-        >
-          <svg style={{ transform: 'scale(1.8)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-            <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-          </svg>
-        </button>
+        <EditButton onClick={() => onEdit(file)} />
 
-        <button
-          onClick={() => onHistory(file)}
-          style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            color: 'var(--muted)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#60a5fa'; e.currentTarget.style.borderColor = 'rgba(96,165,250,0.4)'; e.currentTarget.style.background = 'rgba(96,165,250,0.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-          title="Historial de Práctica"
-        >
-          <svg style={{ transform: 'scale(1.8)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <circle cx="12" cy="12" r="10" />
-            <polyline points="12 6 12 12 16 14" />
-          </svg>
-        </button>
+        <HistoryButton onClick={() => onHistory(file)} />
 
-        <button
-          onClick={() => onDelete(file)}
-          style={{
-            background: 'rgba(255, 255, 255, 0.03)',
-            color: 'var(--muted)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            width: '42px',
-            height: '42px',
-            borderRadius: '8px',
-            cursor: 'pointer',
-            transition: 'all 0.2s',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            flexShrink: 0
-          }}
-          onMouseEnter={e => { e.currentTarget.style.color = '#ff4444'; e.currentTarget.style.borderColor = 'rgba(255,68,68,0.4)'; e.currentTarget.style.background = 'rgba(255,68,68,0.05)'; }}
-          onMouseLeave={e => { e.currentTarget.style.color = 'var(--muted)'; e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'; e.currentTarget.style.background = 'rgba(255,255,255,0.03)'; }}
-          title="Eliminar"
-        >
-          <svg style={{ transform: 'scale(1.8)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-            <polyline points="3 6 5 6 21 6" />
-            <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />
-          </svg>
-        </button>
+        <DeleteButton onClick={() => onDelete(file)} />
       </div>
     </div >
   );

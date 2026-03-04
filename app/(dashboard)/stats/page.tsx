@@ -107,10 +107,14 @@ export default function StatsPage() {
       paddingBottom: '3rem',
       overflowX: 'hidden'
     }}>
-      <header style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3.5rem', color: 'var(--gold)', margin: 0 }}>Dashboard</h1>
-        <p style={{ color: 'var(--muted)', fontSize: '1.1rem' }}>Métricas globales de rendimiento y consistencia.</p>
-      </header>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+        <div>
+          <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>Estadísticas</h1>
+          <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
+            Métricas globales de rendimiento y consistencia.
+          </p>
+        </div>
+      </div>
 
       {/* SECCIÓN SUPERIOR: KPIs Y MAPA DE CALOR (HISTÓRICO) */}
       <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
@@ -152,13 +156,13 @@ export default function StatsPage() {
       <main style={{ width: '100%', minWidth: 0 }}>
         {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-            
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
               <h2 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', margin: 0 }}>
                 Análisis Detallado
               </h2>
-              <select 
-                value={dateFilter} 
+              <select
+                value={dateFilter}
                 onChange={(e) => setDateFilter(e.target.value)}
                 style={{
                   background: 'var(--surface)',

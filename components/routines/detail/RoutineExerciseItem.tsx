@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { Exercise } from '../../../lib/types';
+import { DeleteButton } from '@/components/ui/DeleteButton';
 
 interface RoutineExerciseDetail {
   id: string;
@@ -22,10 +23,9 @@ interface RoutineExerciseItemProps {
   onMove: (index: number, direction: 'up' | 'down') => void;
   onUpdateSetting: (id: string, field: string, value: number | null) => void;
   onRemove: (id: string) => void;
-  onStats?: (id: string) => void;
 }
 
-export function RoutineExerciseItem({ item, index, isFirst, isLast, onMove, onUpdateSetting, onRemove, onStats }: RoutineExerciseItemProps) {
+export function RoutineExerciseItem({ item, index, isFirst, isLast, onMove, onUpdateSetting, onRemove }: RoutineExerciseItemProps) {
   return (
     <div style={{ background: 'var(--surface)', padding: '1.2rem 1.5rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
       
@@ -69,25 +69,8 @@ export function RoutineExerciseItem({ item, index, isFirst, isLast, onMove, onUp
             style={{ background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.5rem', borderRadius: '6px', outline: 'none', width: '100px', fontFamily: 'DM Sans, sans-serif' }}
           />
         </div>
-      </div>
 
-      <div style={{ display: 'flex', gap: '0.8rem', paddingTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.05)', flexWrap: 'wrap' }}>
-        <button 
-          onClick={() => onStats?.(item.id)}
-          style={{ flex: 1, minWidth: '120px', background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)' }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)' }}
-        >
-          📊 Estadísticas
-        </button>
-        <button 
-          onClick={() => onRemove(item.id)}
-          style={{ flex: 1, minWidth: '120px', background: 'rgba(231,76,60,0.1)', color: '#e74c3c', border: '1px solid rgba(231,76,60,0.2)', padding: '0.6rem', borderRadius: '6px', fontWeight: 600, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', transition: 'all 0.2s' }}
-          onMouseEnter={e => { e.currentTarget.style.background = '#e74c3c'; e.currentTarget.style.color = '#fff'; }}
-          onMouseLeave={e => { e.currentTarget.style.background = 'rgba(231,76,60,0.1)'; e.currentTarget.style.color = '#e74c3c'; }}
-        >
-          ✕ Borrar
-        </button>
+        <DeleteButton onClick={() => onRemove(item.id)} />
       </div>
 
     </div>

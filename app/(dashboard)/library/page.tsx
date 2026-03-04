@@ -5,36 +5,37 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import { Exercise } from '../../../lib/types';
 import { TECHNIQUES, DIFFICULTY_LABELS } from '../../../lib/constants';
-import { UploadModal } from '../../../components/library/UploadModal';
-import { EditModal } from '../../../components/library/EditModal';
 import { ExerciseCard } from '../../../components/library/ExerciseCard';
 import { ExerciseRow } from '../../../components/library/ExerciseRow';
-import { BulkAddExercises } from '@/components/library/BulkAddExercises';
-import { ExerciseHistory } from '../../../components/library/ExerciseHistory';
 
 interface ExerciseWithProgress extends Exercise {
   max_bpm_achieved?: number;
 }
 
+const ITEMS_PER_PAGE = 20;
+
 export default function LibraryPage() {
   const router = useRouter();
   const [files, setFiles] = useState<ExerciseWithProgress[]>([]);
-  const [showUpload, setShowUpload] = useState(false);
-  const [editTarget, setEditTarget] = useState<Exercise | null>(null);
-  const [historyTarget, setHistoryTarget] = useState<Exercise | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
-  const [viewMode, setViewMode] = useState<'cards' | 'rows'>('cards');
+  const [viewMode, setViewMode] = useState<'rows' | 'cards'>('rows');
 
   const [searchTerm, setSearchTerm] = useState('');
-  const [categoryFilter, setCategoryFilter] = useState<string>('');
+  const [selectedTechniques, setSelectedTechniques] = useState<string[]>([]);
+  const [isTechDropdownOpen, setIsTechDropdownOpen] = useState(false);
   const [difficultyFilter, setDifficultyFilter] = useState<number | ''>('');
+  const [sortBy, setSortBy] = useState<string>('created_desc');
 
-  const [showBulk, setShowBulk] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   useEffect(() => {
     fetchExercises();
   }, []);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedTechniques, difficultyFilter, sortBy]);
 
   const fetchExercises = async () => {
     setLoading(true);
@@ -81,7 +82,7 @@ export default function LibraryPage() {
 
         setFiles(enrichedExercises);
       } else {
-        setFiles(exercisesData); 
+        setFiles(exercisesData);
       }
     } else {
       setFiles([]);
@@ -138,89 +139,71 @@ export default function LibraryPage() {
     }
   };
 
+  const toggleTechnique = (tech: string) => {
+    if (selectedTechniques.includes(tech)) {
+      setSelectedTechniques(selectedTechniques.filter(t => t !== tech));
+    } else {
+      setSelectedTechniques([...selectedTechniques, tech]);
+    }
+  };
+
+  const handleEditNavigation = (exercise: Exercise) => {
+    router.push(`/library/${exercise.id}`);
+  };
+
   const filteredFiles = files.filter(file => {
     const matchesSearch = file.title.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCat = categoryFilter ? file.technique?.includes(categoryFilter) : true;
+    const matchesCat = selectedTechniques.length === 0 || selectedTechniques.some(tech => file.technique?.includes(tech));
     const matchesDiff = difficultyFilter !== '' ? file.difficulty === difficultyFilter : true;
     return matchesSearch && matchesCat && matchesDiff;
   });
 
+  const sortedFiles = [...filteredFiles].sort((a, b) => {
+    switch (sortBy) {
+      case 'name_asc':
+        return a.title.localeCompare(b.title);
+      case 'name_desc':
+        return b.title.localeCompare(a.title);
+      case 'difficulty_desc':
+        return (b.difficulty || 0) - (a.difficulty || 0);
+      case 'difficulty_asc':
+        return (a.difficulty || 0) - (b.difficulty || 0);
+      case 'current_bpm_desc':
+        return (b.max_bpm_achieved || 0) - (a.max_bpm_achieved || 0);
+      case 'goal_bpm_desc':
+        return (b.bpm_goal || 0) - (a.bpm_goal || 0);
+      case 'created_desc':
+      default:
+        return new Date(b.created_at).getTime() - new Date(a.created_at).getTime();
+    }
+  });
+
+  const totalPages = Math.ceil(sortedFiles.length / ITEMS_PER_PAGE);
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const currentFiles = sortedFiles.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+
+  const goToPage = (page: number) => {
+    setCurrentPage(Math.max(1, Math.min(page, totalPages)));
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
+  const handleHistoryNavigation = (exercise: Exercise) => {
+    router.push(`/library/${exercise.id}/history`);
+  };
+
   return (
     <div>
-      {showUpload && <UploadModal onClose={() => setShowUpload(false)} onSuccess={fetchExercises} />}
-      {editTarget && <EditModal exercise={editTarget} onClose={() => setEditTarget(null)} onSuccess={fetchExercises} />}
-      
-      {historyTarget && (
-        <div style={{
-          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center',
-          alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)', padding: '1rem'
-        }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '12px' }}>
-            <ExerciseHistory 
-              exerciseId={historyTarget.id} 
-              onClose={() => {
-                setHistoryTarget(null);
-                fetchExercises(); 
-              }} 
-            />
-          </div>
-        </div>
-      )}
-
-      {showBulk && (
-        <div style={{
-          position: 'fixed',
-          top: 0,
-          left: 0,
-          width: '100%',
-          height: '100%',
-          backgroundColor: 'rgba(0, 0, 0, 0.8)',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          zIndex: 1000,
-          backdropFilter: 'blur(4px)',
-          padding: '1rem'
-        }}>
-          <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
-            <button
-              onClick={() => setShowBulk(false)}
-              style={{
-                position: 'absolute',
-                top: '1rem',
-                right: '1rem',
-                background: 'none',
-                border: 'none',
-                color: 'var(--muted)',
-                cursor: 'pointer',
-                fontSize: '1.5rem',
-                zIndex: 10
-              }}
-            >
-              ✕
-            </button>
-
-            <BulkAddExercises
-              onSuccess={() => {
-                setShowBulk(false);
-                fetchExercises();
-              }}
-            />
-          </div>
-        </div>
-      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>Biblioteca</h1>
           <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
-            {loading ? 'Cargando ejercicios...' : `${files.length} ${files.length === 1 ? 'ejercicio' : 'ejercicios'} guardados`}
+            {loading ? 'Cargando ejercicios...' : `${sortedFiles.length} ${sortedFiles.length === 1 ? 'ejercicio' : 'ejercicios'} encontrados`}
           </p>
         </div>
 
         <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => setShowUpload(true)} style={{
+          <button onClick={() => router.push('/library/new')} style={{
             display: 'flex', alignItems: 'center', gap: '0.6rem',
             background: 'var(--gold)', color: '#111', padding: '0.8rem 1.5rem',
             borderRadius: '8px', fontWeight: 700, cursor: 'pointer',
@@ -237,7 +220,7 @@ export default function LibraryPage() {
           </button>
 
           <button
-            onClick={() => setShowBulk(true)}
+            onClick={() => router.push('/library/import')}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.6rem',
               background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text)', padding: '0.8rem 1.5rem',
@@ -256,68 +239,126 @@ export default function LibraryPage() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
+      <div style={{ display: 'flex', gap: '0.8rem', marginBottom: '2.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
         <input
           type="text"
           placeholder="Buscar por nombre..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           style={{
-            flex: '1 1 250px', padding: '0.8rem 1rem', borderRadius: '8px',
+            flex: '1 1 200px', padding: '0.8rem 1rem', borderRadius: '8px',
             background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)',
             color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem',
             outline: 'none',
           }}
         />
-        <select
-          value={categoryFilter}
-          onChange={e => setCategoryFilter(e.target.value)}
-          style={{
-            flex: '0 1 180px', padding: '0.8rem 1rem', borderRadius: '8px',
-            background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)',
-            color: categoryFilter ? 'var(--text)' : 'var(--muted)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem',
-            outline: 'none', cursor: 'pointer'
-          }}
-        >
-          <option value="">Todas las técnicas</option>
-          {TECHNIQUES.map(tech => (
-            <option key={tech} value={tech} style={{ color: 'var(--text)' }}>{tech}</option>
-          ))}
-        </select>
+
+        <div style={{ position: 'relative', flex: '0 1 200px' }}>
+          {isTechDropdownOpen && (
+            <div
+              style={{ position: 'fixed', inset: 0, zIndex: 9 }}
+              onClick={() => setIsTechDropdownOpen(false)}
+            />
+          )}
+
+          <button
+            onClick={() => setIsTechDropdownOpen(!isTechDropdownOpen)}
+            style={{
+              width: '100%', padding: '0.8rem 1rem', borderRadius: '8px',
+              background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)',
+              color: selectedTechniques.length > 0 ? 'var(--text)' : 'var(--muted)',
+              fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem',
+              outline: 'none', cursor: 'pointer', textAlign: 'left',
+              display: 'flex', justifyContent: 'space-between', alignItems: 'center'
+            }}
+          >
+            {selectedTechniques.length === 0
+              ? 'Técnicas...'
+              : `${selectedTechniques.length} seleccionada${selectedTechniques.length > 1 ? 's' : ''}`}
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isTechDropdownOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s' }}>
+              <polyline points="6 9 12 15 18 9"></polyline>
+            </svg>
+          </button>
+
+          {isTechDropdownOpen && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 4px)', left: 0, width: '100%',
+              background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '8px', padding: '0.5rem', zIndex: 10,
+              maxHeight: '250px', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
+            }}>
+              <label style={{
+                display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem',
+                cursor: 'pointer', borderRadius: '4px', color: selectedTechniques.length === 0 ? 'var(--gold)' : 'var(--text)'
+              }}>
+                <input
+                  type="checkbox"
+                  checked={selectedTechniques.length === 0}
+                  onChange={() => setSelectedTechniques([])}
+                  style={{ accentColor: 'var(--gold)' }}
+                />
+                Todas
+              </label>
+
+              <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0.2rem 0' }} />
+
+              {TECHNIQUES.map(tech => (
+                <label key={tech} style={{
+                  display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem',
+                  cursor: 'pointer', borderRadius: '4px', color: 'var(--text)'
+                }}
+                  onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                >
+                  <input
+                    type="checkbox"
+                    checked={selectedTechniques.includes(tech)}
+                    onChange={() => toggleTechnique(tech)}
+                    style={{ accentColor: 'var(--gold)' }}
+                  />
+                  {tech}
+                </label>
+              ))}
+            </div>
+          )}
+        </div>
+
         <select
           value={difficultyFilter}
           onChange={e => setDifficultyFilter(e.target.value === '' ? '' : Number(e.target.value))}
           style={{
-            flex: '0 1 180px', padding: '0.8rem 1rem', borderRadius: '8px',
+            flex: '0 1 150px', padding: '0.8rem 1rem', borderRadius: '8px',
             background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)',
             color: difficultyFilter !== '' ? 'var(--text)' : 'var(--muted)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem',
             outline: 'none', cursor: 'pointer'
           }}
         >
-          <option value="">Cualquier dificultad</option>
+          <option value="">Dificultad...</option>
           {[1, 2, 3, 4, 5].map(n => (
             <option key={n} value={n} style={{ color: 'var(--text)' }}>Nv. {n} - {DIFFICULTY_LABELS[n]}</option>
           ))}
         </select>
 
+        <select
+          value={sortBy}
+          onChange={e => setSortBy(e.target.value)}
+          style={{
+            flex: '0 1 160px', padding: '0.8rem 1rem', borderRadius: '8px',
+            background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)',
+            color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem',
+            outline: 'none', cursor: 'pointer'
+          }}
+        >
+          <option value="created_desc">Más recientes</option>
+          <option value="name_asc">Nombre (A-Z)</option>
+          <option value="name_desc">Nombre (Z-A)</option>
+          <option value="difficulty_desc">Mayor dificultad</option>
+          <option value="difficulty_asc">Menor dificultad</option>
+          <option value="current_bpm_desc">Mayor BPM Actual</option>
+          <option value="goal_bpm_desc">Mayor BPM Objetivo</option>
+        </select>
+
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.2rem', marginLeft: 'auto' }}>
-          <button
-            onClick={() => setViewMode('cards')}
-            style={{
-              background: viewMode === 'cards' ? 'var(--surface2)' : 'transparent',
-              color: viewMode === 'cards' ? 'var(--gold)' : 'var(--muted)',
-              border: 'none', padding: '0.5rem 0.8rem', borderRadius: '6px', cursor: 'pointer',
-              display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
-            }}
-            title="Vista de cuadrícula"
-          >
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <rect x="3" y="3" width="7" height="7"></rect>
-              <rect x="14" y="3" width="7" height="7"></rect>
-              <rect x="14" y="14" width="7" height="7"></rect>
-              <rect x="3" y="14" width="7" height="7"></rect>
-            </svg>
-          </button>
           <button
             onClick={() => setViewMode('rows')}
             style={{
@@ -337,6 +378,23 @@ export default function LibraryPage() {
               <line x1="3" y1="18" x2="3.01" y2="18"></line>
             </svg>
           </button>
+          <button
+            onClick={() => setViewMode('cards')}
+            style={{
+              background: viewMode === 'cards' ? 'var(--surface2)' : 'transparent',
+              color: viewMode === 'cards' ? 'var(--gold)' : 'var(--muted)',
+              border: 'none', padding: '0.5rem 0.8rem', borderRadius: '6px', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s'
+            }}
+            title="Vista de cuadrícula"
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="7" height="7"></rect>
+              <rect x="14" y="3" width="7" height="7"></rect>
+              <rect x="14" y="14" width="7" height="7"></rect>
+              <rect x="3" y="14" width="7" height="7"></rect>
+            </svg>
+          </button>
         </div>
       </div>
 
@@ -348,8 +406,8 @@ export default function LibraryPage() {
       )}
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--muted)' }}>
-          <span style={{ display: 'inline-block', width: 24, height: 24, border: '3px solid rgba(220,185,138,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+          <span className="loader" />
         </div>
       ) : files.length === 0 ? (
         <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>
@@ -357,56 +415,86 @@ export default function LibraryPage() {
           <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>Tu biblioteca está vacía</p>
           <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>Sube tu primer ejercicio para empezar</p>
         </div>
-      ) : filteredFiles.length === 0 ? (
+      ) : sortedFiles.length === 0 ? (
         <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>
           <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>No hay coincidencias</p>
           <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>Prueba a cambiar los filtros o el término de búsqueda</p>
           <button
-            onClick={() => { setSearchTerm(''); setCategoryFilter(''); setDifficultyFilter(''); }}
+            onClick={() => { setSearchTerm(''); setSelectedTechniques([]); setDifficultyFilter(''); }}
             style={{ marginTop: '1rem', background: 'transparent', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}
           >
             Limpiar filtros
           </button>
         </div>
       ) : (
-        <div style={{
-          display: viewMode === 'cards' ? 'grid' : 'flex',
-          gridTemplateColumns: viewMode === 'cards' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
-          flexDirection: viewMode === 'rows' ? 'column' : 'row',
-          gap: '1.2rem'
-        }}>
-          {filteredFiles.map((file) => (
-            viewMode === 'cards' ? (
-              <ExerciseCard
-                key={file.id}
-                file={file}
-                currentBpm={file.max_bpm_achieved}
-                onEdit={setEditTarget}
-                onHistory={setHistoryTarget}
-                onDelete={handleDelete}
-              />
-            ) : (
-              <ExerciseRow
-                key={file.id}
-                file={file}
-                currentBpm={file.max_bpm_achieved}
-                onEdit={setEditTarget}
-                onHistory={setHistoryTarget}
-                onDelete={handleDelete}
-              />
-            )
-          ))}
-        </div>
-      )}
+        <>
+          <div style={{
+            display: viewMode === 'cards' ? 'grid' : 'flex',
+            gridTemplateColumns: viewMode === 'cards' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
+            flexDirection: viewMode === 'rows' ? 'column' : 'row',
+            gap: '1.2rem',
+            marginBottom: '2rem'
+          }}>
+            {currentFiles.map((file) => (
+              viewMode === 'cards' ? (
+                <ExerciseCard
+                  key={file.id}
+                  file={file}
+                  currentBpm={file.max_bpm_achieved}
+                  onEdit={handleEditNavigation}
+                  onHistory={handleHistoryNavigation}
+                  onDelete={handleDelete}
+                />
+              ) : (
+                <ExerciseRow
+                  key={file.id}
+                  file={file}
+                  currentBpm={file.max_bpm_achieved}
+                  onEdit={handleEditNavigation}
+                  onHistory={handleHistoryNavigation}
+                  onDelete={handleDelete}
+                />
+              )
+            ))}
+          </div>
 
-      <style>{`
-        @keyframes spin { to { transform: rotate(360deg); } }
-        :root {
-          --gold: #dcb98a; --gold-dark: #b8945f;
-          --surface: #1c1c1c; --surface2: #252525;
-          --text: #f0e8dc; --muted: #6a5f52;
-        }
-      `}</style>
+          {totalPages > 1 && (
+            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+              <button
+                onClick={() => goToPage(currentPage - 1)}
+                disabled={currentPage === 1}
+                style={{
+                  background: 'rgba(255,255,255,0.05)', color: currentPage === 1 ? 'var(--muted)' : 'var(--text)',
+                  border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem 1rem', borderRadius: '8px',
+                  cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '0.4rem'
+                }}
+              >
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
+                Anterior
+              </button>
+
+              <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>
+                Página <strong style={{ color: 'var(--gold)' }}>{currentPage}</strong> de {totalPages}
+              </span>
+
+              <button
+                onClick={() => goToPage(currentPage + 1)}
+                disabled={currentPage === totalPages}
+                style={{
+                  background: 'rgba(255,255,255,0.05)', color: currentPage === totalPages ? 'var(--muted)' : 'var(--text)',
+                  border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem 1rem', borderRadius: '8px',
+                  cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'all 0.2s',
+                  display: 'flex', alignItems: 'center', gap: '0.4rem'
+                }}
+              >
+                Siguiente
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
+              </button>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 }

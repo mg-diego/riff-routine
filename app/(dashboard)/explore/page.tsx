@@ -61,9 +61,8 @@ export default function ExplorePage() {
             )}
 
             {loading ? (
-                <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--muted)' }}>
-                    <span style={{ display: 'inline-block', width: 24, height: 24, border: '3px solid rgba(220,185,138,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-                    <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+                <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+                    <span className="loader" />
                 </div>
             ) : systemExercises.length === 0 ? (
                 <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>

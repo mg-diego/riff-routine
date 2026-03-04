@@ -4,6 +4,9 @@ import React, { useState, useEffect } from 'react';
 import { Routine } from '../../lib/types';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
+import { DeleteButton } from '../ui/DeleteButton';
+import { EditButton } from '../ui/EditButton';
+import { HistoryButton } from '../ui/HistoryButton';
 
 interface RoutineCardProps {
   routine: Routine;
@@ -47,7 +50,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
       overflow: 'hidden',
       transition: 'all 0.2s ease'
     }}>
-      <div 
+      <div
         onClick={() => setIsOpen(!isOpen)}
         style={{
           padding: '1rem 1.5rem',
@@ -59,8 +62,8 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
         }}
       >
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flex: 1 }}>
-          <span style={{ 
-            transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)', 
+          <span style={{
+            transform: isOpen ? 'rotate(90deg)' : 'rotate(0deg)',
             transition: 'transform 0.2s',
             color: 'var(--gold)',
             fontSize: '0.8rem'
@@ -77,50 +80,27 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
           <button
             disabled={!hasExercises}
             onClick={() => router.push(`/practice?routine=${routine.id}`)}
-            style={{ 
-              background: 'var(--gold)', color: '#111', border: 'none', padding: '0.5rem 1rem', 
-              borderRadius: '6px', cursor: hasExercises ? 'pointer' : 'not-allowed', 
-              fontSize: '0.85rem', fontWeight: 700, opacity: hasExercises ? 1 : 0.5 
+            style={{
+              background: 'var(--gold)', color: '#111', border: 'none', padding: '0.5rem 1rem',
+              borderRadius: '6px', cursor: hasExercises ? 'pointer' : 'not-allowed',
+              fontSize: '0.85rem', fontWeight: 700, opacity: hasExercises ? 1 : 0.5
             }}
           >
             🚀 Iniciar
           </button>
           
-          <button
-            onClick={() => router.push(`/routines/${routine.id}`)}
-            style={{ 
-              background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', 
-              padding: '0.5rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' 
-            }}
-          >
-            ⚙️ Configurar
-          </button>
 
-          <button
-            onClick={() => console.log('Stats', routine.id)}
-            style={{ 
-              background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', 
-              padding: '0.5rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' 
-            }}
-          >
-            📊
-          </button>
+          <EditButton onClick={() => router.push(`/routines/${routine.id}`)} />
+          
+          <HistoryButton onClick={() => console.log('Stats', routine.id)} />
 
-          <button
-            onClick={() => onDelete(routine)}
-            style={{ 
-              background: 'rgba(231,76,60,0.1)', color: '#e74c3c', border: '1px solid rgba(231,76,60,0.2)', 
-              padding: '0.5rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem' 
-            }}
-          >
-            🗑
-          </button>
+          <DeleteButton onClick={() => onDelete(routine)} />
         </div>
       </div>
 
       {isOpen && (
-        <div style={{ 
-          padding: '0 1.5rem 1.5rem 3rem', 
+        <div style={{
+          padding: '0 1.5rem 1.5rem 3rem',
           borderTop: '1px solid rgba(255,255,255,0.03)',
           background: 'rgba(0,0,0,0.1)'
         }}>
@@ -129,15 +109,15 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
               {routine.description}
             </p>
           )}
-          
+
           <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
             {loadingExercises ? (
               <li style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Cargando ejercicios...</li>
             ) : exerciseTitles.length > 0 ? (
               exerciseTitles.map((title, i) => (
-                <li key={i} style={{ 
-                  color: 'var(--text)', 
-                  fontSize: '0.85rem', 
+                <li key={i} style={{
+                  color: 'var(--text)',
+                  fontSize: '0.85rem',
                   padding: '0.3rem 0',
                   display: 'flex',
                   alignItems: 'center',

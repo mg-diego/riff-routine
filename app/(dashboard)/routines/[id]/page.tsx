@@ -15,7 +15,7 @@ interface RoutineExerciseDetail {
   target_bpm: number | null;
   order_index: number;
   target_duration_seconds: number | null;
-  session_count?: number; 
+  session_count?: number;
   exercises: Exercise;
 }
 
@@ -36,7 +36,7 @@ export default function RoutineDetailsPage() {
   const fetchData = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       router.push('/login');
       return;
@@ -71,35 +71,35 @@ export default function RoutineDetailsPage() {
       .order('order_index', { ascending: true });
 
     if (reData) {
-        const exerciseIds = reData.map(re => re.exercise_id);
-        
-        const { data: logsData } = await supabase
-            .from('practice_logs')
-            .select('exercise_id')
-            .in('exercise_id', exerciseIds)
-            .eq('user_id', user.id);
+      const exerciseIds = reData.map(re => re.exercise_id);
 
-        const sessionCounts: Record<string, number> = {};
-        if (logsData) {
-            logsData.forEach(log => {
-                sessionCounts[log.exercise_id] = (sessionCounts[log.exercise_id] || 0) + 1;
-            });
-        }
+      const { data: logsData } = await supabase
+        .from('practice_logs')
+        .select('exercise_id')
+        .in('exercise_id', exerciseIds)
+        .eq('user_id', user.id);
 
-        const enrichedData = reData.map(re => ({
-            ...re,
-            session_count: sessionCounts[re.exercise_id] || 0
-        }));
+      const sessionCounts: Record<string, number> = {};
+      if (logsData) {
+        logsData.forEach(log => {
+          sessionCounts[log.exercise_id] = (sessionCounts[log.exercise_id] || 0) + 1;
+        });
+      }
 
-        setRoutineExercises(enrichedData as RoutineExerciseDetail[]);
+      const enrichedData = reData.map(re => ({
+        ...re,
+        session_count: sessionCounts[re.exercise_id] || 0
+      }));
+
+      setRoutineExercises(enrichedData as RoutineExerciseDetail[]);
     }
 
     setLoading(false);
   };
 
   const handleAddExercise = async (exerciseId: string) => {
-    const nextOrder = routineExercises.length > 0 
-      ? Math.max(...routineExercises.map(e => e.order_index)) + 1 
+    const nextOrder = routineExercises.length > 0
+      ? Math.max(...routineExercises.map(e => e.order_index)) + 1
       : 0;
 
     const { error: insertError } = await supabase
@@ -151,15 +151,10 @@ export default function RoutineDetailsPage() {
     ]);
   };
 
-  const handleStatsExercise = (id: string) => {
-    console.log("Estadísticas del ejercicio:", id);
-  };
-
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem', color: 'var(--muted)' }}>
-        <span style={{ display: 'inline-block', width: 24, height: 24, border: '3px solid rgba(220,185,138,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-        <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <span className="loader" />
       </div>
     );
   }
@@ -209,7 +204,6 @@ export default function RoutineDetailsPage() {
               onMove={handleMove}
               onUpdateSetting={handleUpdateSetting}
               onRemove={handleRemoveExercise}
-              onStats={handleStatsExercise}
             />
           ))}
         </div>

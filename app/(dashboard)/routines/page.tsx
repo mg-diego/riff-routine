@@ -1,16 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import { Routine } from '../../../lib/types';
 import { RoutinesPageHeader } from '../../../components/routines/RoutinesPageHeader';
 import { RoutineCard } from '../../../components/routines/RoutineCard';
-import { CreateRoutineModal } from '../../../components/routines/CreateRoutineModal';
 
 export default function RoutinesPage() {
+  const router = useRouter();
   const [routines, setRoutines] = useState<Routine[]>([]);
   const [loading, setLoading] = useState(true);
-  const [showCreateModal, setShowCreateModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
@@ -57,17 +57,10 @@ export default function RoutinesPage() {
 
   return (
     <div>
-      {showCreateModal && (
-        <CreateRoutineModal 
-          onClose={() => setShowCreateModal(false)} 
-          onSuccess={fetchRoutines} 
-        />
-      )}
-
       <RoutinesPageHeader 
         count={routines.length} 
         loading={loading} 
-        onCreateClick={() => setShowCreateModal(true)} 
+        onCreateClick={() => router.push('/routines/new')}
       />
 
       {error && (
@@ -88,7 +81,6 @@ export default function RoutinesPage() {
           <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>Agrupa ejercicios para practicar de forma organizada</p>
         </div>
       ) : (
-        /* Cambio de Grid a Flex Column para el diseño de filas */
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {routines.map((routine) => (
             <RoutineCard 
@@ -99,15 +91,6 @@ export default function RoutinesPage() {
           ))}
         </div>
       )}
-
-      <style>{`
-        .loader { 
-          display: inline-block; width: 24px; height: 24px; 
-          border: 3px solid rgba(220,185,138,0.3); border-top-color: var(--gold); 
-          borderRadius: 50%; animation: spin 0.8s linear infinite; 
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
     </div>
   );
 }

@@ -35,7 +35,7 @@ export default function Navbar() {
   return (
     <nav style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 3rem', background: 'var(--surface)', borderBottom: '1px solid rgba(220,185,138,0.15)' }}>
       <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', color: 'var(--gold)', letterSpacing: '0.05em' }}>
-        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>🎸 RiffRoutine</Link>
+        <Link href="/" style={{ textDecoration: 'none', color: 'inherit' }}>RiffRoutine</Link>
       </div>
 
       <div style={{ display: 'flex', gap: '2rem' }}>
