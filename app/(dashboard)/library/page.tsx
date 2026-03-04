@@ -9,12 +9,19 @@ import { UploadModal } from '../../../components/library/UploadModal';
 import { EditModal } from '../../../components/library/EditModal';
 import { ExerciseCard } from '../../../components/library/ExerciseCard';
 import { ExerciseRow } from '../../../components/library/ExerciseRow';
+import { BulkAddExercises } from '@/components/library/BulkAddExercises';
+import { ExerciseHistory } from '../../../components/library/ExerciseHistory';
+
+interface ExerciseWithProgress extends Exercise {
+  max_bpm_achieved?: number;
+}
 
 export default function LibraryPage() {
   const router = useRouter();
-  const [files, setFiles] = useState<Exercise[]>([]);
+  const [files, setFiles] = useState<ExerciseWithProgress[]>([]);
   const [showUpload, setShowUpload] = useState(false);
   const [editTarget, setEditTarget] = useState<Exercise | null>(null);
+  const [historyTarget, setHistoryTarget] = useState<Exercise | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'cards' | 'rows'>('cards');
@@ -23,27 +30,63 @@ export default function LibraryPage() {
   const [categoryFilter, setCategoryFilter] = useState<string>('');
   const [difficultyFilter, setDifficultyFilter] = useState<number | ''>('');
 
-  useEffect(() => { 
-    fetchExercises(); 
+  const [showBulk, setShowBulk] = useState(false);
+
+  useEffect(() => {
+    fetchExercises();
   }, []);
 
   const fetchExercises = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    
+
     if (!user) {
       setLoading(false);
       return;
     }
-    
-    const { data, error } = await supabase
-      .from('exercises').select('*').eq('user_id', user.id)
+
+    const { data: exercisesData, error: exercisesError } = await supabase
+      .from('exercises')
+      .select('*')
+      .eq('user_id', user.id)
       .order('created_at', { ascending: false });
-      
-    if (!error && data) {
-      setFiles(data);
+
+    if (exercisesError || !exercisesData) {
+      setError(exercisesError?.message || 'Error cargando ejercicios');
+      setLoading(false);
+      return;
     }
-    
+
+    const exerciseIds = exercisesData.map(ex => ex.id);
+
+    if (exerciseIds.length > 0) {
+      const { data: logsData, error: logsError } = await supabase
+        .from('practice_logs')
+        .select('exercise_id, bpm_used')
+        .in('exercise_id', exerciseIds)
+        .eq('user_id', user.id);
+
+      if (!logsError && logsData) {
+        const maxBpms: Record<string, number> = {};
+        logsData.forEach(log => {
+          if (!maxBpms[log.exercise_id] || log.bpm_used > maxBpms[log.exercise_id]) {
+            maxBpms[log.exercise_id] = log.bpm_used;
+          }
+        });
+
+        const enrichedExercises = exercisesData.map(ex => ({
+          ...ex,
+          max_bpm_achieved: maxBpms[ex.id] || undefined
+        }));
+
+        setFiles(enrichedExercises);
+      } else {
+        setFiles(exercisesData); 
+      }
+    } else {
+      setFiles([]);
+    }
+
     setLoading(false);
   };
 
@@ -51,25 +94,48 @@ export default function LibraryPage() {
     if (!confirm(`¿Eliminar "${exercise.title}"?`)) return;
     try {
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('User not authenticated');
+      if (!user) throw new Error('User no autenticado');
 
-      if (exercise.file_url) {
-        const url = new URL(exercise.file_url);
-        const parts = url.pathname.split('/');
-        const bucketIndex = parts.indexOf('guitar_tabs');
-        if (bucketIndex !== -1) {
-          const storagePath = parts.slice(bucketIndex + 1).join('/');
-          const { error: storageError } = await supabase.storage.from('guitar_tabs').remove([storagePath]);
-          if (storageError) console.warn(storageError.message);
+      if (exercise.file_url && typeof exercise.file_url === 'string' && exercise.file_url.startsWith('http')) {
+        try {
+          const url = new URL(exercise.file_url);
+          const parts = url.pathname.split('/');
+          const bucketIndex = parts.indexOf('guitar_tabs');
+          if (bucketIndex !== -1) {
+            const storagePath = parts.slice(bucketIndex + 1).join('/');
+            await supabase.storage.from('guitar_tabs').remove([storagePath]);
+          }
+        } catch (storageErr) {
+          console.warn(storageErr);
         }
       }
 
-      const { error: dbError } = await supabase.from('exercises')
-        .delete().eq('id', exercise.id).eq('user_id', user.id);
-      if (dbError) throw dbError;
+      const { error: logsError } = await supabase.from('practice_logs')
+        .delete()
+        .eq('exercise_id', exercise.id);
+      if (logsError) throw new Error(`Error en practice_logs: ${logsError.message}`);
+
+      const { error: routinesError } = await supabase.from('routine_exercises')
+        .delete()
+        .eq('exercise_id', exercise.id);
+      if (routinesError && routinesError.code !== '42P01') {
+        throw new Error(`Error en routine_exercises: ${routinesError.message}`);
+      }
+
+      const { data, error: dbError } = await supabase.from('exercises')
+        .delete()
+        .eq('id', exercise.id)
+        .eq('user_id', user.id)
+        .select();
+
+      if (dbError) throw new Error(dbError.message);
+      if (!data || data.length === 0) throw new Error('RLS bloqueó el borrado. Faltan permisos de DELETE.');
 
       fetchExercises();
-    } catch (e) { setError(e instanceof Error ? e.message : String(e)); }
+    } catch (e) {
+      console.error(e);
+      setError(e instanceof Error ? e.message : String(e));
+    }
   };
 
   const filteredFiles = files.filter(file => {
@@ -83,6 +149,67 @@ export default function LibraryPage() {
     <div>
       {showUpload && <UploadModal onClose={() => setShowUpload(false)} onSuccess={fetchExercises} />}
       {editTarget && <EditModal exercise={editTarget} onClose={() => setEditTarget(null)} onSuccess={fetchExercises} />}
+      
+      {historyTarget && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100%', height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)', display: 'flex', justifyContent: 'center',
+          alignItems: 'center', zIndex: 1000, backdropFilter: 'blur(4px)', padding: '1rem'
+        }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '700px', maxHeight: '90vh', overflowY: 'auto', borderRadius: '12px' }}>
+            <ExerciseHistory 
+              exerciseId={historyTarget.id} 
+              onClose={() => {
+                setHistoryTarget(null);
+                fetchExercises(); 
+              }} 
+            />
+          </div>
+        </div>
+      )}
+
+      {showBulk && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          backgroundColor: 'rgba(0, 0, 0, 0.8)',
+          display: 'flex',
+          justifyContent: 'center',
+          alignItems: 'center',
+          zIndex: 1000,
+          backdropFilter: 'blur(4px)',
+          padding: '1rem'
+        }}>
+          <div style={{ position: 'relative', width: '100%', maxWidth: '600px' }}>
+            <button
+              onClick={() => setShowBulk(false)}
+              style={{
+                position: 'absolute',
+                top: '1rem',
+                right: '1rem',
+                background: 'none',
+                border: 'none',
+                color: 'var(--muted)',
+                cursor: 'pointer',
+                fontSize: '1.5rem',
+                zIndex: 10
+              }}
+            >
+              ✕
+            </button>
+
+            <BulkAddExercises
+              onSuccess={() => {
+                setShowBulk(false);
+                fetchExercises();
+              }}
+            />
+          </div>
+        </div>
+      )}
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
@@ -91,7 +218,7 @@ export default function LibraryPage() {
             {loading ? 'Cargando ejercicios...' : `${files.length} ${files.length === 1 ? 'ejercicio' : 'ejercicios'} guardados`}
           </p>
         </div>
-        
+
         <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button onClick={() => setShowUpload(true)} style={{
             display: 'flex', alignItems: 'center', gap: '0.6rem',
@@ -104,17 +231,35 @@ export default function LibraryPage() {
             onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
             </svg>
             Nuevo ejercicio
+          </button>
+
+          <button
+            onClick={() => setShowBulk(true)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.6rem',
+              background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text)', padding: '0.8rem 1.5rem',
+              borderRadius: '8px', fontWeight: 600, cursor: 'pointer',
+              fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem', border: '1px solid rgba(255,255,255,0.1)',
+              transition: 'all 0.2s', whiteSpace: 'nowrap'
+            }}
+            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
+            </svg>
+            Importar lista
           </button>
         </div>
       </div>
 
       <div style={{ display: 'flex', gap: '1rem', marginBottom: '2.5rem', flexWrap: 'wrap', alignItems: 'center' }}>
-        <input 
-          type="text" 
-          placeholder="Buscar por nombre..." 
+        <input
+          type="text"
+          placeholder="Buscar por nombre..."
           value={searchTerm}
           onChange={e => setSearchTerm(e.target.value)}
           style={{
@@ -124,7 +269,7 @@ export default function LibraryPage() {
             outline: 'none',
           }}
         />
-        <select 
+        <select
           value={categoryFilter}
           onChange={e => setCategoryFilter(e.target.value)}
           style={{
@@ -139,7 +284,7 @@ export default function LibraryPage() {
             <option key={tech} value={tech} style={{ color: 'var(--text)' }}>{tech}</option>
           ))}
         </select>
-        <select 
+        <select
           value={difficultyFilter}
           onChange={e => setDifficultyFilter(e.target.value === '' ? '' : Number(e.target.value))}
           style={{
@@ -156,7 +301,7 @@ export default function LibraryPage() {
         </select>
 
         <div style={{ display: 'flex', background: 'rgba(255,255,255,0.05)', borderRadius: '8px', padding: '0.2rem', marginLeft: 'auto' }}>
-          <button 
+          <button
             onClick={() => setViewMode('cards')}
             style={{
               background: viewMode === 'cards' ? 'var(--surface2)' : 'transparent',
@@ -173,7 +318,7 @@ export default function LibraryPage() {
               <rect x="3" y="14" width="7" height="7"></rect>
             </svg>
           </button>
-          <button 
+          <button
             onClick={() => setViewMode('rows')}
             style={{
               background: viewMode === 'rows' ? 'var(--surface2)' : 'transparent',
@@ -216,7 +361,7 @@ export default function LibraryPage() {
         <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>
           <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>No hay coincidencias</p>
           <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>Prueba a cambiar los filtros o el término de búsqueda</p>
-          <button 
+          <button
             onClick={() => { setSearchTerm(''); setCategoryFilter(''); setDifficultyFilter(''); }}
             style={{ marginTop: '1rem', background: 'transparent', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}
           >
@@ -224,17 +369,31 @@ export default function LibraryPage() {
           </button>
         </div>
       ) : (
-        <div style={{ 
-          display: viewMode === 'cards' ? 'grid' : 'flex', 
-          gridTemplateColumns: viewMode === 'cards' ? 'repeat(auto-fill, minmax(260px, 1fr))' : 'none',
+        <div style={{
+          display: viewMode === 'cards' ? 'grid' : 'flex',
+          gridTemplateColumns: viewMode === 'cards' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
           flexDirection: viewMode === 'rows' ? 'column' : 'row',
-          gap: '1.2rem' 
+          gap: '1.2rem'
         }}>
           {filteredFiles.map((file) => (
             viewMode === 'cards' ? (
-              <ExerciseCard key={file.id} file={file} onEdit={setEditTarget} onDelete={handleDelete} />
+              <ExerciseCard
+                key={file.id}
+                file={file}
+                currentBpm={file.max_bpm_achieved}
+                onEdit={setEditTarget}
+                onHistory={setHistoryTarget}
+                onDelete={handleDelete}
+              />
             ) : (
-              <ExerciseRow key={file.id} file={file} onEdit={setEditTarget} onDelete={handleDelete} />
+              <ExerciseRow
+                key={file.id}
+                file={file}
+                currentBpm={file.max_bpm_achieved}
+                onEdit={setEditTarget}
+                onHistory={setHistoryTarget}
+                onDelete={handleDelete}
+              />
             )
           ))}
         </div>

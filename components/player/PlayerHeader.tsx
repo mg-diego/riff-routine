@@ -1,74 +1,128 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Exercise } from '../../lib/types';
 
 interface PlayerHeaderProps {
-    mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation';
-    routineLength: number;
-    currentIndex: number;
-    onPrev: () => void;
-    onNext: () => void;
-    exercise?: Exercise | null;
+  mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation';
+  routineLength: number;
+  currentIndex: number;
+  onPrev: () => void;
+  onNext: () => void;
+  onEndSession: (fallbackPath: string) => void;
+  exercise?: Exercise | null;
+  sessionId?: string | null;
+  routineTargetBpm?: number | null;
+  routineExerciseId?: string | null;
+  routineTargetDuration?: number | null;
 }
 
 const MODE_CONFIG = {
-    free: { label: 'Práctica Libre', icon: '🎸', color: '#7dd3fc', back: '/' },
-    library: { label: 'Modo Biblioteca', icon: '📚', color: '#dcb98a', back: '/library' },
-    routine: { label: 'Modo Rutina', icon: '🔁', color: '#a78bfa', back: '/routines' },
-    scales: { label: 'Escalas', icon: '🔁', color: '#a78bfa', back: '/explore' },
-    improvisation: { label: 'Escalas', icon: '🔁', color: '#a78bfa', back: '/explore' },
+  free: { label: 'Práctica Libre', icon: '🎸', color: '#7dd3fc', back: '/' },
+  library: { label: 'Modo Biblioteca', icon: '📚', color: '#dcb98a', back: '/library' },
+  routine: { label: 'Modo Rutina', icon: '🔁', color: '#a78bfa', back: '/routines' },
+  scales: { label: 'Escalas', icon: '🔁', color: '#a78bfa', back: '/explore' },
+  improvisation: { label: 'Improvisación', icon: '🔁', color: '#a78bfa', back: '/explore' },
 };
 
 const DIFF_COLORS: Record<number, string> = {
-    1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171',
+  1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171',
 };
 
-export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext, exercise }: PlayerHeaderProps) {
-    const router = useRouter();
-    const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
+export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext, onEndSession, exercise, sessionId = null, routineTargetBpm = null, routineExerciseId = null, routineTargetDuration = null }: PlayerHeaderProps) {
+  const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
 
-    const [bpmCurrent, setBpmCurrent] = useState('');
-    const [bpmGoal, setBpmGoal] = useState('');
-    const [isSaving, setIsSaving] = useState(false);
-    const [saved, setSaved] = useState(false);
+  const [bpmCurrent, setBpmCurrent] = useState('');
+  const [bpmGoal, setBpmGoal] = useState('');
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [errorMsg, setErrorMsg] = useState('');
+  
+  const [timeSpent, setTimeSpent] = useState(0);
 
-    useEffect(() => {
-        setBpmCurrent(exercise?.bpm_current?.toString() || exercise?.bpm_initial?.toString() || '');
-        setBpmGoal(exercise?.bpm_goal?.toString() || '');
-    }, [exercise?.id]);
+  useEffect(() => {
+    setBpmCurrent(exercise?.bpm_suggested?.toString() || exercise?.bpm_initial?.toString() || '');
+    const initialGoal = (mode === 'routine' && routineTargetBpm !== null) 
+      ? routineTargetBpm 
+      : exercise?.bpm_goal;
+    setBpmGoal(initialGoal?.toString() || '');
+  }, [exercise?.id, routineTargetBpm, mode]);
 
-    const saveBpms = async () => {
-        if (!exercise || exercise.user_id === null) return;
-        setIsSaving(true);
-        await supabase.from('exercises').update({
-            bpm_current: bpmCurrent ? parseInt(bpmCurrent) : null,
-            bpm_goal: bpmGoal ? parseInt(bpmGoal) : null,
-        }).eq('id', exercise.id);
-        setIsSaving(false);
-        setSaved(true);
-        setTimeout(() => setSaved(false), 2000);
-    };
+  useEffect(() => {
+    setTimeSpent(0);
+    const timer = setInterval(() => {
+      setTimeSpent(prev => prev + 1);
+    }, 1000);
+    return () => clearInterval(timer);
+  }, [exercise?.id]);
 
-    const isSystem = exercise?.user_id === null;
-    const bpmInitial = exercise?.bpm_initial ?? null;
-    const activeBpm = bpmCurrent ? parseInt(bpmCurrent) : null;
-    const goalBpm = bpmGoal ? parseInt(bpmGoal) : null;
+  const saveProgress = async () => {
+    if (!exercise) return;
+    setErrorMsg('');
+    setIsSaving(true);
 
-    const minBpm = bpmInitial || 20;
-    const maxBpm = goalBpm ? Math.max(goalBpm, minBpm + 10) : Math.max(minBpm + 50, (activeBpm || 0) + 20);
-    const validCurrent = Math.min(Math.max(activeBpm || minBpm, minBpm), maxBpm);
-    const progressPercent = ((validCurrent - minBpm) / (maxBpm - minBpm)) * 100;
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) throw new Error("Usuario no autenticado");
 
-    const showBpm = mode !== 'free' && exercise && (bpmInitial !== null || goalBpm !== null || activeBpm !== null);
-    const cats = exercise?.technique ? exercise.technique.split(', ') : [];
-    const diff = exercise?.difficulty;
+      const currentBpmNum = parseInt(bpmCurrent);
+      if (isNaN(currentBpmNum) || currentBpmNum <= 0) {
+        throw new Error("BPM Actual no válido");
+      }
 
-    return (
-        <>
-            <style>{`
+      const { error: logError } = await supabase.from('practice_logs').insert({
+        user_id: user.id,
+        exercise_id: exercise.id,
+        bpm_used: currentBpmNum,
+        session_id: sessionId,
+        duration_seconds: timeSpent,
+      });
+
+      if (logError) throw logError;
+
+      if (bpmGoal) {
+        const goalNum = parseInt(bpmGoal);
+        if (!isNaN(goalNum)) {
+          if (mode === 'routine' && routineExerciseId) {
+            if (goalNum !== routineTargetBpm) {
+              await supabase.from('routine_exercises')
+                .update({ target_bpm: goalNum })
+                .eq('id', routineExerciseId);
+            }
+          } else if (exercise.user_id === user.id && goalNum !== exercise.bpm_goal) {
+            await supabase.from('exercises')
+              .update({ bpm_goal: goalNum })
+              .eq('id', exercise.id);
+          }
+        }
+      }
+
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2000);
+    } catch (err: any) {
+      console.error(err);
+      setErrorMsg(err.message || "Error al guardar");
+    } finally {
+      setIsSaving(false);
+    }
+  };
+
+  const isSystem = exercise?.user_id === null;
+  const bpmInitial = exercise?.bpm_suggested || exercise?.bpm_initial || null;
+  const showBpm = mode !== 'free' && exercise;
+  const cats = exercise?.technique ? exercise.technique.split(', ') : [];
+  const diff = exercise?.difficulty;
+
+  const formatTime = (totalSeconds: number) => {
+    const m = Math.floor(totalSeconds / 60);
+    const s = totalSeconds % 60;
+    return `${m}:${s.toString().padStart(2, '0')}`;
+  };
+
+  return (
+    <>
+      <style>{`
         .ph-root {
           display: flex;
           flex-direction: column;
@@ -156,9 +210,9 @@ export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext
         .ph-btn-primary:hover:not(:disabled) { background: #c9a676; }
 
         .ph-btn-close {
-          background: transparent; color: var(--muted, #6a5f52); border: 1px solid rgba(255,255,255,0.1);
+          background: rgba(231,76,60,0.1); color: #e74c3c; border: 1px solid rgba(231,76,60,0.3);
         }
-        .ph-btn-close:hover { background: rgba(231,76,60,0.1); color: #e74c3c; border-color: rgba(231,76,60,0.3); }
+        .ph-btn-close:hover { background: #e74c3c; color: #fff; border-color: #e74c3c; }
 
         .ph-bottom-row {
           display: flex;
@@ -182,6 +236,14 @@ export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext
           border-left: 3px solid rgba(220,185,138,0.4);
           padding-left: 0.8rem; font-style: italic;
           display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        
+        .ph-timer-section {
+          display: flex;
+          align-items: center;
+          gap: 0.8rem;
+          padding: 0 1.5rem;
+          border-right: 1px solid rgba(255,255,255,0.03);
         }
 
         .ph-bpm-section {
@@ -238,10 +300,6 @@ export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext
           border-color: var(--gold, #dcb98a);
           background: rgba(220,185,138,0.15);
         }
-        .ph-bpm-input.current:disabled {
-          opacity: 0.6;
-          cursor: not-allowed;
-        }
 
         .ph-bpm-input.goal {
           background: rgba(167,139,250,0.08);
@@ -256,131 +314,131 @@ export function PlayerHeader({ mode, routineLength, currentIndex, onPrev, onNext
           opacity: 0.6;
           cursor: not-allowed;
         }
-
-        .ph-system-badge {
-          font-size: 0.75rem;
-          color: var(--muted);
-          font-style: italic;
-          padding: 0.6rem 1rem;
-          margin-left: 0.5rem;
-          display: flex;
-          align-items: center;
-          gap: 0.4rem;
-        }
       `}</style>
 
-            <header className="ph-root">
+      <header className="ph-root">
 
-                <div className="ph-top-row">
-                    <div className="ph-identity">
-                        <div className="ph-badge" style={{ color: cfg.color, borderColor: cfg.color + '40', background: cfg.color + '15' }}>
-                            <span>{cfg.icon}</span> {cfg.label}
-                        </div>
+        <div className="ph-top-row">
+          <div className="ph-identity">
+            <div className="ph-badge" style={{ color: cfg.color, borderColor: cfg.color + '40', background: cfg.color + '15' }}>
+              <span>{cfg.icon}</span> {cfg.label}
+            </div>
 
-                        <h1 className="ph-title" style={{ color: cfg.color }} title={exercise?.title ?? 'Modo Libre'}>
-                            {exercise?.title ?? 'Sin pista seleccionada'}
-                        </h1>
+            <h1 className="ph-title" style={{ color: cfg.color }} title={exercise?.title ?? 'Modo Libre'}>
+              {exercise?.title ?? 'Sin pista seleccionada'}
+            </h1>
 
-                        {(cats.length > 0 || diff) && (
-                            <div className="ph-tags">
-                                {diff && DIFF_COLORS[diff] && (
-                                    <span className="ph-diff" style={{ background: DIFF_COLORS[diff] + '20', color: DIFF_COLORS[diff], border: `1px solid ${DIFF_COLORS[diff]}40` }}>
-                                        Nv. {diff}
-                                    </span>
-                                )}
-                                {cats.map(cat => <span key={cat} className="ph-cat">{cat}</span>)}
-                            </div>
-                        )}
-                    </div>
+            {(cats.length > 0 || diff) && (
+              <div className="ph-tags">
+                {diff && DIFF_COLORS[diff] && (
+                  <span className="ph-diff" style={{ background: DIFF_COLORS[diff] + '20', color: DIFF_COLORS[diff], border: `1px solid ${DIFF_COLORS[diff]}40` }}>
+                    Nv. {diff}
+                  </span>
+                )}
+                {cats.map(cat => <span key={cat} className="ph-cat">{cat}</span>)}
+              </div>
+            )}
+          </div>
 
-                    <div className="ph-nav-container">
-                        {mode === 'routine' && routineLength > 0 && (
-                            <>
-                                <div className="ph-dots">
-                                    {Array.from({ length: Math.min(routineLength, 8) }).map((_, i) => (
-                                        <div key={i} className={`ph-dot ${i === currentIndex ? 'active' : i < currentIndex ? 'done' : ''}`} />
-                                    ))}
-                                    {routineLength > 8 && <span style={{ color: 'var(--muted)', fontSize: '0.7rem', marginLeft: 4 }}>+{routineLength - 8}</span>}
-                                </div>
-                                <button className="ph-btn ph-btn-nav" onClick={onPrev} disabled={currentIndex === 0}>← Ant</button>
-                                <button className="ph-btn ph-btn-primary" onClick={onNext} disabled={currentIndex === routineLength - 1}>Siguiente →</button>
-                            </>
-                        )}
-                        <button className="ph-btn ph-btn-close" onClick={() => router.push(cfg.back)}>✕ Cerrar</button>
-                    </div>
+          <div className="ph-nav-container">
+            {mode === 'routine' && routineLength > 0 && (
+              <>
+                <div className="ph-dots">
+                  {Array.from({ length: Math.min(routineLength, 8) }).map((_, i) => (
+                    <div key={i} className={`ph-dot ${i === currentIndex ? 'active' : i < currentIndex ? 'done' : ''}`} />
+                  ))}
+                  {routineLength > 8 && <span style={{ color: 'var(--muted)', fontSize: '0.7rem', marginLeft: 4 }}>+{routineLength - 8}</span>}
                 </div>
+                <button className="ph-btn ph-btn-nav" onClick={onPrev} disabled={currentIndex === 0}>← Ant</button>
+                <button className="ph-btn ph-btn-primary" onClick={onNext} disabled={currentIndex === routineLength - 1}>Siguiente →</button>
+              </>
+            )}
+            <button className="ph-btn ph-btn-close" onClick={() => onEndSession(cfg.back)}>
+              🛑 Finalizar Sesión
+            </button>
+          </div>
+        </div>
 
-                <div className="ph-bottom-row">
-                    <div className="ph-notes-section">
-                        {exercise?.notes ? (
-                            <p className="ph-notes-text">{exercise.notes}</p>
-                        ) : (
-                            <p className="ph-notes-text" style={{ opacity: 0.3, borderLeftColor: 'transparent', fontStyle: 'normal' }}>
-                                {mode === 'free' ? 'Arrastra un archivo Guitar Pro para comenzar a tocar.' : 'No hay notas añadidas para este ejercicio.'}
-                            </p>
-                        )}
-                    </div>
+        <div className="ph-bottom-row">
+          <div className="ph-notes-section">
+            {exercise?.notes ? (
+              <p className="ph-notes-text">{exercise.notes}</p>
+            ) : (
+              <p className="ph-notes-text" style={{ opacity: 0.3, borderLeftColor: 'transparent', fontStyle: 'normal' }}>
+                {mode === 'free' ? 'Arrastra un archivo Guitar Pro para comenzar a tocar.' : 'No hay notas añadidas para este ejercicio.'}
+              </p>
+            )}
+          </div>
 
-                    {showBpm && (
-                        <div className="ph-bpm-section">
+          {mode === 'routine' && (
+            <div className="ph-timer-section">
+              <span style={{ fontSize: '1.4rem' }}>⏱️</span>
+              <div style={{ display: 'flex', flexDirection: 'column' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--gold)', textTransform: 'uppercase', fontWeight: 800, letterSpacing: '0.05em' }}>Tiempo</span>
+                <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.6rem', color: 'var(--text)', lineHeight: 1 }}>
+                  {formatTime(timeSpent)}
+                  {routineTargetDuration ? <span style={{ color: 'var(--muted)', fontSize: '1.2rem' }}> / {formatTime(routineTargetDuration)}</span> : ''}
+                </span>
+              </div>
+            </div>
+          )}
 
-                            <div className="ph-bpm-group">
-                                <input
-                                    type="text"
-                                    className="ph-bpm-input start"
-                                    value={bpmInitial ?? '—'}
-                                    disabled
-                                />
-                                <span className="ph-bpm-lbl">Inicio</span>
-                            </div>
+          {showBpm && (
+            <div className="ph-bpm-section">
 
-                            <div className="ph-bpm-group">
-                                <input
-                                    type="number"
-                                    className="ph-bpm-input current"
-                                    value={bpmCurrent}
-                                    placeholder="—"
-                                    onChange={e => setBpmCurrent(e.target.value)}
-                                    disabled={isSystem}
-                                    title={isSystem ? "Solo lectura" : "BPM Actual"}
-                                />
-                                <span className="ph-bpm-lbl">Actual</span>
-                            </div>
+              <div className="ph-bpm-group">
+                <input
+                  type="text"
+                  className="ph-bpm-input start"
+                  value={bpmInitial ?? '—'}
+                  disabled
+                  title="BPM Sugerido/Inicial"
+                />
+                <span className="ph-bpm-lbl">Sugerido</span>
+              </div>
 
-                            <div className="ph-bpm-group">
-                                <input
-                                    type="number"
-                                    className="ph-bpm-input goal"
-                                    value={bpmGoal}
-                                    placeholder="—"
-                                    onChange={e => setBpmGoal(e.target.value)}
-                                    disabled={isSystem}
-                                    title={isSystem ? "Solo lectura" : "BPM Objetivo"}
-                                />
-                                <span className="ph-bpm-lbl">Objetivo</span>
-                            </div>
+              <div className="ph-bpm-group">
+                <input
+                  type="number"
+                  className="ph-bpm-input current"
+                  value={bpmCurrent}
+                  placeholder="—"
+                  onChange={e => setBpmCurrent(e.target.value)}
+                  title="A qué velocidad lo has tocado hoy"
+                />
+                <span className="ph-bpm-lbl">Hoy</span>
+              </div>
 
-                            {isSystem ? (
-                                <div className="ph-system-badge">
-                                    <span>🔒</span> Ejercicio de sistema (Solo lectura)
-                                </div>
-                            ) : (
-                                <button className="ph-btn ph-btn-nav" onClick={saveBpms} disabled={isSaving} style={{
-                                    background: saved ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)',
-                                    color: saved ? '#4ade80' : 'var(--gold)',
-                                    borderColor: saved ? 'rgba(74,222,128,0.4)' : 'rgba(220,185,138,0.3)',
-                                    padding: '0.6rem 1rem',
-                                    marginLeft: '0.5rem',
-                                    alignSelf: 'center'
-                                }}>
-                                    {isSaving ? '...' : saved ? '✓ Guardado' : '💾 Guardar'}
-                                </button>
-                            )}
+              <div className="ph-bpm-group">
+                <input
+                  type="number"
+                  className="ph-bpm-input goal"
+                  value={bpmGoal}
+                  placeholder="—"
+                  onChange={e => setBpmGoal(e.target.value)}
+                  disabled={isSystem && mode !== 'routine'}
+                  title={isSystem && mode !== 'routine' ? "Solo lectura" : "BPM Objetivo"}
+                />
+                <span className="ph-bpm-lbl">Objetivo</span>
+              </div>
 
-                        </div>
-                    )}
-                </div>
-            </header>
-        </>
-    );
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+                <button className="ph-btn ph-btn-nav" onClick={saveProgress} disabled={isSaving} style={{
+                  background: saved ? 'rgba(74,222,128,0.15)' : 'rgba(255,255,255,0.05)',
+                  color: saved ? '#4ade80' : 'var(--gold)',
+                  borderColor: saved ? 'rgba(74,222,128,0.4)' : 'rgba(220,185,138,0.3)',
+                  padding: '0.6rem 1rem',
+                  marginLeft: '0.5rem'
+                }}>
+                  {isSaving ? '...' : saved ? '✓ Registrado' : '💾 Registrar'}
+                </button>
+                {errorMsg && <span style={{ color: '#ef4444', fontSize: '0.7rem', marginTop: '4px' }}>{errorMsg}</span>}
+              </div>
+
+            </div>
+          )}
+        </div>
+      </header>
+    </>
+  );
 }

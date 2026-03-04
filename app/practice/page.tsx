@@ -1,4 +1,4 @@
-import GuitarPlayer from '../../components/GuitarPlayer';
+import GuitarPlayer from '../../components/player/GuitarPlayer';
 
 export default function PracticePage() {
   return (

@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
-import Navbar from '../../components/Navbar';
+import Navbar from '../../components/layout/Navbar';
+import { Footer } from '../../components/layout/Footer';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -28,11 +29,12 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100vw' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
       <Navbar />
-      <main style={{ flex: 1, padding: '2.5rem 3rem', overflowY: 'auto' }}>
+      <main style={{ flex: 1, padding: '2.5rem 2rem', width: '100%', maxWidth: '1600px', margin: '0 auto' }}>
         {children}
       </main>
+      <Footer />
     </div>
   );
 }

@@ -1,15 +1,15 @@
 export interface Exercise {
-  id: number;
-  created_at: string;
+  id: string;
   user_id: string;
   title: string;
   file_url: string | null;
-  technique: string;
+  technique: string | null;
   bpm_initial: number | null;
-  bpm_current: number | null;
+  bpm_suggested: number | null;
   bpm_goal: number | null;
   difficulty: number;
   notes: string | null;
+  created_at: string;
 }
 
 export interface Routine {
