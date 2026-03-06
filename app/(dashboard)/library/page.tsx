@@ -7,6 +7,7 @@ import { Exercise } from '../../../lib/types';
 import { TECHNIQUES, DIFFICULTY_LABELS } from '../../../lib/constants';
 import { ExerciseCard } from '../../../components/library/ExerciseCard';
 import { ExerciseRow } from '../../../components/library/ExerciseRow';
+import { DeleteConfirmModal } from '../../../components/ui/DeleteConfirmModal';
 
 interface ExerciseWithProgress extends Exercise {
   max_bpm_achieved?: number;
@@ -28,6 +29,10 @@ export default function LibraryPage() {
   const [sortBy, setSortBy] = useState<string>('created_desc');
 
   const [currentPage, setCurrentPage] = useState(1);
+  
+  // Estados para el modal de borrado
+  const [exerciseToDelete, setExerciseToDelete] = useState<Exercise | null>(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     fetchExercises();
@@ -91,15 +96,22 @@ export default function LibraryPage() {
     setLoading(false);
   };
 
-  const handleDelete = async (exercise: Exercise) => {
-    if (!confirm(`¿Eliminar "${exercise.title}"?`)) return;
+  const handleDeleteRequest = (exercise: Exercise) => {
+    setExerciseToDelete(exercise);
+  };
+
+  const confirmDelete = async () => {
+    if (!exerciseToDelete) return;
+    setIsDeleting(true);
+    setError(null);
+    
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error('User no autenticado');
 
-      if (exercise.file_url && typeof exercise.file_url === 'string' && exercise.file_url.startsWith('http')) {
+      if (exerciseToDelete.file_url && typeof exerciseToDelete.file_url === 'string' && exerciseToDelete.file_url.startsWith('http')) {
         try {
-          const url = new URL(exercise.file_url);
+          const url = new URL(exerciseToDelete.file_url);
           const parts = url.pathname.split('/');
           const bucketIndex = parts.indexOf('guitar_tabs');
           if (bucketIndex !== -1) {
@@ -113,29 +125,32 @@ export default function LibraryPage() {
 
       const { error: logsError } = await supabase.from('practice_logs')
         .delete()
-        .eq('exercise_id', exercise.id);
+        .eq('exercise_id', exerciseToDelete.id);
       if (logsError) throw new Error(`Error en practice_logs: ${logsError.message}`);
 
       const { error: routinesError } = await supabase.from('routine_exercises')
         .delete()
-        .eq('exercise_id', exercise.id);
+        .eq('exercise_id', exerciseToDelete.id);
       if (routinesError && routinesError.code !== '42P01') {
         throw new Error(`Error en routine_exercises: ${routinesError.message}`);
       }
 
       const { data, error: dbError } = await supabase.from('exercises')
         .delete()
-        .eq('id', exercise.id)
+        .eq('id', exerciseToDelete.id)
         .eq('user_id', user.id)
         .select();
 
       if (dbError) throw new Error(dbError.message);
       if (!data || data.length === 0) throw new Error('RLS bloqueó el borrado. Faltan permisos de DELETE.');
 
-      fetchExercises();
+      await fetchExercises();
+      setExerciseToDelete(null);
     } catch (e) {
       console.error(e);
       setError(e instanceof Error ? e.message : String(e));
+    } finally {
+      setIsDeleting(false);
     }
   };
 
@@ -193,7 +208,6 @@ export default function LibraryPage() {
 
   return (
     <div>
-
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>Biblioteca</h1>
@@ -443,7 +457,7 @@ export default function LibraryPage() {
                   currentBpm={file.max_bpm_achieved}
                   onEdit={handleEditNavigation}
                   onHistory={handleHistoryNavigation}
-                  onDelete={handleDelete}
+                  onDelete={() => handleDeleteRequest(file)} // Actualizado
                 />
               ) : (
                 <ExerciseRow
@@ -452,7 +466,7 @@ export default function LibraryPage() {
                   currentBpm={file.max_bpm_achieved}
                   onEdit={handleEditNavigation}
                   onHistory={handleHistoryNavigation}
-                  onDelete={handleDelete}
+                  onDelete={() => handleDeleteRequest(file)} // Actualizado
                 />
               )
             ))}
@@ -494,6 +508,18 @@ export default function LibraryPage() {
             </div>
           )}
         </>
+      )}
+
+      {/* Uso del nuevo componente modal */}
+      {exerciseToDelete && (
+        <DeleteConfirmModal
+          title="Eliminar Ejercicio"
+          itemName={exerciseToDelete.title}
+          warningMessage="Esta acción es irreversible. Se eliminará el ejercicio, el archivo asociado, y todo su historial de práctica de forma permanente."
+          isDeleting={isDeleting}
+          onConfirm={confirmDelete}
+          onCancel={() => setExerciseToDelete(null)}
+        />
       )}
     </div>
   );

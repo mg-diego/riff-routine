@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface SidebarControlsProps {
   apiRef: React.MutableRefObject<any>;
@@ -9,15 +9,74 @@ interface SidebarControlsProps {
   setIsPlaying: (playing: boolean) => void;
   tracks: any[];
   setTracks: React.Dispatch<React.SetStateAction<any[]>>;
+  currentPlaybackBpm?: number | null;
+  originalBpm?: number | null;
 }
 
-export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tracks, setTracks }: SidebarControlsProps) {
+export function SidebarControls({ 
+  apiRef, 
+  isLoaded, 
+  isPlaying, 
+  setIsPlaying, 
+  tracks, 
+  setTracks,
+  currentPlaybackBpm,
+  originalBpm
+}: SidebarControlsProps) {
   const [speed, setSpeed] = useState('1');
   const [isMetronomeOn, setIsMetronomeOn] = useState(false);
+  const [isCountIn, setIsCountIn] = useState(false);
+  const [isLooping, setIsLooping] = useState(false);
   const [isOpen, setIsOpen] = useState(true);
+  const [hasSelection, setHasSelection] = useState(false);
+  const [activeTrackIndex, setActiveTrackIndex] = useState(0);
+
+  useEffect(() => {
+    if (isLoaded) {
+      setActiveTrackIndex(0);
+    }
+  }, [isLoaded]);
+
+  useEffect(() => {
+    if (!apiRef.current || !originalBpm || !isLoaded) return;
+    
+    const baseBpm = (currentPlaybackBpm && currentPlaybackBpm > 0) ? currentPlaybackBpm : originalBpm;
+    const multiplier = parseFloat(speed);
+    
+    apiRef.current.playbackSpeed = (baseBpm * multiplier) / originalBpm;
+  }, [currentPlaybackBpm, speed, originalBpm, isLoaded, apiRef]);
+
+  useEffect(() => {
+    if (!apiRef.current || !isLoaded) return;
+    
+    const handleRangeChanged = () => {
+      if (apiRef.current) {
+        setHasSelection(apiRef.current.playbackRange !== null);
+      }
+    };
+
+    apiRef.current.playbackRangeChanged.on(handleRangeChanged);
+
+    return () => {
+      apiRef.current?.playbackRangeChanged?.off(handleRangeChanged);
+    };
+  }, [apiRef, isLoaded]);
+
+  const clearSelection = () => {
+    if (!apiRef.current) return;
+    apiRef.current.playbackRange = null;
+    if (apiRef.current.clearPlaybackRangeHighlight) {
+      apiRef.current.clearPlaybackRangeHighlight();
+    }
+    setHasSelection(false);
+  };
 
   const handlePlayPause = () => apiRef.current?.playPause();
   const handleStop = () => { apiRef.current?.stop(); setIsPlaying(false); };
+
+  const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
+    setSpeed(e.target.value);
+  };
 
   const handleMetronome = () => {
     if (!apiRef.current) return;
@@ -26,13 +85,24 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
     apiRef.current.metronomeVolume = next ? 1 : 0;
   };
 
-  const handleSpeedChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    const val = e.target.value;
-    setSpeed(val);
-    if (apiRef.current) apiRef.current.playbackSpeed = parseFloat(val);
+  const handleCountIn = () => {
+    if (!apiRef.current) return;
+    const next = !isCountIn;
+    setIsCountIn(next);
+    apiRef.current.countInVolume = next ? 1 : 0;
   };
 
-  const handleTrackView = (track: any) => apiRef.current?.renderTracks([track]);
+  const handleLooping = () => {
+    if (!apiRef.current) return;
+    const next = !isLooping;
+    setIsLooping(next);
+    apiRef.current.isLooping = next;
+  };
+
+  const handleTrackView = (track: any, index: number) => {
+    setActiveTrackIndex(index);
+    apiRef.current?.renderTracks([track]);
+  };
 
   const toggleMute = (track: any) => {
     if (!apiRef.current) return;
@@ -54,6 +124,9 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
     apiRef.current?.changeTrackVolume([track], parseFloat(volume));
   };
 
+  const baseBpmToDisplay = (currentPlaybackBpm && currentPlaybackBpm > 0) ? currentPlaybackBpm : originalBpm;
+  const effectiveBpm = baseBpmToDisplay ? Math.round(baseBpmToDisplay * parseFloat(speed)) : null;
+
   return (
     <>
       <style>{`
@@ -71,7 +144,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
         .sidebar-root.open  { width: 300px; min-width: 300px; }
         .sidebar-root.closed { width: 52px; min-width: 52px; }
 
-        /* Toggle button */
         .sidebar-toggle {
           position: absolute;
           top: 1.2rem;
@@ -93,7 +165,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           border-color: rgba(220,185,138,0.4);
         }
 
-        /* Collapsed icon strip */
         .sidebar-icons {
           display: flex;
           flex-direction: column;
@@ -115,7 +186,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
         }
         .sidebar-icon-dot.active { background: var(--gold, #dcb98a); }
 
-        /* Content panel */
         .sidebar-content {
           position: absolute;
           top: 0; left: 0;
@@ -139,7 +209,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           transition: opacity 0.1s ease;
         }
 
-        /* Section label */
         .sb-section-label {
           font-size: 0.68rem;
           font-weight: 700;
@@ -149,7 +218,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           margin: 0 0 0.75rem 0;
         }
 
-        /* Select */
         .sb-select {
           width: 100%;
           padding: 0.6rem 0.8rem;
@@ -171,8 +239,7 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
         .sb-select:focus { border-color: rgba(220,185,138,0.4); }
         .sb-select:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        /* Metronome */
-        .sb-metro {
+        .sb-toggle-btn {
           width: 100%;
           padding: 0.6rem 0.8rem;
           border-radius: 7px;
@@ -185,15 +252,27 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           background: rgba(255,255,255,0.04);
           color: var(--text, #f0e8dc);
           text-align: left;
+          display: flex;
+          align-items: center;
+          gap: 0.5rem;
         }
-        .sb-metro.on {
+        .sb-toggle-btn.on {
           background: rgba(231,76,60,0.15);
           border-color: rgba(231,76,60,0.4);
           color: #e74c3c;
         }
-        .sb-metro:disabled { opacity: 0.35; cursor: not-allowed; }
+        .sb-toggle-btn.loop.on {
+          background: rgba(167,139,250,0.15);
+          border-color: rgba(167,139,250,0.4);
+          color: #a78bfa;
+        }
+        .sb-toggle-btn.sel.on {
+          background: rgba(220,185,138,0.15);
+          border-color: rgba(220,185,138,0.4);
+          color: var(--gold, #dcb98a);
+        }
+        .sb-toggle-btn:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        /* Transport row */
         .sb-transport {
           display: grid;
           grid-template-columns: 1fr auto;
@@ -228,14 +307,12 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
         .sb-stop:hover:not(:disabled) { background: rgba(255,255,255,0.08); }
         .sb-stop:disabled { opacity: 0.35; cursor: not-allowed; }
 
-        /* Divider */
         .sb-divider {
           border: none;
           border-top: 1px solid rgba(255,255,255,0.05);
           margin: 0;
         }
 
-        /* Track rows */
         .sb-track {
           background: rgba(255,255,255,0.03);
           border: 1px solid rgba(255,255,255,0.05);
@@ -244,9 +321,14 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           display: flex;
           flex-direction: column;
           gap: 0.55rem;
-          transition: border-color 0.2s;
+          transition: all 0.2s;
         }
         .sb-track:hover { border-color: rgba(220,185,138,0.15); }
+        .sb-track.active {
+          border-color: rgba(220,185,138,0.5);
+          background: rgba(220,185,138,0.08);
+          box-shadow: inset 3px 0 0 var(--gold, #dcb98a);
+        }
 
         .sb-track-header {
           display: flex;
@@ -262,7 +344,13 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           text-overflow: ellipsis;
           white-space: nowrap;
           flex: 1;
+          transition: color 0.2s;
         }
+        .sb-track.active .sb-track-name {
+          color: var(--gold, #dcb98a);
+          font-weight: 700;
+        }
+
         .sb-track-eye {
           background: none;
           border: none;
@@ -275,6 +363,7 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           flex-shrink: 0;
         }
         .sb-track-eye:hover { color: var(--gold, #dcb98a); }
+        .sb-track.active .sb-track-eye { color: var(--gold, #dcb98a); opacity: 1; }
 
         .sb-track-vol {
           display: flex;
@@ -329,7 +418,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
 
       <aside className={`sidebar-root ${isOpen ? 'open' : 'closed'}`}>
 
-        {/* Toggle */}
         <button
           className="sidebar-toggle"
           onClick={() => setIsOpen(!isOpen)}
@@ -339,46 +427,68 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
           {isOpen ? '›' : '‹'}
         </button>
 
-        {/* Collapsed state: icon dots */}
         <div className="sidebar-icons">
           <div className={`sidebar-icon-dot ${isLoaded ? 'active' : ''}`} title="Player" />
           <div className={`sidebar-icon-dot ${isPlaying ? 'active' : ''}`} title="Reproduciendo" />
           <div className={`sidebar-icon-dot ${tracks.length > 0 ? 'active' : ''}`} title="Pistas" />
         </div>
 
-        {/* Expanded content */}
         <div className="sidebar-content">
 
-          {/* Header */}
           <div style={{ paddingTop: '2.4rem' }}>
             <p style={{ margin: 0, fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.4)' }}>Panel</p>
             <h2 style={{ margin: '0.2rem 0 0', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', letterSpacing: '0.06em', color: 'var(--gold, #dcb98a)' }}>Controles</h2>
           </div>
 
-          {/* Speed */}
           <div>
-            <p className="sb-section-label">Velocidad</p>
-            <select className="sb-select" value={speed} onChange={handleSpeedChange} disabled={!isLoaded}>
-              <option value="0.25">× 0.25 — Muy lento</option>
-              <option value="0.5">× 0.50 — Lento</option>
-              <option value="0.75">× 0.75 — Moderado</option>
-              <option value="1">× 1.00 — Normal</option>
-              <option value="1.25">× 1.25 — Rápido</option>
-              <option value="1.5">× 1.50 — Muy rápido</option>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
+              <p className="sb-section-label" style={{ margin: 0 }}>Velocidad</p>
+            </div>
+            <select 
+              className="sb-select" 
+              value={speed} 
+              onChange={handleSpeedChange} 
+              disabled={!isLoaded}
+            >
+              <option value="0.25">× 0.25</option>
+              <option value="0.5">× 0.50</option>
+              <option value="0.75">× 0.75</option>
+              <option value="1">× 1.00</option>
+              <option value="1.25">× 1.25</option>
+              <option value="1.5">× 1.50</option>
             </select>
           </div>
 
-          {/* Metronome */}
-          <div>
-            <p className="sb-section-label">Metrónomo</p>
-            <button className={`sb-metro ${isMetronomeOn ? 'on' : ''}`} onClick={handleMetronome} disabled={!isLoaded}>
-              {isMetronomeOn ? '🔴 Metrónomo ON' : '⏱ Metrónomo OFF'}
+          {effectiveBpm !== null && (
+            <div style={{ textAlign: 'center', background: 'rgba(220,185,138,0.05)', padding: '0.5rem', borderRadius: '7px' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 'bold' }}>
+                BPM EFECTIVO: {effectiveBpm}
+              </span>
+            </div>
+          )}
+
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <p className="sb-section-label">Herramientas</p>
+            <button className={`sb-toggle-btn ${isMetronomeOn ? 'on' : ''}`} onClick={handleMetronome} disabled={!isLoaded}>
+              {isMetronomeOn ? '🔴' : '⚪️'} Metrónomo
+            </button>
+            <button className={`sb-toggle-btn ${isCountIn ? 'on' : ''}`} onClick={handleCountIn} disabled={!isLoaded}>
+              {isCountIn ? '🔴' : '⚪️'} Cuenta atrás
+            </button>
+            <button className={`sb-toggle-btn loop ${isLooping ? 'on' : ''}`} onClick={handleLooping} disabled={!isLoaded}>
+              {isLooping ? '🟣' : '⚪️'} Bucle
+            </button>
+            <button 
+              className={`sb-toggle-btn sel ${hasSelection ? 'on' : ''}`} 
+              onClick={clearSelection} 
+              disabled={!isLoaded || !hasSelection}
+            >
+              {hasSelection ? '✖️ Limpiar selección' : '🖱️ Arrastra para selec.'}
             </button>
           </div>
 
           <hr className="sb-divider" />
 
-          {/* Transport */}
           <div>
             <p className="sb-section-label">Reproducción</p>
             <div className="sb-transport">
@@ -391,7 +501,6 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
             </div>
           </div>
 
-          {/* Mixer */}
           {tracks.length > 0 && (
             <>
               <hr className="sb-divider" />
@@ -401,11 +510,12 @@ export function SidebarControls({ apiRef, isLoaded, isPlaying, setIsPlaying, tra
                   {tracks.map((track, index) => {
                     const isMuted = track.playbackInfo?.isMute ?? false;
                     const isSolo  = track.playbackInfo?.isSolo ?? false;
+                    const isActive = activeTrackIndex === index;
                     return (
-                      <div key={index} className="sb-track">
+                      <div key={index} className={`sb-track ${isActive ? 'active' : ''}`}>
                         <div className="sb-track-header">
                           <span className="sb-track-name" title={track.name}>{track.name}</span>
-                          <button className="sb-track-eye" onClick={() => handleTrackView(track)} title="Ver tablatura">
+                          <button className="sb-track-eye" onClick={() => handleTrackView(track, index)} title="Ver tablatura">
                             <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round">
                               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" />
                               <circle cx="12" cy="12" r="3" />

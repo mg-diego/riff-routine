@@ -29,6 +29,7 @@ export default function Navbar() {
     { name: 'Mis Rutinas', path: '/routines' },
     { name: 'Mi Biblioteca', path: '/library' },
     { name: 'Explorar', path: '/explore' },
+    { name: 'Practicar', path: '/practice' },
     { name: 'Estadísticas', path: '/stats' },
   ];
 

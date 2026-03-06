@@ -102,8 +102,6 @@ export default function StatsPage() {
       display: 'flex',
       flexDirection: 'column',
       width: '100%',
-      maxWidth: '1200px',
-      margin: '0 auto',
       paddingBottom: '3rem',
       overflowX: 'hidden'
     }}>

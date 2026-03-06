@@ -16,14 +16,35 @@ interface RoutineCardProps {
 export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
+  
+  const [exerciseCount, setExerciseCount] = useState<number | null>(null);
   const [exerciseTitles, setExerciseTitles] = useState<string[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(false);
 
+  // Cargar solo el conteo inicial si el componente padre no lo proporciona
+  useEffect(() => {
+    if ((routine as any).exercise_count !== undefined) {
+      setExerciseCount((routine as any).exercise_count);
+    } else {
+      fetchExerciseCount();
+    }
+  }, [routine]);
+
+  // Cargar los títulos solo cuando se abre la tarjeta por primera vez
   useEffect(() => {
     if (isOpen && exerciseTitles.length === 0) {
       fetchExercisePreview();
     }
   }, [isOpen]);
+
+  const fetchExerciseCount = async () => {
+    const { count } = await supabase
+      .from('routine_exercises')
+      .select('*', { count: 'exact', head: true })
+      .eq('routine_id', routine.id);
+      
+    setExerciseCount(count || 0);
+  };
 
   const fetchExercisePreview = async () => {
     setLoadingExercises(true);
@@ -36,11 +57,13 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
     if (data) {
       const titles = data.map((item: any) => item.exercises.title);
       setExerciseTitles(titles);
+      // Actualizar el conteo por si acaso difiere de la lectura inicial
+      setExerciseCount(titles.length);
     }
     setLoadingExercises(false);
   };
 
-  const hasExercises = exerciseTitles.length > 0 || (routine as any).exercise_count > 0;
+  const displayCount = exerciseCount !== null ? exerciseCount : 0;
 
   return (
     <div style={{
@@ -71,24 +94,39 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
           <div>
             <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{routine.title}</h3>
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
-              {exerciseTitles.length || (routine as any).exercise_count || 0} ejercicios
+              {displayCount} {displayCount === 1 ? 'ejercicio' : 'ejercicios'}
             </p>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
           <button
-            disabled={!hasExercises}
             onClick={() => router.push(`/practice?routine=${routine.id}`)}
             style={{
-              background: 'var(--gold)', color: '#111', border: 'none', padding: '0.5rem 1rem',
-              borderRadius: '6px', cursor: hasExercises ? 'pointer' : 'not-allowed',
-              fontSize: '0.85rem', fontWeight: 700, opacity: hasExercises ? 1 : 0.5
+              background: 'var(--gold)',
+              color: '#111',
+              border: 'none',
+              padding: '0.6rem 1.2rem',
+              borderRadius: '8px',
+              cursor: 'pointer',
+              fontSize: '0.9rem',
+              fontWeight: 700,
+              fontFamily: 'DM Sans, sans-serif',
+              transition: 'background 0.2s',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              textTransform: 'uppercase',
+              height: '42px'
             }}
+            onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark)'}
+            onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
           >
-            🚀 Iniciar
-          </button>
-          
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M5 3l16 9-16 9V3z" />
+            </svg>
+            Tocar
+          </button>          
 
           <EditButton onClick={() => router.push(`/routines/${routine.id}`)} />
           

@@ -346,12 +346,21 @@ button:disabled {
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
 }
 
-.at-cursor-bar {
-  background: rgba(220, 185, 138, 0.2);
+/* Selección de compases con el ratón */
+.at-selection div {
+  background: rgba(220, 185, 138, 0.25) !important; /* Tu color dorado con opacidad */
+  border-radius: 4px;
 }
 
+/* El fondo del compás que está sonando actualmente */
+.at-cursor-bar {
+  background: rgba(255, 255, 255, 0.05);
+}
+
+/* La línea vertical que marca la nota exacta sonando */
 .at-cursor-beat {
-  background: rgba(220, 185, 138, 0.4);
+  background: var(--gold, #dcb98a);
+  width: 2px;
 }
 
 @keyframes spin {

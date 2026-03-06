@@ -290,38 +290,52 @@ export default function CreateRoutinePage() {
             ) : (
               filteredExercises.map(ex => {
                 const isSelected = selectedExercises.some(item => item.id === ex.id);
+                const hasNoFile = !ex.file_url;
+                const isDisabled = isSelected || hasNoFile;
+
                 return (
                   <div 
                     key={ex.id}
-                    onClick={() => { if (!isSelected) handleAddExercise(ex); }}
+                    onClick={() => { if (!isDisabled) handleAddExercise(ex); }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '1rem', borderRadius: '8px', cursor: isSelected ? 'default' : 'pointer', transition: 'all 0.2s',
-                      background: 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)',
-                      opacity: isSelected ? 0.4 : 1
+                      padding: '1rem', borderRadius: '8px', cursor: isDisabled ? 'default' : 'pointer', transition: 'all 0.2s',
+                      background: hasNoFile ? 'rgba(231,76,60,0.02)' : 'rgba(255,255,255,0.02)', 
+                      border: hasNoFile ? '1px solid rgba(231,76,60,0.2)' : '1px solid rgba(255,255,255,0.05)',
+                      opacity: isSelected ? 0.4 : (hasNoFile ? 0.6 : 1)
                     }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                    onMouseEnter={e => { if (!isDisabled) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    onMouseLeave={e => { if (!isDisabled) e.currentTarget.style.background = hasNoFile ? 'rgba(231,76,60,0.02)' : 'rgba(255,255,255,0.02)'; }}
                   >
-                    <div>
-                      <p style={{ color: 'var(--text)', margin: '0 0 0.2rem', fontWeight: 600, fontSize: '0.95rem' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <p style={{ color: 'var(--text)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
                         {ex.title}
                       </p>
-                      <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.8rem' }}>
-                        {ex.technique || 'Sin categoría'}
-                      </p>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.8rem' }}>
+                          {ex.technique || 'Sin categoría'}
+                        </p>
+                        {hasNoFile && (
+                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#e74c3c', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                            ⚠️ Sin archivo GP
+                          </span>
+                        )}
+                      </div>
                     </div>
                     
                     <button 
-                      disabled={isSelected}
+                      disabled={isDisabled}
                       style={{ 
                         width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                        background: isSelected ? 'var(--surface)' : 'var(--gold)', color: isSelected ? 'var(--muted)' : '#111',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSelected ? 'default' : 'pointer'
+                        background: isSelected ? 'var(--surface)' : (hasNoFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)'), 
+                        color: isSelected ? 'var(--muted)' : (hasNoFile ? 'rgba(255,255,255,0.3)' : '#111'),
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isDisabled ? 'default' : 'pointer'
                       }}
                     >
                       {isSelected ? (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                      ) : hasNoFile ? (
+                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
                       ) : (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                       )}
