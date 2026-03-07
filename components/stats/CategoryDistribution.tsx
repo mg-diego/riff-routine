@@ -32,10 +32,10 @@ export function CategoryDistribution() {
       const stats: Record<string, number> = {};
 
       logs.forEach((log: any) => {
-        const techniqueField = Array.isArray(log.exercises) 
-          ? log.exercises[0]?.technique 
+        const techniqueField = Array.isArray(log.exercises)
+          ? log.exercises[0]?.technique
           : log.exercises?.technique || 'General';
-        
+
         const seconds = log.duration_seconds || 0;
 
         const techniqueList = techniqueField
@@ -83,8 +83,8 @@ export function CategoryDistribution() {
                 <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
               ))}
             </Pie>
-            <Tooltip 
-              formatter={(value: number) => [`${value} min`, 'Tiempo']}
+            <Tooltip
+              formatter={(value: any) => [`${value} min`, 'Tiempo']}
               contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
               itemStyle={{ color: 'var(--text)' }}
             />
