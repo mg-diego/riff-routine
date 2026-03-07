@@ -37,6 +37,22 @@ export default function Login() {
     setLoading(false);
   };
 
+  const handleDemo = async () => {
+    setLoading(true);
+    setError(null);
+    const { error } = await supabase.auth.signInWithPassword({
+      email: 'demo@riffroutine.com',
+      password: 'demo1234',
+    });
+
+    if (error) {
+      setError('El acceso demo no está disponible en este momento.');
+      setLoading(false);
+    } else {
+      router.push('/');
+    }
+  };
+
   return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: '100vh', width: '100vw' }}>
       <div style={{ background: 'var(--surface)', padding: '3rem', borderRadius: '10px', width: '100%', maxWidth: '400px', border: '1px solid rgba(220,185,138,0.15)', boxShadow: '0 10px 30px rgba(0,0,0,0.5)' }}>
@@ -76,6 +92,22 @@ export default function Login() {
             {loading ? 'Cargando...' : (isLogin ? 'Entrar' : 'Registrarse')}
           </button>
         </form>
+
+        <div style={{ display: 'flex', alignItems: 'center', margin: '1.5rem 0', gap: '1rem' }}>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+          <span style={{ color: 'var(--muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>o</span>
+          <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.1)' }}></div>
+        </div>
+
+        <button
+          onClick={handleDemo}
+          disabled={loading}
+          style={{ width: '100%', padding: '0.8rem', borderRadius: '6px', border: '1px solid var(--gold)', background: 'transparent', color: 'var(--gold)', fontWeight: 'bold', cursor: loading ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', transition: 'all 0.2s' }}
+          onMouseEnter={(e) => { e.currentTarget.style.background = 'rgba(220,185,138,0.1)'; }}
+          onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
+        >
+          Explorar como Invitado
+        </button>
 
         <button
           onClick={() => { setIsLogin(!isLogin); setError(null); setMessage(null); }}

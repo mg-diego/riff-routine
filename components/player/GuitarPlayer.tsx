@@ -45,6 +45,7 @@ export default function GuitarPlayer() {
         elapsedSeconds,
         isTimerRunning,
         routineName,
+        sessionId,
         toggleTimer,
         saveExerciseLog,
         handleEndSession
@@ -57,7 +58,7 @@ export default function GuitarPlayer() {
     }, [initialUrlToLoad, scriptReady, isLoaded]);
 
     const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
-
+    console.log("Session ID en padre:", sessionId);
     return (
         <>
             <Script
@@ -98,7 +99,7 @@ export default function GuitarPlayer() {
                         currentIndex={currentIndex}
                         onPrev={handlePrevExercise}
                         onNext={handleNextExercise}
-                        onEndSession={() => handleEndSession('/routines')}
+                        onEndSession={(overrideTotal?: number) => handleEndSession('/routines', overrideTotal)}
                         exercise={activeExercise}
                         routineTargetBpm={routineList[currentIndex]?.target_bpm ?? null}
                         routineTargetDuration={routineList[currentIndex]?.target_duration_seconds ?? null}
@@ -123,6 +124,7 @@ export default function GuitarPlayer() {
                                 );
                             }
                         }}
+                        sessionId={sessionId}
                     />
 
                     {/* PANELES OPCIONALES */}

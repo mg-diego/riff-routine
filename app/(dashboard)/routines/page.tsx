@@ -75,6 +75,7 @@ export default function RoutinesPage() {
       setIsDeleting(false);
     }
   };
+  
 
   return (
     <div>

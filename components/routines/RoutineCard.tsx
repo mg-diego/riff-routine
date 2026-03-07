@@ -126,11 +126,11 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
               <path d="M5 3l16 9-16 9V3z" />
             </svg>
             Tocar
-          </button>          
+          </button>
 
           <EditButton onClick={() => router.push(`/routines/${routine.id}`)} />
           
-          <HistoryButton onClick={() => console.log('Stats', routine.id)} />
+          <HistoryButton onClick={() => router.push(`/routines/${routine.id}/history`)} />
 
           <DeleteButton onClick={() => onDelete(routine)} />
         </div>

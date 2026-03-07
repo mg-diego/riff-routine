@@ -4,8 +4,6 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../../lib/supabase';
 import { GlobalKpis } from '../../../components/stats/GlobalKpis';
 import { RecentActivity } from '@/components/stats/RecentActivity';
-import { ExerciseStats } from '@/components/stats/ExerciseStats';
-import { RoutineStats } from '@/components/stats/RoutineStats';
 import { ConsistencyHeatmap } from '@/components/stats/ConsistencyHeatmap';
 import { StatsCarousel } from '@/components/stats/StatsCarousel';
 
@@ -128,31 +126,7 @@ export default function StatsPage() {
       </div>
 
       {/* TABS DE NAVEGACIÓN */}
-      <div style={{ display: 'flex', gap: '1rem', borderBottom: '1px solid rgba(255,255,255,0.1)', marginBottom: '2.5rem', overflowX: 'auto' }}>
-        {['overview', 'exercises', 'routines'].map((tab) => (
-          <button
-            key={tab}
-            onClick={() => setActiveTab(tab as any)}
-            style={{
-              background: 'none',
-              border: 'none',
-              padding: '1rem 2rem',
-              color: activeTab === tab ? 'var(--gold)' : 'var(--muted)',
-              borderBottom: activeTab === tab ? '3px solid var(--gold)' : '3px solid transparent',
-              cursor: 'pointer',
-              fontWeight: 600,
-              fontSize: '1rem',
-              textTransform: 'capitalize',
-              transition: 'all 0.2s'
-            }}
-          >
-            {tab === 'overview' ? 'Resumen' : tab === 'exercises' ? 'Ejercicios' : 'Rutinas'}
-          </button>
-        ))}
-      </div>
-
       <main style={{ width: '100%', minWidth: 0 }}>
-        {activeTab === 'overview' && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
 
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
@@ -189,21 +163,6 @@ export default function StatsPage() {
               </div>
             </div>
           </div>
-        )}
-
-        {activeTab === 'exercises' && (
-          <div style={{ width: '100%' }}>
-            <h2 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', marginBottom: '1.5rem' }}>Evolución de BPM</h2>
-            <ExerciseStats />
-          </div>
-        )}
-
-        {activeTab === 'routines' && (
-          <div style={{ width: '100%' }}>
-            <h2 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', marginBottom: '1.5rem' }}>Historial de Sesiones</h2>
-            <RoutineStats />
-          </div>
-        )}
       </main>
     </div>
   );
