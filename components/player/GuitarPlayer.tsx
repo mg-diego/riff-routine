@@ -58,7 +58,8 @@ export default function GuitarPlayer() {
     }, [initialUrlToLoad, scriptReady, isLoaded]);
 
     const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
-    console.log("Session ID en padre:", sessionId);
+    const isScoreMode = ['free', 'library', 'routine'].includes(mode);
+
     return (
         <>
             <Script
@@ -67,10 +68,6 @@ export default function GuitarPlayer() {
                 onReady={() => setScriptReady(true)}
             />
 
-            {/*
-              El borderRadius va en un wrapper exterior que NO use overflow:hidden,
-              así el header puede ocupar el 100% del ancho sin ser recortado.
-            */}
             <div style={{
                 display: 'flex',
                 width: '100%',
@@ -85,14 +82,13 @@ export default function GuitarPlayer() {
                     className="main-panel"
                     style={{
                         flex: 1,
-                        width: 0,          // ← clave: fuerza al flex a respetar el ancho real
+                        width: 0,
                         minWidth: 0,
                         display: 'flex',
                         flexDirection: 'column',
                         overflow: 'hidden',
                     }}
                 >
-                    {/* CABECERA — ocupa todo el ancho del main */}
                     <PlayerHeader
                         mode={mode}
                         routineLength={routineList.length}
@@ -127,16 +123,43 @@ export default function GuitarPlayer() {
                         sessionId={sessionId}
                     />
 
-                    {/* PANELES OPCIONALES */}
-                    {mode === 'scales' && <div style={{ padding: '0 2rem' }}><ScalesPanel /></div>}
-                    {mode === 'improvisation' && <div style={{ padding: '0 2rem' }}><ImprovPanel /></div>}
-
-                    {/* ZONA DE PARTITURA SCROLLABLE */}
                     <div
                         ref={mainScrollRef}
-                        style={{ flex: 1, overflowY: 'auto', position: 'relative' }}
+                        style={{
+                            flex: 1,
+                            overflow: 'auto',
+                            display: 'flex',
+                            flexDirection: 'column',
+                            position: 'relative'
+                        }}
                     >
-                        <ScoreViewer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
+                        {mode === 'scales' && (
+                            <div style={{
+                                padding: '1rem 2rem',
+                                flexShrink: 0,
+                                minWidth: 'min-content',
+                                boxSizing: 'border-box'
+                            }}>
+                                <ScalesPanel />
+                            </div>
+                        )}
+
+                        {mode === 'improvisation' && (
+                            <div style={{
+                                padding: '1rem 2rem',
+                                flexShrink: 0,
+                                minWidth: 'min-content',
+                                boxSizing: 'border-box'
+                            }}>
+                                <ImprovPanel />
+                            </div>
+                        )}
+
+                        {isScoreMode && (
+                            <div style={{ flex: 1, position: 'relative', minWidth: 'min-content' }}>
+                                <ScoreViewer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
+                            </div>
+                        )}
                     </div>
                 </main>
 
@@ -149,6 +172,7 @@ export default function GuitarPlayer() {
                     setTracks={setTracks}
                     currentPlaybackBpm={currentPlaybackBpm}
                     originalBpm={originalPlaybackBpm}
+                    forceDisabled={!isScoreMode}
                 />
             </div>
         </>

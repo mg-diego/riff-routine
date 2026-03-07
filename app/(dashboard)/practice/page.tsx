@@ -5,8 +5,8 @@ import GuitarPlayer from '../../../components/player/GuitarPlayer';
 
 export default function PracticePage() {
   return (
-    <div>
-      <div style={{ marginBottom: '1.5rem' }}>
+    <div style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
+      <div style={{ marginBottom: '1.5rem', flexShrink: 0 }}>
         <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
           Sala de Práctica
         </h1>
@@ -22,7 +22,10 @@ export default function PracticePage() {
         overflow: 'hidden',
         minHeight: '70vh',
         display: 'flex',
-        flexDirection: 'column'
+        flexDirection: 'column',
+        flex: 1,
+        width: '100%',
+        minWidth: 0 
       }}>
         <GuitarPlayer />
       </div>

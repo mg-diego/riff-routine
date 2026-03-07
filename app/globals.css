@@ -378,3 +378,26 @@ button:disabled {
   animation: spin 0.8s linear infinite;
 }
 
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--surface);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(220, 185, 138, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--gold);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(220, 185, 138, 0.3) var(--surface);
+}
+

@@ -1,7 +1,7 @@
 "use client";
 
 import { CHROMATIC_NOTES, CHORD_INTERVALS, INTERVAL_NAMES, MARKED_FRETS, PREDEFINED_COLORS, SCALES, STANDARD_BASES, STANDARD_TUNING, DEFAULT_INTERVAL_COLORS } from '@/lib/constants';
-import React, { useState, useMemo, useRef } from 'react';
+import React, { useState, useMemo } from 'react';
 
 let audioCtx: AudioContext | null = null;
 
@@ -191,7 +191,45 @@ export function ScalesPanel() {
       }
     }
 
-    return positions.sort((a, b) => a.startFret - b.startFret);
+    let extendedPositions: { activeNotes: { string: number; fret: number; note: string; }[] | { fret: number; string: number; note: string; }[] | { fret: number; string: number; note: string; }[]; startFret: number; title: string; }[] = [];
+    
+    positions.forEach(pos => {
+      extendedPositions.push(pos);
+      
+      let newStartFret12 = pos.startFret + 12;
+      if (newStartFret12 <= 24) {
+        let newActiveNotes = pos.activeNotes
+          .map(n => ({ ...n, fret: n.fret + 12 }))
+          .filter(n => n.fret <= 24);
+        
+        if (newActiveNotes.length > 0) {
+          let baseTitle = pos.title.split(' (')[0];
+          extendedPositions.push({
+            activeNotes: newActiveNotes,
+            startFret: newStartFret12,
+            title: `${baseTitle} (traste ${newStartFret12})`
+          });
+        }
+      }
+
+      let newStartFret24 = pos.startFret + 24;
+      if (newStartFret24 <= 24) {
+        let newActiveNotes = pos.activeNotes
+          .map(n => ({ ...n, fret: n.fret + 24 }))
+          .filter(n => n.fret <= 24);
+        
+        if (newActiveNotes.length > 0) {
+          let baseTitle = pos.title.split(' (')[0];
+          extendedPositions.push({
+            activeNotes: newActiveNotes,
+            startFret: newStartFret24,
+            title: `${baseTitle} (traste ${newStartFret24})`
+          });
+        }
+      }
+    });
+
+    return extendedPositions.sort((a, b) => a.startFret - b.startFret);
   }, [viewMode, scaleNotes]);
 
   const Fretboard = ({ activeNotesList, title }: { activeNotesList?: any[], title?: string }) => {
@@ -228,20 +266,20 @@ export function ScalesPanel() {
             )}
           </div>
         )}
-        <div style={{ overflowX: 'auto', paddingBottom: '1rem' }}>
+        <div style={{ width: '100%', paddingBottom: '1rem' }}>
           <div style={{ 
             display: 'grid', 
-            gridTemplateColumns: '40px repeat(24, minmax(45px, 1fr))', 
+            gridTemplateColumns: 'minmax(15px, 4%) repeat(24, minmax(0, 1fr))', 
             background: '#2a1a0a', 
             border: '2px solid #8b5a2b', 
             borderRadius: '8px', 
-            padding: '12px 20px 12px 0',
-            minWidth: '1000px',
+            padding: '1% 1% 1% 0',
+            width: '100%',
             transform: leftyMode ? 'scaleX(-1)' : 'none'
           }}>
             <div></div>
             {Array.from({ length: 24 }).map((_, i) => (
-              <div key={`header-${i}`} style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', paddingBottom: '10px', color: 'var(--gold)', fontSize: '14px', fontWeight: 'bold', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
+              <div key={`header-${i}`} style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', paddingBottom: '10px', color: 'var(--gold)', fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 'bold', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
                 {i + 1}
               </div>
             ))}
@@ -252,7 +290,7 @@ export function ScalesPanel() {
               
               return (
                 <React.Fragment key={`string-${stringIndex}`}>
-                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: '16px', paddingRight: '8px', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: 'clamp(10px, 1.5vw, 16px)', paddingRight: '4px', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
                     {openNote}
                   </div>
 
@@ -278,7 +316,7 @@ export function ScalesPanel() {
                     return (
                       <div key={`cell-${stringIndex}-${fret}`} style={{
                         position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRight: '3px solid silver', height: '42px',
+                        borderRight: 'clamp(1px, 0.2vw, 3px) solid silver', height: 'clamp(20px, 3.5vw, 42px)',
                         backgroundColor: isMarked ? 'rgba(255, 255, 255, 0.05)' : 'transparent'
                       }}>
                         <div style={{
@@ -296,9 +334,9 @@ export function ScalesPanel() {
                               playFreq(freq, audioCtx!.currentTime, 0.8, 0.2);
                             }}
                             style={{
-                              width: '26px', height: '26px', borderRadius: '50%',
+                              width: 'clamp(12px, 2.5vw, 26px)', height: 'clamp(12px, 2.5vw, 26px)', borderRadius: '50%',
                               backgroundColor: bgColor, color: textColor, 
-                              fontSize: '11px', fontWeight: 'bold',
+                              fontSize: 'clamp(6px, 1vw, 11px)', fontWeight: 'bold',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               zIndex: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
                               cursor: 'pointer', transform: leftyMode ? 'scaleX(-1)' : 'none',
@@ -323,28 +361,28 @@ export function ScalesPanel() {
   };
 
   return (
-    <div style={{ padding: '2rem', display: 'flex', flexDirection: 'column', gap: '2rem', width: '95%', maxWidth: '1600px', margin: '0 auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', maxWidth: '1600px', margin: '0 auto', boxSizing: 'border-box' }}>
       
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)', padding: '1.2rem 1.5rem', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-        <h1 style={{ fontSize: '1.4rem', color: 'var(--gold)', margin: 0, fontWeight: 'bold' }}>{scaleData.name} ({rootNote})</h1>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface)', padding: '1rem', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
+        <h1 style={{ fontSize: '1.2rem', color: 'var(--gold)', margin: 0, fontWeight: 'bold' }}>{scaleData.name} ({rootNote})</h1>
         
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          <select value={rootNote} onChange={e => setRootNote(e.target.value)} style={{ padding: '0.5rem 0.8rem', background: 'var(--surface2)', color: '#fff', border: '1px solid #555', borderRadius: '6px', outline: 'none' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', flexWrap: 'wrap' }}>
+          <select value={rootNote} onChange={e => setRootNote(e.target.value)} style={{ padding: '0.4rem', background: 'var(--surface2)', color: '#fff', border: '1px solid #555', borderRadius: '6px', outline: 'none' }}>
             {CHROMATIC_NOTES.map(note => <option key={note} value={note}>{note}</option>)}
           </select>
-          <select value={scaleKey} onChange={e => setScaleKey(e.target.value)} style={{ padding: '0.5rem 0.8rem', background: 'var(--surface2)', color: '#fff', border: '1px solid #555', borderRadius: '6px', outline: 'none' }}>
+          <select value={scaleKey} onChange={e => setScaleKey(e.target.value)} style={{ padding: '0.4rem', background: 'var(--surface2)', color: '#fff', border: '1px solid #555', borderRadius: '6px', outline: 'none' }}>
             {Object.entries(SCALES).map(([key, data]) => <option key={key} value={key}>{data.name}</option>)}
           </select>
-          <button onClick={playScale} style={{ background: 'var(--gold)', color: '#111', padding: '0.5rem 0.8rem', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>▶ Reproducir Escala</button>
+          <button onClick={playScale} style={{ background: 'var(--gold)', color: '#111', padding: '0.4rem 0.8rem', borderRadius: '6px', fontWeight: 'bold', border: 'none', cursor: 'pointer' }}>▶ Reproducir Escala</button>
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', alignItems: 'center', background: 'var(--surface)', padding: '1rem 1.5rem', borderRadius: '8px' }}>
-        <div style={{ display: 'flex', gap: '1rem', background: '#1a1a1a', padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', background: 'var(--surface)', padding: '1rem', borderRadius: '8px' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: '#1a1a1a', padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.9rem' }}>
           <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><input type="radio" checked={viewMode === 'full'} onChange={() => setViewMode('full')} /> Completo</label>
           <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><input type="radio" checked={viewMode === 'positions'} onChange={() => setViewMode('positions')} /> Posiciones</label>
         </div>
-        <div style={{ display: 'flex', gap: '1rem', background: '#1a1a1a', padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: '#1a1a1a', padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.9rem' }}>
           <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><input type="radio" checked={labelMode === 'notes'} onChange={() => setLabelMode('notes')} /> Notas</label>
           <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><input type="radio" checked={labelMode === 'intervals'} onChange={() => setLabelMode('intervals')} /> Intervalos</label>
         </div>
@@ -353,8 +391,8 @@ export function ScalesPanel() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--surface)', padding: '1.5rem 2rem', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #444', paddingBottom: '12px', marginBottom: '8px' }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '12px', background: 'var(--surface)', padding: '1.5rem', borderRadius: '8px', boxShadow: '0 4px 6px rgba(0,0,0,0.3)', width: '100%', boxSizing: 'border-box' }}>
+        <div style={{ display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', alignItems: 'center', borderBottom: '1px solid #444', paddingBottom: '12px', marginBottom: '8px', gap: '1rem' }}>
           <div style={{ fontWeight: 'bold', color: 'var(--gold)', fontSize: '1.1rem' }}>Configuración de la Escala</div>
           <div style={{ display: 'flex', gap: '1rem' }}>
             <label style={{ cursor: 'pointer', fontSize: '0.9rem' }}><input type="radio" checked={chordType === 'triads'} onChange={() => setChordType('triads')} /> Tríadas</label>
@@ -362,26 +400,26 @@ export function ScalesPanel() {
           </div>
         </div>
         
-        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap' }}>
-          <div style={{ flex: 3, minWidth: '350px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+        <div style={{ display: 'flex', gap: '2rem', flexWrap: 'wrap', width: '100%' }}>
+          <div style={{ flex: '3 1 550px', display: 'flex', flexDirection: 'column', gap: '16px', minWidth: 0 }}>
             
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ width: '110px', color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Notas</div>
-              <div style={{ display: 'flex', gap: '8px', flex: 1, overflowX: 'auto', paddingBottom: '4px' }}>
-                {scaleNotes.map((n: string, i: number) => <div key={i} style={{ flex: 1, minWidth: '55px', maxWidth: '80px', textAlign: 'center', background: '#3a3a3a', padding: '8px 4px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem' }}>{n}</div>)}
+              <div style={{ width: '80px', flexShrink: 0, color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Notas</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+                {scaleNotes.map((n: string, i: number) => <div key={i} style={{ flex: '1 1 0%', minWidth: '40px', maxWidth: '75px', textAlign: 'center', background: '#3a3a3a', padding: '6px 2px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem' }}>{n}</div>)}
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ width: '110px', color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Intervalos</div>
-              <div style={{ display: 'flex', gap: '8px', flex: 1, overflowX: 'auto', paddingBottom: '4px' }}>
-                {scaleData.intervals.map((inv: number, i: number) => <div key={i} style={{ flex: 1, minWidth: '55px', maxWidth: '80px', textAlign: 'center', background: '#2c3e50', padding: '8px 4px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem' }}>{scaleData.intervalAliases?.[inv] || INTERVAL_NAMES[inv]}</div>)}
+              <div style={{ width: '80px', flexShrink: 0, color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Intervalos</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
+                {scaleData.intervals.map((inv: number, i: number) => <div key={i} style={{ flex: '1 1 0%', minWidth: '40px', maxWidth: '75px', textAlign: 'center', background: '#2c3e50', padding: '6px 2px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem' }}>{scaleData.intervalAliases?.[inv] || INTERVAL_NAMES[inv]}</div>)}
               </div>
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ width: '110px', color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Acordes</div>
-              <div style={{ display: 'flex', gap: '8px', flex: 1, overflowX: 'auto', paddingBottom: '4px' }}>
+              <div style={{ width: '80px', flexShrink: 0, color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Acordes</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
                 {scaleNotes.map((n: string, i: number) => {
                   const chordVal = scaleData[chordType]?.[i];
                   const chordStr = chordVal ? `${n}${chordVal}` : '-';
@@ -389,7 +427,7 @@ export function ScalesPanel() {
                     <div 
                       key={i} 
                       onClick={() => chordVal && playChord(n, chordVal)}
-                      style={{ flex: 1, minWidth: '55px', maxWidth: '80px', textAlign: 'center', background: '#8b5a2b', padding: '8px 4px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem', cursor: chordVal ? 'pointer' : 'default' }}
+                      style={{ flex: '1 1 0%', minWidth: '40px', maxWidth: '75px', textAlign: 'center', background: '#8b5a2b', padding: '6px 2px', borderRadius: '6px', fontWeight: 'bold', fontSize: '0.85rem', cursor: chordVal ? 'pointer' : 'default' }}
                       title={chordVal ? "Reproducir acorde" : ""}
                     >
                       {chordStr}
@@ -400,8 +438,8 @@ export function ScalesPanel() {
             </div>
 
             <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
-              <div style={{ width: '110px', color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Colores</div>
-              <div style={{ display: 'flex', gap: '8px', flex: 1, overflowX: 'auto', paddingBottom: '4px' }}>
+              <div style={{ width: '80px', flexShrink: 0, color: 'var(--gold)', fontWeight: 'bold', fontSize: '0.95rem' }}>Colores</div>
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap', flex: 1 }}>
                 {scaleData.intervals.map((inv: number, i: number) => {
                   const currentColor = getIntervalColor(inv);
                   const textColor = (currentColor === '#f1c40f' || currentColor === '#2ecc71') ? '#000' : '#fff';
@@ -410,7 +448,7 @@ export function ScalesPanel() {
                       key={i} 
                       value={currentColor} 
                       onChange={e => handleColorChange(inv, e.target.value)}
-                      style={{ flex: 1, minWidth: '55px', maxWidth: '80px', padding: 0, border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'center', fontWeight: 'bold', fontSize: '0.85rem', height: '32px', appearance: 'none', WebkitAppearance: 'none', background: currentColor, color: textColor }}
+                      style={{ flex: '1 1 0%', minWidth: '40px', maxWidth: '75px', padding: '0', border: 'none', borderRadius: '6px', cursor: 'pointer', textAlign: 'center', fontWeight: 'bold', fontSize: '0.85rem', height: '28px', appearance: 'none', WebkitAppearance: 'none', background: currentColor, color: textColor }}
                     >
                       {Object.entries(PREDEFINED_COLORS).map(([hex, name]) => <option key={hex} value={hex}>{name}</option>)}
                     </select>
@@ -421,12 +459,12 @@ export function ScalesPanel() {
 
           </div>
 
-          <div style={{ flex: 2, minWidth: '300px', background: '#1f1f1f', borderLeft: '4px solid var(--gold)', padding: '1rem 1.2rem', borderRadius: '0 6px 6px 0', fontSize: '0.9rem', lineHeight: 1.6, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}>
+          <div style={{ flex: '1 1 200px', background: '#1f1f1f', borderLeft: '4px solid var(--gold)', padding: '1rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', lineHeight: 1.6, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
             {scaleData.desc ? (
               <>
-                <p style={{ margin: '0 0 0.6rem 0' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>🎵 Sonido / Uso:</span> {scaleData.desc}</p>
-                <p style={{ margin: '0 0 0.6rem 0' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>🎯 Notas objetivo:</span> {scaleData.target || '-'}</p>
-                <p style={{ margin: 0 }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>🎸 Tocar sobre:</span> {scaleData.chords || '-'}</p>
+                <p style={{ margin: '0 0 0.6rem 0', wordBreak: 'break-word' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>🎵 Uso:</span> {scaleData.desc}</p>
+                <p style={{ margin: '0 0 0.6rem 0', wordBreak: 'break-word' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>🎯 Notas:</span> {scaleData.target || '-'}</p>
+                <p style={{ margin: 0, wordBreak: 'break-word' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>🎸 Tocar sobre:</span> {scaleData.chords || '-'}</p>
               </>
             ) : (
               <p style={{ color: '#888', margin: 0 }}>Selecciona una escala para ver su información teórica.</p>

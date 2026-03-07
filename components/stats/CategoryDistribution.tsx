@@ -60,6 +60,27 @@ export function CategoryDistribution() {
     setLoading(false);
   };
 
+  const formatTime = (totalMinutes: number) => {
+    if (!totalMinutes) return '0 min';
+    const m = Math.round(totalMinutes);
+    if (m < 60) return `${m} min`;
+
+    const months = Math.floor(m / 43200);
+    let rem = m % 43200;
+    const days = Math.floor(rem / 1440);
+    rem = rem % 1440;
+    const hours = Math.floor(rem / 60);
+    const mins = rem % 60;
+
+    const parts = [];
+    if (months > 0) parts.push(`${months} mes${months > 1 ? 'es' : ''}`);
+    if (days > 0) parts.push(`${days}d`);
+    if (hours > 0) parts.push(`${hours}h`);
+    if (mins > 0) parts.push(`${mins}min`);
+
+    return parts.join(' ');
+  };
+
   if (loading) return null;
 
   return (
@@ -84,7 +105,7 @@ export function CategoryDistribution() {
               ))}
             </Pie>
             <Tooltip
-              formatter={(value: any) => [`${value} min`, 'Tiempo']}
+              formatter={(value: any, name: any) => [formatTime(Number(value)), name]}
               contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
               itemStyle={{ color: 'var(--text)' }}
             />

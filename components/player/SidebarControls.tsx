@@ -11,17 +11,19 @@ interface SidebarControlsProps {
   setTracks: React.Dispatch<React.SetStateAction<any[]>>;
   currentPlaybackBpm?: number | null;
   originalBpm?: number | null;
+  forceDisabled: boolean;
 }
 
-export function SidebarControls({ 
-  apiRef, 
-  isLoaded, 
-  isPlaying, 
-  setIsPlaying, 
-  tracks, 
+export function SidebarControls({
+  apiRef,
+  isLoaded,
+  isPlaying,
+  setIsPlaying,
+  tracks,
   setTracks,
   currentPlaybackBpm,
-  originalBpm
+  originalBpm,
+  forceDisabled
 }: SidebarControlsProps) {
   const [speed, setSpeed] = useState('1');
   const [isMetronomeOn, setIsMetronomeOn] = useState(false);
@@ -31,6 +33,13 @@ export function SidebarControls({
   const [hasSelection, setHasSelection] = useState(false);
   const [activeTrackIndex, setActiveTrackIndex] = useState(0);
 
+  // Si se deshabilita el panel desde fuera, lo cerramos automáticamente
+  useEffect(() => {
+    if (forceDisabled) {
+      setIsOpen(false);
+    }
+  }, [forceDisabled]);
+
   useEffect(() => {
     if (isLoaded) {
       setActiveTrackIndex(0);
@@ -39,16 +48,16 @@ export function SidebarControls({
 
   useEffect(() => {
     if (!apiRef.current || !originalBpm || !isLoaded) return;
-    
+
     const baseBpm = (currentPlaybackBpm && currentPlaybackBpm > 0) ? currentPlaybackBpm : originalBpm;
     const multiplier = parseFloat(speed);
-    
+
     apiRef.current.playbackSpeed = (baseBpm * multiplier) / originalBpm;
   }, [currentPlaybackBpm, speed, originalBpm, isLoaded, apiRef]);
 
   useEffect(() => {
     if (!apiRef.current || !isLoaded) return;
-    
+
     const handleRangeChanged = () => {
       if (apiRef.current) {
         setHasSelection(apiRef.current.playbackRange !== null);
@@ -126,6 +135,9 @@ export function SidebarControls({
 
   const baseBpmToDisplay = (currentPlaybackBpm && currentPlaybackBpm > 0) ? currentPlaybackBpm : originalBpm;
   const effectiveBpm = baseBpmToDisplay ? Math.round(baseBpmToDisplay * parseFloat(speed)) : null;
+
+  // El estado real de si está abierto depende de si lo ha elegido el usuario Y no está forzado a deshabilitarse
+  const actuallyOpen = isOpen && !forceDisabled;
 
   return (
     <>
@@ -416,16 +428,18 @@ export function SidebarControls({
         .sb-solo.on { background: #f1c40f; color: #111; }
       `}</style>
 
-      <aside className={`sidebar-root ${isOpen ? 'open' : 'closed'}`}>
+      <aside className={`sidebar-root ${actuallyOpen ? 'open' : 'closed'}`}>
 
-        <button
-          className="sidebar-toggle"
-          onClick={() => setIsOpen(!isOpen)}
-          title={isOpen ? 'Ocultar panel' : 'Mostrar panel'}
-          style={{ right: isOpen ? '0.85rem' : '50%', transform: isOpen ? 'none' : 'translateX(50%)' }}
-        >
-          {isOpen ? '›' : '‹'}
-        </button>
+        {!forceDisabled && (
+          <button
+            className="sidebar-toggle"
+            onClick={() => setIsOpen(!isOpen)}
+            title={actuallyOpen ? 'Ocultar panel' : 'Mostrar panel'}
+            style={{ right: actuallyOpen ? '0.85rem' : '50%', transform: actuallyOpen ? 'none' : 'translateX(50%)' }}
+          >
+            {actuallyOpen ? '›' : '‹'}
+          </button>
+        )}
 
         <div className="sidebar-icons">
           <div className={`sidebar-icon-dot ${isLoaded ? 'active' : ''}`} title="Player" />
@@ -444,10 +458,10 @@ export function SidebarControls({
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem' }}>
               <p className="sb-section-label" style={{ margin: 0 }}>Velocidad</p>
             </div>
-            <select 
-              className="sb-select" 
-              value={speed} 
-              onChange={handleSpeedChange} 
+            <select
+              className="sb-select"
+              value={speed}
+              onChange={handleSpeedChange}
               disabled={!isLoaded}
             >
               <option value="0.25">× 0.25</option>
@@ -478,9 +492,9 @@ export function SidebarControls({
             <button className={`sb-toggle-btn loop ${isLooping ? 'on' : ''}`} onClick={handleLooping} disabled={!isLoaded}>
               {isLooping ? '🟣' : '⚪️'} Bucle
             </button>
-            <button 
-              className={`sb-toggle-btn sel ${hasSelection ? 'on' : ''}`} 
-              onClick={clearSelection} 
+            <button
+              className={`sb-toggle-btn sel ${hasSelection ? 'on' : ''}`}
+              onClick={clearSelection}
               disabled={!isLoaded || !hasSelection}
             >
               {hasSelection ? '✖️ Limpiar selección' : '🖱️ Arrastra para selec.'}
@@ -509,7 +523,7 @@ export function SidebarControls({
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {tracks.map((track, index) => {
                     const isMuted = track.playbackInfo?.isMute ?? false;
-                    const isSolo  = track.playbackInfo?.isSolo ?? false;
+                    const isSolo = track.playbackInfo?.isSolo ?? false;
                     const isActive = activeTrackIndex === index;
                     return (
                       <div key={index} className={`sb-track ${isActive ? 'active' : ''}`}>
