@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Exercise } from '../../lib/types';
 import { supabase } from '../../lib/supabase';
 import { DropZone } from './DropZone';
@@ -18,7 +18,7 @@ interface PlayerHeaderProps {
   elapsedSeconds: number;
   isTimerRunning: boolean;
   onToggleTimer: () => void;
-  onSaveExerciseLog: (currentBpm: number, goalBpm: number | null, overrideSeconds?: number) => Promise<void>;
+  onSaveExerciseLog: (currentBpm: number | null, goalBpm: number | null, overrideSeconds?: number) => Promise<void>;
   onBpmChange: (bpm: number | null) => void;
   originalBpm?: number | null;
   routineName?: string;
@@ -26,6 +26,7 @@ interface PlayerHeaderProps {
   onFileLoaded?: (file: File) => void;
   onResetTimer?: () => void;
   sessionId?: string | null;
+  disableBpmInputs?: boolean;
 }
 
 const MODE_CONFIG = {
@@ -49,9 +50,9 @@ function formatTime(totalSeconds: number) {
 export function PlayerHeader({
   mode, routineLength, currentIndex, onPrev, onNext, onEndSession,
   exercise, routineTargetBpm = null, routineTargetDuration = null,
-  elapsedSeconds, isTimerRunning, onToggleTimer,
+  elapsedSeconds: propElapsedSeconds, isTimerRunning, onToggleTimer,
   onSaveExerciseLog, onBpmChange, originalBpm, routineName,
-  fileName, onFileLoaded, onResetTimer, sessionId
+  fileName, onFileLoaded, onResetTimer, sessionId, disableBpmInputs = false
 }: PlayerHeaderProps) {
   const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
   const isRoutine = mode === 'routine';
@@ -67,16 +68,61 @@ export function PlayerHeader({
   const [finalLogs, setFinalLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
+  // --- NUEVA LÓGICA DE TIEMPO POR EJERCICIO ---
+  // Diccionario para guardar el tiempo acumulado de cada ejercicio { exerciseId: seconds }
+  const [exerciseTimes, setExerciseTimes] = useState<Record<string, number>>({});
+  
+  // Usamos el ID del ejercicio actual o un string genérico si es modo libre
+  const currentExerciseKey = exercise?.id || 'free-mode';
+
+  // Obtenemos el tiempo a mostrar: el de las props (si el hook lo sigue manejando centralizado) 
+  // o el guardado en nuestro diccionario.
+  const displaySeconds = exerciseTimes[currentExerciseKey] !== undefined 
+    ? exerciseTimes[currentExerciseKey] 
+    : propElapsedSeconds;
+
+  // Efecto para actualizar el diccionario local con el tiempo que viene de propElapsedSeconds
+  // Se asume que propElapsedSeconds es el contador activo
   useEffect(() => {
+    if (isTimerRunning) {
+      setExerciseTimes(prev => ({
+        ...prev,
+        [currentExerciseKey]: propElapsedSeconds
+      }));
+    }
+  }, [propElapsedSeconds, isTimerRunning, currentExerciseKey]);
+
+  // Al cambiar de ejercicio, restauramos el tiempo guardado en el hook padre (si es necesario)
+  // o pausamos el temporizador si estaba corriendo
+  useEffect(() => {
+    // Si cambiamos de ejercicio y el timer está corriendo, lo pausamos por defecto
+    if (isRoutine && isTimerRunning) {
+        onToggleTimer();
+    }
+    // Si tienes una función para inyectar el tiempo guardado de vuelta al hook, la llamarías aquí.
+    // Ej: if (onSetTimer) onSetTimer(exerciseTimes[currentExerciseKey] || 0);
+  }, [currentIndex]);
+  // ---------------------------------------------
+
+
+  useEffect(() => {
+    if (disableBpmInputs) {
+      setBpmGoal('');
+      return;
+    }
     const goal = isRoutine && routineTargetBpm != null
       ? routineTargetBpm
       : exercise?.bpm_goal;
     setBpmGoal(goal?.toString() || '');
-  }, [exercise?.id, routineTargetBpm, mode]);
+  }, [exercise?.id, routineTargetBpm, mode, disableBpmInputs]);
 
   useEffect(() => {
     let mounted = true;
-    if (!exercise?.id) { setBpmCurrent(''); onBpmChange(null); return; }
+    if (disableBpmInputs || !exercise?.id) {
+      setBpmCurrent('');
+      onBpmChange(null);
+      return;
+    }
 
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
@@ -91,21 +137,31 @@ export function PlayerHeader({
     })();
 
     return () => { mounted = false; };
-  }, [exercise?.id]);
+  }, [exercise?.id, disableBpmInputs]);
 
   useEffect(() => {
-    if (originalBpm && !bpmCurrent) {
+    if (originalBpm && !bpmCurrent && !disableBpmInputs) {
       setBpmCurrent(originalBpm.toString());
       onBpmChange(originalBpm);
     }
-  }, [originalBpm]);
+  }, [originalBpm, disableBpmInputs]);
 
   const autoSaveLog = async () => {
-    if (!exercise || elapsedSeconds === 0) return;
+    if (!exercise || displaySeconds === 0) return; // Cambiado a displaySeconds
     try {
-      const cur = parseInt(bpmCurrent) || originalBpm || exercise.bpm_goal || 100;
-      const goal = bpmGoal ? parseInt(bpmGoal) : null;
-      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal);
+      let cur: number | null = null;
+      let goal: number | null = null;
+
+      if (!disableBpmInputs) {
+        const parsedCur = parseInt(bpmCurrent);
+        cur = !isNaN(parsedCur) && parsedCur > 0
+          ? parsedCur
+          : (originalBpm || exercise.bpm_goal || null);
+
+        goal = bpmGoal ? parseInt(bpmGoal) : null;
+      }
+
+      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds); // Pasamos el tiempo real
     } catch (err) {
       console.error(err);
     }
@@ -113,13 +169,14 @@ export function PlayerHeader({
 
   const handleNext = async () => {
     if (isRoutine) await autoSaveLog();
-    if (onResetTimer) onResetTimer();
+    // Quitamos el resetTimer para que no se ponga a 0 en el padre
+    // if (onResetTimer) onResetTimer(); 
     onNext();
   };
 
   const handlePrev = async () => {
     if (isRoutine) await autoSaveLog();
-    if (onResetTimer) onResetTimer();
+    // if (onResetTimer) onResetTimer();
     onPrev();
   };
 
@@ -130,7 +187,7 @@ export function PlayerHeader({
     }
 
     if (!isRoutine) {
-      if (elapsedSeconds > 0 && !saved) {
+      if (displaySeconds > 0 && !saved) {
         if (!window.confirm('Tienes tiempo sin registrar. ¿Seguro que quieres salir?')) return;
       }
       onEndSession();
@@ -162,7 +219,7 @@ export function PlayerHeader({
 
       const { data: routineExercises } = await supabase
         .from('routine_exercises')
-        .select('exercise_id, exercises(title)')
+        .select('exercise_id, exercises(title, file_url)')
         .eq('routine_id', sessionData.routine_id)
         .order('order_index', { ascending: true });
 
@@ -176,10 +233,12 @@ export function PlayerHeader({
       routineExercises?.forEach(re => {
         const exerciseData = re.exercises as any;
         const exTitle = Array.isArray(exerciseData) ? exerciseData[0]?.title : exerciseData?.title;
-        
+        const exFileUrl = Array.isArray(exerciseData) ? exerciseData[0]?.file_url : exerciseData?.file_url;
+
         grouped[re.exercise_id] = {
           exercise_id: re.exercise_id,
           title: exTitle || 'Ejercicio Desconocido',
+          hasFile: !!exFileUrl,
           bpm_used: '',
           duration_seconds: 0,
           idsToDelete: []
@@ -189,7 +248,7 @@ export function PlayerHeader({
       existingLogs?.forEach(log => {
         if (grouped[log.exercise_id]) {
           grouped[log.exercise_id].duration_seconds += log.duration_seconds;
-          grouped[log.exercise_id].bpm_used = log.bpm_used.toString();
+          grouped[log.exercise_id].bpm_used = log.bpm_used ? log.bpm_used.toString() : '';
           grouped[log.exercise_id].idsToDelete.push(log.id);
         }
       });
@@ -224,9 +283,11 @@ export function PlayerHeader({
 
       for (const log of finalLogs) {
         const totalSecs = (parseInt(log.minutes) || 0) * 60 + (parseInt(log.seconds) || 0);
-        const bpmVal = parseInt(log.bpm_used);
+        let bpmVal: number | null = parseInt(log.bpm_used);
 
-        if (totalSecs === 0 || isNaN(bpmVal)) {
+        if (isNaN(bpmVal)) bpmVal = null;
+
+        if (totalSecs === 0) {
           if (log.idsToDelete.length > 0) {
             await supabase.from('practice_logs').delete().in('id', log.idsToDelete);
           }
@@ -244,9 +305,9 @@ export function PlayerHeader({
           }
 
           await supabase.from('practice_logs')
-            .update({ 
-              bpm_used: bpmVal, 
-              duration_seconds: totalSecs 
+            .update({
+              bpm_used: bpmVal,
+              duration_seconds: totalSecs
             })
             .eq('id', mainId);
         } else {
@@ -260,7 +321,7 @@ export function PlayerHeader({
           });
         }
       }
-      
+
       setShowEndModal(false);
       onEndSession(totalRoutineSeconds);
     } catch (e) {
@@ -276,10 +337,16 @@ export function PlayerHeader({
     setErrorMsg('');
     setIsSaving(true);
     try {
-      const cur = parseInt(bpmCurrent);
-      if (isNaN(cur) || cur <= 0) throw new Error('BPM inválido');
-      const goal = bpmGoal ? parseInt(bpmGoal) : null;
-      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal);
+      let cur: number | null = null;
+      let goal: number | null = null;
+
+      if (!disableBpmInputs) {
+        cur = parseInt(bpmCurrent);
+        if (isNaN(cur) || cur <= 0) throw new Error('BPM inválido');
+        goal = bpmGoal ? parseInt(bpmGoal) : null;
+      }
+
+      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
       setSaved(true);
       setTimeout(() => setSaved(false), 2500);
     } catch (err: any) {
@@ -292,7 +359,7 @@ export function PlayerHeader({
   const bpmSuggested = exercise?.bpm_suggested || exercise?.bpm_initial || null;
   const diff = exercise?.difficulty;
   const timerPct = routineTargetDuration
-    ? Math.min(100, (elapsedSeconds / routineTargetDuration) * 100)
+    ? Math.min(100, (displaySeconds / routineTargetDuration) * 100)
     : null;
 
   return (
@@ -321,6 +388,7 @@ export function PlayerHeader({
         .ph-bpm-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; letter-spacing: 0.02em; color: var(--text); }
         .ph-bpm-input { width: 56px; padding: 0; background: transparent; border: none; border-bottom: 1px solid rgba(220,185,138,0.3); font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; outline: none; letter-spacing: 0.02em; color: var(--gold); transition: border-color 0.2s; }
         .ph-bpm-input:focus { border-color: var(--gold); }
+        .ph-bpm-input:disabled { opacity: 0.3; cursor: not-allowed; border-bottom: none; }
         .ph-bpm-sep { width: 1px; height: 32px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
         .ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; }
         .ph-timer-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: all 0.2s; flex-shrink: 0; background: rgba(255,255,255,0.05); color: var(--text); }
@@ -358,8 +426,8 @@ export function PlayerHeader({
 
           {isFree ? (
             <div style={{ flex: 1 }}>
-              <DropZone 
-                onFileLoaded={onFileLoaded ?? (() => {})} 
+              <DropZone
+                onFileLoaded={onFileLoaded ?? (() => { })}
                 fileName={fileName ?? null}
               />
             </div>
@@ -405,10 +473,12 @@ export function PlayerHeader({
               <div className="ph-bpm-block">
                 <span className="ph-bpm-label">BPM Actual</span>
                 <input
-                  type="number"
+                  type={disableBpmInputs ? "text" : "number"}
                   className="ph-bpm-input"
-                  value={bpmCurrent}
+                  value={disableBpmInputs ? "---" : bpmCurrent}
+                  disabled={disableBpmInputs}
                   onChange={(e) => {
+                    if (disableBpmInputs) return;
                     setBpmCurrent(e.target.value);
                     const val = parseInt(e.target.value);
                     if (!isNaN(val) && val > 0) onBpmChange(val);
@@ -421,9 +491,9 @@ export function PlayerHeader({
 
               <div className="ph-bpm-block">
                 <span className="ph-bpm-label" style={{ color: 'rgba(255,255,255,0.3)' }}>Objetivo</span>
-                {isRoutine ? (
-                  <span className="ph-bpm-val" style={{ color: 'rgba(255,255,255,0.4)' }}>
-                    {bpmGoal || '---'}
+                {isRoutine || disableBpmInputs ? (
+                  <span className="ph-bpm-val" style={{ color: 'rgba(255,255,255,0.4)', opacity: disableBpmInputs ? 0.3 : 1 }}>
+                    {disableBpmInputs ? '---' : (bpmGoal || '---')}
                   </span>
                 ) : (
                   <input
@@ -437,7 +507,7 @@ export function PlayerHeader({
                 )}
               </div>
 
-              {bpmSuggested && (
+              {bpmSuggested && !disableBpmInputs && (
                 <div style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', maxWidth: '80px', lineHeight: 1.2 }}>
                   Sugerido:<br /><strong style={{ color: 'rgba(255,255,255,0.5)' }}>{bpmSuggested} BPM</strong>
                 </div>
@@ -451,9 +521,9 @@ export function PlayerHeader({
                 style={{ color: isTimerRunning ? '#e74c3c' : '#4ade80' }}
               >
                 {isTimerRunning ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16"/><rect x="14" y="4" width="4" height="16"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
                 ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
                 )}
               </button>
 
@@ -462,7 +532,7 @@ export function PlayerHeader({
                   {isTimerRunning ? 'Practicando' : 'Pausado'}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem' }}>
-                  <span className="ph-timer-val">{formatTime(elapsedSeconds)}</span>
+                  <span className="ph-timer-val">{formatTime(displaySeconds || 0)}</span>
                   {routineTargetDuration && (
                     <span className="ph-timer-target">/ {formatTime(routineTargetDuration)}</span>
                   )}
@@ -511,12 +581,12 @@ export function PlayerHeader({
       {showEndModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: '#141414', border: '1px solid rgba(220,185,138,0.2)', borderRadius: '12px', padding: '2.5rem', width: '100%', maxWidth: '550px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', fontFamily: 'DM Sans, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
-            
+
             <div style={{ flexShrink: 0, marginBottom: '1.5rem' }}>
               <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: '0 0 0.5rem 0', lineHeight: 1 }}>Finalizar Rutina</h2>
               <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.95rem' }}>Verifica y ajusta los datos finales de la sesión antes de guardar.</p>
             </div>
-            
+
             <div className="logs-scroll" style={{ overflowY: 'auto', paddingRight: '0.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {loadingLogs ? (
                 <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Cargando ejercicios...</div>
@@ -529,31 +599,47 @@ export function PlayerHeader({
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', fontWeight: 700 }}>BPM Final</label>
-                        <input 
-                          type="number" 
+                        <input
+                          type={log.hasFile ? "number" : "text"}
                           placeholder="-"
-                          value={log.bpm_used} 
-                          onChange={e => updateFinalLog(i, 'bpm_used', e.target.value)} 
-                          style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 700, outline: 'none' }} 
+                          value={log.hasFile ? log.bpm_used : "---"}
+                          onChange={e => {
+                            if (log.hasFile) updateFinalLog(i, 'bpm_used', e.target.value);
+                          }}
+                          disabled={!log.hasFile}
+                          style={{
+                            width: '100%',
+                            background: 'rgba(0,0,0,0.2)',
+                            border: '1px solid rgba(255,255,255,0.1)',
+                            color: 'var(--gold)',
+                            padding: '0.7rem',
+                            borderRadius: '6px',
+                            textAlign: 'center',
+                            fontSize: '1.2rem',
+                            fontWeight: 700,
+                            outline: 'none',
+                            opacity: log.hasFile ? 1 : 0.3,
+                            cursor: log.hasFile ? 'auto' : 'not-allowed'
+                          }}
                         />
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', fontWeight: 700 }}>Tiempo</label>
                         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             placeholder="0"
-                            value={log.minutes} 
-                            onChange={e => updateFinalLog(i, 'minutes', e.target.value)} 
-                            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem' }} 
+                            value={log.minutes}
+                            onChange={e => updateFinalLog(i, 'minutes', e.target.value)}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem' }}
                           />
                           <span style={{ color: 'var(--muted)', fontWeight: 'bold' }}>:</span>
-                          <input 
-                            type="number" 
+                          <input
+                            type="number"
                             placeholder="00"
-                            value={log.seconds} 
-                            onChange={e => updateFinalLog(i, 'seconds', e.target.value)} 
-                            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem' }} 
+                            value={log.seconds}
+                            onChange={e => updateFinalLog(i, 'seconds', e.target.value)}
+                            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem' }}
                           />
                         </div>
                       </div>
@@ -564,7 +650,7 @@ export function PlayerHeader({
             </div>
 
             <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexShrink: 0 }}>
-              <button 
+              <button
                 onClick={() => {
                   setShowEndModal(false);
                   if (!isTimerRunning) onToggleTimer();
@@ -576,7 +662,7 @@ export function PlayerHeader({
               >
                 Volver a la práctica
               </button>
-              <button 
+              <button
                 onClick={confirmEndSession}
                 disabled={isSaving}
                 style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '1rem', borderRadius: '8px', cursor: isSaving ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: isSaving ? 0.5 : 1, transition: 'all 0.2s' }}

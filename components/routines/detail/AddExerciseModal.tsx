@@ -48,15 +48,14 @@ export function AddExerciseModal({ exercises, onAdd, onClose }: AddExerciseModal
                   display: 'flex', 
                   flexDirection: 'column', 
                   padding: '1.2rem', 
-                  background: hasNoFile ? 'rgba(231,76,60,0.02)' : 'var(--surface)', 
+                  background: 'var(--surface)', 
                   borderRadius: '10px', 
                   border: hasNoFile ? '1px solid rgba(231,76,60,0.2)' : '1px solid rgba(255,255,255,0.05)', 
                   transition: 'all 0.2s', 
                   gap: '1rem',
-                  opacity: hasNoFile ? 0.6 : 1
                 }} 
-                onMouseEnter={e => !hasNoFile && (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.3)')} 
-                onMouseLeave={e => !hasNoFile && (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)')}
+                onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.3)')} 
+                onMouseLeave={e => (e.currentTarget.style.borderColor = hasNoFile ? 'rgba(231,76,60,0.2)' : '1px solid rgba(255,255,255,0.05)')}
               >
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', flex: 1 }}>
                   <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.8rem' }}>
@@ -83,38 +82,32 @@ export function AddExerciseModal({ exercises, onAdd, onClose }: AddExerciseModal
                 
                 <button 
                   onClick={() => onAdd(ex.id.toString())}
-                  disabled={hasNoFile}
                   style={{ 
                     width: '100%', 
-                    background: hasNoFile ? 'rgba(255,255,255,0.02)' : 'rgba(255,255,255,0.05)', 
-                    color: hasNoFile ? 'rgba(255,255,255,0.3)' : 'var(--text)', 
-                    border: '1px solid',
-                    borderColor: hasNoFile ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.1)', 
+                    background: 'rgba(255,255,255,0.05)', 
+                    color: 'var(--text)', 
+                    border: '1px solid rgba(255,255,255,0.1)', 
                     padding: '0.6rem', 
                     borderRadius: '6px', 
                     fontWeight: 600, 
-                    cursor: hasNoFile ? 'not-allowed' : 'pointer', 
+                    cursor: 'pointer', 
                     fontFamily: 'DM Sans, sans-serif', 
                     transition: 'all 0.2s', 
                     fontSize: '0.9rem', 
                     marginTop: 'auto' 
                   }}
                   onMouseEnter={e => { 
-                    if (!hasNoFile) {
-                      e.currentTarget.style.background = 'var(--gold)'; 
-                      e.currentTarget.style.color = '#111'; 
-                      e.currentTarget.style.borderColor = 'var(--gold)'; 
-                    }
+                    e.currentTarget.style.background = 'var(--gold)'; 
+                    e.currentTarget.style.color = '#111'; 
+                    e.currentTarget.style.borderColor = 'var(--gold)'; 
                   }}
                   onMouseLeave={e => { 
-                    if (!hasNoFile) {
-                      e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; 
-                      e.currentTarget.style.color = 'var(--text)'; 
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; 
-                    }
+                    e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; 
+                    e.currentTarget.style.color = 'var(--text)'; 
+                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'; 
                   }}
                 >
-                  {hasNoFile ? 'No disponible' : '+ Añadir'}
+                  + Añadir {hasNoFile && ' (Sin GP)'}
                 </button>
               </div>
             );

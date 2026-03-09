@@ -136,7 +136,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             
             let prev = null;
             for (let i = index - 1; i >= 0; i--) {
-              if (exLogs[i].session_id !== log.session_id) {
+              if (exLogs[i].session_id !== log.session_id && exLogs[i].bpm_used !== null) {
                 prev = exLogs[i].bpm_used;
                 break;
               }
@@ -180,7 +180,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
     e.stopPropagation();
     setEditingLogId(log.id);
     setEditForm({
-      bpm: log.bpm_used.toString(),
+      bpm: log.bpm_used ? log.bpm_used.toString() : '',
       durationMinutes: Math.floor((log.duration_seconds || 0) / 60).toString()
     });
   };
@@ -196,18 +196,18 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
       const bpm = parseInt(editForm.bpm);
       const mins = parseInt(editForm.durationMinutes);
 
-      if (isNaN(bpm) || bpm <= 0) throw new Error("BPM inválido");
+      const bpmToSave = isNaN(bpm) ? null : bpm;
       const durationSecs = isNaN(mins) ? 0 : mins * 60;
 
       const { error: updateError } = await supabase
         .from('practice_logs')
-        .update({ bpm_used: bpm, duration_seconds: durationSecs })
+        .update({ bpm_used: bpmToSave, duration_seconds: durationSecs })
         .eq('id', logId);
 
       if (updateError) throw updateError;
 
       const updatedSessionLogs = sessionLogs[sessionId].map(l => 
-        l.id === logId ? { ...l, bpm_used: bpm, duration_seconds: durationSecs } : l
+        l.id === logId ? { ...l, bpm_used: bpmToSave, duration_seconds: durationSecs } : l
       );
       const newTotalSecs = updatedSessionLogs.reduce((acc, l) => acc + (l.duration_seconds || 0), 0);
 
@@ -239,7 +239,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             ...prev[logToEdit.exercise_id],
             [sessionId]: {
               ...prev[logToEdit.exercise_id]?.[sessionId],
-              bpm: bpm,
+              bpm: bpmToSave,
               duration: durationSecs
             }
           }
@@ -252,8 +252,8 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
     }
   };
 
-  const getHeatmapColor = (bpm: number, targetBpm: number | null) => {
-    if (!targetBpm) return 'rgba(220,185,138,0.3)';
+  const getHeatmapColor = (bpm: number | null, targetBpm: number | null) => {
+    if (bpm === null || !targetBpm) return 'rgba(220,185,138,0.3)';
     const ratio = Math.min(1, bpm / targetBpm);
     const opacity = 0.1 + (ratio * 0.9);
     return `rgba(220,185,138,${opacity})`;
@@ -330,6 +330,13 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
   const totalSessions = sessions.length;
   const totalSeconds = sessions.reduce((acc, curr) => acc + (curr.total_duration_seconds || 0), 0);
   const avgSeconds = totalSessions > 0 ? Math.round(totalSeconds / totalSessions) : 0;
+
+  // Filtrar ejercicios que tengan al menos un registro de BPM en alguna sesión
+  const heatmapExercises = exercises.filter(ex => {
+    const logs = logsMatrix[ex.exercise_id];
+    if (!logs) return false;
+    return Object.values(logs).some(log => log.bpm !== null && log.bpm !== undefined);
+  });
 
   if (loading) {
     return (
@@ -486,105 +493,107 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             </div>
           </div>
 
-          <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto' }}>
-            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>
-              Matriz de Progreso (BPM)
-            </h2>
-            <div style={{ minWidth: '800px' }}>
-              <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                <div style={{ width: '250px', flexShrink: 0, fontWeight: 700, color: 'var(--muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                  Ejercicio
-                </div>
-                <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
-                  {sessions.map(session => {
-                    const sessionTime = new Date(session.started_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
-                    return (
-                      <div 
-                        key={session.id} 
-                        style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', cursor: 'default' }}
-                        title={`Sesión a las ${sessionTime}`} 
-                      >
-                        {new Date(session.started_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
-                      </div>
-                    );
-                  })}
-                </div>
-              </div>
-
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                {exercises.map(ex => (
-                  <div key={ex.exercise_id} style={{ display: 'flex', alignItems: 'center' }}>
-                    <div style={{ width: '250px', flexShrink: 0, paddingRight: '1rem' }}>
-                      <p style={{ margin: 0, color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {ex.exercises?.title || 'Ejercicio Desconocido'}
-                      </p>
-                      <p style={{ margin: 0, color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>
-                        Obj: {ex.target_bpm ? `${ex.target_bpm} BPM` : '—'} • {formatTime(ex.target_duration_seconds || 0)}
-                      </p>
-                    </div>
-
-                    <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
-                      {sessions.map(session => {
-                        const log = logsMatrix[ex.exercise_id]?.[session.id];
-                        const diff = log && log.prevBpm !== null ? log.bpm - log.prevBpm : 0;
-                        
-                        return (
-                          <div 
-                            key={session.id} 
-                            style={{ 
-                              flex: 1, 
-                              background: log ? getHeatmapColor(log.bpm, ex.target_bpm) : 'rgba(255,255,255,0.02)',
-                              border: '1px solid rgba(255,255,255,0.05)',
-                              borderRadius: '6px',
-                              height: '40px',
-                              display: 'flex',
-                              flexDirection: 'column',
-                              alignItems: 'center',
-                              justifyContent: 'center',
-                              color: log ? '#111' : 'transparent',
-                              fontWeight: 800,
-                              fontSize: '0.85rem',
-                              transition: 'all 0.2s'
-                            }}
-                            title={log ? `BPM: ${log.bpm}\nTiempo: ${formatTime(log.duration)}` : 'No practicado'}
-                          >
-                            {log ? (
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
-                                <span>{log.bpm}</span>
-                                {diff !== 0 && (
-                                  <span style={{ 
-                                    fontSize: '0.65rem',
-                                    color: diff > 0 ? '#15803d' : '#b91c1c',
-                                    background: 'rgba(255,255,255,0.6)',
-                                    padding: '1px 3px',
-                                    borderRadius: '3px',
-                                    lineHeight: 1
-                                  }}>
-                                    {diff > 0 ? '↑' : '↓'} {Math.abs(diff)}
-                                  </span>
-                                )}
-                              </div>
-                            ) : '-'}
-                          </div>
-                        );
-                      })}
-                    </div>
+          {heatmapExercises.length > 0 && (
+            <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto' }}>
+              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>
+                Matriz de Progreso (BPM)
+              </h2>
+              <div style={{ minWidth: '800px' }}>
+                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', marginBottom: '1rem' }}>
+                  <div style={{ width: '250px', flexShrink: 0, fontWeight: 700, color: 'var(--muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                    Ejercicio
                   </div>
-                ))}
+                  <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
+                    {sessions.map(session => {
+                      const sessionTime = new Date(session.started_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' });
+                      return (
+                        <div 
+                          key={session.id} 
+                          style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', cursor: 'default' }}
+                          title={`Sesión a las ${sessionTime}`} 
+                        >
+                          {new Date(session.started_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                  {heatmapExercises.map(ex => (
+                    <div key={ex.exercise_id} style={{ display: 'flex', alignItems: 'center' }}>
+                      <div style={{ width: '250px', flexShrink: 0, paddingRight: '1rem' }}>
+                        <p style={{ margin: 0, color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {ex.exercises?.title || 'Ejercicio Desconocido'}
+                        </p>
+                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>
+                          Obj: {ex.target_bpm ? `${ex.target_bpm} BPM` : '—'} • {formatTime(ex.target_duration_seconds || 0)}
+                        </p>
+                      </div>
+
+                      <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
+                        {sessions.map(session => {
+                          const log = logsMatrix[ex.exercise_id]?.[session.id];
+                          const diff = log && log.prevBpm !== null && log.bpm !== null ? log.bpm - log.prevBpm : 0;
+                          
+                          return (
+                            <div 
+                              key={session.id} 
+                              style={{ 
+                                flex: 1, 
+                                background: log && log.bpm !== null ? getHeatmapColor(log.bpm, ex.target_bpm) : 'rgba(255,255,255,0.02)',
+                                border: '1px solid rgba(255,255,255,0.05)',
+                                borderRadius: '6px',
+                                height: '40px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                alignItems: 'center',
+                                justifyContent: 'center',
+                                color: log && log.bpm !== null ? '#111' : 'transparent',
+                                fontWeight: 800,
+                                fontSize: '0.85rem',
+                                transition: 'all 0.2s'
+                              }}
+                              title={log ? `BPM: ${log.bpm ?? 'N/A'}\nTiempo: ${formatTime(log.duration)}` : 'No practicado'}
+                            >
+                              {log && log.bpm !== null ? (
+                                <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                                  <span>{log.bpm}</span>
+                                  {diff !== 0 && (
+                                    <span style={{ 
+                                      fontSize: '0.65rem',
+                                      color: diff > 0 ? '#15803d' : '#b91c1c',
+                                      background: 'rgba(255,255,255,0.6)',
+                                      padding: '1px 3px',
+                                      borderRadius: '3px',
+                                      lineHeight: 1
+                                    }}>
+                                      {diff > 0 ? '↑' : '↓'} {Math.abs(diff)}
+                                    </span>
+                                  )}
+                                </div>
+                              ) : '-'}
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              
+              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '2rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                <span>Menos cerca del objetivo</span>
+                <div style={{ display: 'flex', gap: '0.2rem' }}>
+                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,0.2)' }} />
+                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,0.5)' }} />
+                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,0.8)' }} />
+                  <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,1)' }} />
+                </div>
+                <span>Objetivo superado / alcanzado</span>
               </div>
             </div>
-            
-            <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '2rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
-              <span>Menos cerca del objetivo</span>
-              <div style={{ display: 'flex', gap: '0.2rem' }}>
-                <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,0.2)' }} />
-                <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,0.5)' }} />
-                <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,0.8)' }} />
-                <div style={{ width: '20px', height: '20px', borderRadius: '4px', background: 'rgba(220,185,138,1)' }} />
-              </div>
-              <span>Objetivo superado / alcanzado</span>
-            </div>
-          </div>
+          )}
         </div>
       ) : (
         <div style={{ background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', animation: 'fadeIn 0.3s ease' }}>
@@ -692,7 +701,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                                     ) : (
                                       <>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--text)', fontSize: '0.9rem' }}>{log.title}</td>
-                                        <td style={{ padding: '0.8rem 1rem', color: 'var(--gold)', fontWeight: 700, fontSize: '0.9rem' }}>{log.bpm_used}</td>
+                                        <td style={{ padding: '0.8rem 1rem', color: 'var(--gold)', fontWeight: 700, fontSize: '0.9rem' }}>{log.bpm_used ?? '---'}</td>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--muted)', fontSize: '0.9rem' }}>{Math.floor(log.duration_seconds / 60)} min</td>
                                         <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}>
                                           <button onClick={(e) => startEditingLog(log, e)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', padding: '0.3rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'} title="Editar">

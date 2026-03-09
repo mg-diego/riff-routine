@@ -11,6 +11,7 @@ interface SelectedExercise {
   technique: string;
   durationMinutes: number | string;
   targetBpm: number | string;
+  hasFile: boolean;
 }
 
 export default function CreateRoutinePage() {
@@ -59,7 +60,8 @@ export default function CreateRoutinePage() {
       title: ex.title,
       technique: ex.technique || '',
       durationMinutes: 5,
-      targetBpm: ex.bpm_goal || ''
+      targetBpm: ex.bpm_goal || '',
+      hasFile: !!ex.file_url
     }]);
   };
 
@@ -212,10 +214,13 @@ export default function CreateRoutinePage() {
               ) : (
                 selectedExercises.map((ex, index) => (
                   <div key={ex.id} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1rem' }}>
-                      <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                      <div style={{ flex: 1 }}>
                         <span style={{ fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 700 }}>#{index + 1}</span>
-                        <p style={{ color: 'var(--text)', margin: '0.2rem 0 0', fontWeight: 600 }}>{ex.title}</p>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <p style={{ color: 'var(--text)', margin: 0, fontWeight: 600 }}>{ex.title}</p>
+                          {!ex.hasFile && <span title="Este ejercicio no tiene tablatura interactiva" style={{ fontSize: '0.9rem', cursor: 'help' }}>⚠️</span>}
+                        </div>
                       </div>
                       <button onClick={() => handleRemoveExercise(ex.id)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '0.2rem' }}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
@@ -291,21 +296,20 @@ export default function CreateRoutinePage() {
               filteredExercises.map(ex => {
                 const isSelected = selectedExercises.some(item => item.id === ex.id);
                 const hasNoFile = !ex.file_url;
-                const isDisabled = isSelected || hasNoFile;
 
                 return (
                   <div 
                     key={ex.id}
-                    onClick={() => { if (!isDisabled) handleAddExercise(ex); }}
+                    onClick={() => { if (!isSelected) handleAddExercise(ex); }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '1rem', borderRadius: '8px', cursor: isDisabled ? 'default' : 'pointer', transition: 'all 0.2s',
-                      background: hasNoFile ? 'rgba(231,76,60,0.02)' : 'rgba(255,255,255,0.02)', 
-                      border: hasNoFile ? '1px solid rgba(231,76,60,0.2)' : '1px solid rgba(255,255,255,0.05)',
-                      opacity: isSelected ? 0.4 : (hasNoFile ? 0.6 : 1)
+                      padding: '1rem', borderRadius: '8px', cursor: isSelected ? 'default' : 'pointer', transition: 'all 0.2s',
+                      background: 'rgba(255,255,255,0.02)', 
+                      border: isSelected ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)',
+                      opacity: isSelected ? 0.5 : 1
                     }}
-                    onMouseEnter={e => { if (!isDisabled) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { if (!isDisabled) e.currentTarget.style.background = hasNoFile ? 'rgba(231,76,60,0.02)' : 'rgba(255,255,255,0.02)'; }}
+                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
+                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
                   >
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
                       <p style={{ color: 'var(--text)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
@@ -317,25 +321,23 @@ export default function CreateRoutinePage() {
                         </p>
                         {hasNoFile && (
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#e74c3c', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
-                            ⚠️ Sin archivo GP
+                            ⚠️ Sin GP
                           </span>
                         )}
                       </div>
                     </div>
                     
                     <button 
-                      disabled={isDisabled}
+                      disabled={isSelected}
                       style={{ 
                         width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                        background: isSelected ? 'var(--surface)' : (hasNoFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)'), 
-                        color: isSelected ? 'var(--muted)' : (hasNoFile ? 'rgba(255,255,255,0.3)' : '#111'),
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isDisabled ? 'default' : 'pointer'
+                        background: isSelected ? 'transparent' : 'var(--gold)', 
+                        color: isSelected ? 'var(--gold)' : '#111',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSelected ? 'default' : 'pointer'
                       }}
                     >
                       {isSelected ? (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
-                      ) : hasNoFile ? (
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line></svg>
                       ) : (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg>
                       )}

@@ -317,3 +317,36 @@ export const PROGRESSIONS = [
     "vi - IV - I - V (Ej: Am - F - C - G)",
     "I - vi - ii - V (Ej: C - Am - Dm - G)"
 ];
+
+export const ROMAN_PROGRESSIONS = [
+  { roman: "I - V - vi - IV", isMinorStart: false },
+  { roman: "ii - V - I", isMinorStart: false }, // Se resuelve en Mayor
+  { roman: "vi - IV - I - V", isMinorStart: true },
+  { roman: "I - vi - IV - V", isMinorStart: false },
+  { roman: "i - iv - V", isMinorStart: true }, // Progresión menor clásica
+  { roman: "I - IV - vi - V", isMinorStart: false },
+];
+
+export const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]; // I, ii, iii, IV, V, vi, vii°
+export const MINOR_INTERVALS = [0, 2, 3, 5, 7, 8, 10]; // i, ii°, III, iv, v, VI, VII
+
+export const DEGREE_MAP_MAJOR: Record<string, { idx: number, suffix: string }> = {
+  'I': { idx: 0, suffix: '' },
+  'ii': { idx: 1, suffix: 'm' },
+  'iii': { idx: 2, suffix: 'm' },
+  'IV': { idx: 3, suffix: '' },
+  'V': { idx: 4, suffix: '' },
+  'vi': { idx: 5, suffix: 'm' },
+  'vii°': { idx: 6, suffix: 'dim' },
+};
+
+export const DEGREE_MAP_MINOR: Record<string, { idx: number, suffix: string }> = {
+  'i': { idx: 0, suffix: 'm' },
+  'ii°': { idx: 1, suffix: 'dim' },
+  'III': { idx: 2, suffix: '' },
+  'iv': { idx: 3, suffix: 'm' },
+  'v': { idx: 4, suffix: 'm' },
+  'V': { idx: 4, suffix: '' }, // A veces se usa el V mayor en tonalidad menor (armónica)
+  'VI': { idx: 5, suffix: '' },
+  'VII': { idx: 6, suffix: '' },
+};

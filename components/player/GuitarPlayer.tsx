@@ -49,7 +49,7 @@ export default function GuitarPlayer() {
         toggleTimer,
         saveExerciseLog,
         handleEndSession
-    } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null);
+    } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
     useEffect(() => {
         if (scriptReady && isLoaded && initialUrlToLoad) {
@@ -59,6 +59,9 @@ export default function GuitarPlayer() {
 
     const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
     const isScoreMode = ['free', 'library', 'routine'].includes(mode);
+    
+    const isSidebarDisabled = !isScoreMode || !!hasNoScore;
+    console.log('mode: ', mode)
 
     return (
         <>
@@ -121,6 +124,7 @@ export default function GuitarPlayer() {
                             }
                         }}
                         sessionId={sessionId}
+                        disableBpmInputs={isSidebarDisabled}
                     />
 
                     <div
@@ -133,7 +137,7 @@ export default function GuitarPlayer() {
                             position: 'relative'
                         }}
                     >
-                        {mode === 'scales' && (
+                        {(mode === 'scales' || activeExercise?.title === 'Escalas') && (
                             <div style={{
                                 padding: '1rem 2rem',
                                 flexShrink: 0,
@@ -144,7 +148,7 @@ export default function GuitarPlayer() {
                             </div>
                         )}
 
-                        {mode === 'improvisation' && (
+                        {(mode === 'improvisation' || activeExercise?.title === "Improvisación") && (
                             <div style={{
                                 padding: '1rem 2rem',
                                 flexShrink: 0,
@@ -157,7 +161,7 @@ export default function GuitarPlayer() {
 
                         {isScoreMode && (
                             <div style={{ flex: 1, position: 'relative', minWidth: 'min-content' }}>
-                                <ScoreViewer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
+                                <ScoreViewer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} apiRef={apiRef} />
                             </div>
                         )}
                     </div>
@@ -172,7 +176,7 @@ export default function GuitarPlayer() {
                     setTracks={setTracks}
                     currentPlaybackBpm={currentPlaybackBpm}
                     originalBpm={originalPlaybackBpm}
-                    forceDisabled={!isScoreMode}
+                    forceDisabled={isSidebarDisabled}
                 />
             </div>
         </>

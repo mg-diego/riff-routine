@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
+import { formatTime } from '../../lib/utils';
+
 
 const TECHNIQUE_MAP: Record<string, string> = {
   'Alternate Picking': 'Velocidad', 'Sweep Picking': 'Velocidad', 'Economy Picking': 'Velocidad',
@@ -13,11 +15,11 @@ const TECHNIQUE_MAP: Record<string, string> = {
 };
 
 const PILLAR_COLORS: Record<string, string> = {
-  'Velocidad': '#f87171', // Rojo/Naranja
-  'Expresión': '#a78bfa', // Violeta
-  'Precisión': '#34d399', // Esmeralda
-  'Ritmo': '#fbbf24',     // Ámbar
-  'Teoría': '#60a5fa'      // Azul
+  'Velocidad': '#f87171',
+  'Expresión': '#a78bfa',
+  'Precisión': '#34d399',
+  'Ritmo': '#fbbf24',
+  'Teoría': '#60a5fa'
 };
 
 export function SkillsRadar() {
@@ -49,7 +51,6 @@ export function SkillsRadar() {
         stats[pillar] += (log.duration_seconds || 0) / 60;
       });
 
-      // Encontrar el pilar dominante
       let dominantPillar = 'Velocidad';
       let maxVal = 0;
       
@@ -64,8 +65,8 @@ export function SkillsRadar() {
 
       setData(Object.keys(stats).map(key => ({
         subject: key,
-        A: Number(stats[key].toFixed(1)),
-        fullMark: Math.max(...Object.values(stats), 1)
+        A: Math.round(stats[key]),
+        fullMark: Math.max(...Object.values(stats).map(v => Math.round(v)), 1)
       })));
     }
     setLoading(false);
@@ -88,14 +89,22 @@ export function SkillsRadar() {
             />
             <PolarRadiusAxis axisLine={false} tick={false} />
             <Radar
-              name="Minutos"
+              name="Tiempo"
               dataKey="A"
               stroke={mainColor}
               fill={mainColor}
               fillOpacity={0.5}
-             // transitionDuration={1000}
             />
             <Tooltip 
+              formatter={(value: number | undefined) => {
+                if (value === undefined) return ["0 MIN", "Tiempo"];
+                const roundedValue = Math.round(value);
+                const timeParts = formatTime(roundedValue);
+                const label = timeParts
+                  .map(p => `${p.value} ${p.unit}`)
+                  .join(' ');
+                return [label, "Tiempo"];
+              }}
               contentStyle={{ background: '#111', border: `1px solid ${mainColor}`, borderRadius: '8px' }}
               itemStyle={{ color: mainColor }}
             />

@@ -8,7 +8,6 @@ import { ConsistencyHeatmap } from '@/components/stats/ConsistencyHeatmap';
 import { StatsCarousel } from '@/components/stats/StatsCarousel';
 
 export default function StatsPage() {
-  const [activeTab, setActiveTab] = useState<'overview' | 'exercises' | 'routines'>('overview');
   const [dateFilter, setDateFilter] = useState('30');
   const [loading, setLoading] = useState(true);
 
