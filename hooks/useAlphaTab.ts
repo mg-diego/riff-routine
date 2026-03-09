@@ -54,9 +54,12 @@ export function useAlphaTab(
             })
             .then(buffer => {
                 apiRef.current.load(new Uint8Array(buffer));
+                // Doble render: uno inmediato y otro diferido por si el contenedor
+                // acaba de pasar de display:none a visible (cambio de ejercicio en rutina)
                 setTimeout(() => apiRef.current?.render(), 50);
+                setTimeout(() => apiRef.current?.render(), 300);
             })
-            .catch(err => console.error(err));
+            .catch(err => console.error('[useAlphaTab] loadUrl error:', err));
     };
 
     const loadFile = (file: File) => {
@@ -65,6 +68,7 @@ export function useAlphaTab(
         reader.onload = (evt) => {
             apiRef.current.load(new Uint8Array(evt.target?.result as ArrayBuffer));
             setTimeout(() => apiRef.current?.render(), 50);
+            setTimeout(() => apiRef.current?.render(), 300);
         };
         reader.readAsArrayBuffer(file);
     };

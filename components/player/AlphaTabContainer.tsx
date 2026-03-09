@@ -1,11 +1,11 @@
 import React, { RefObject, useEffect, useRef } from 'react';
 
-interface ScoreViewerProps {
+interface AlphaTabContainerProps {
     wrapperRef: RefObject<HTMLDivElement | null>;
     hasNoScore: boolean;
 }
 
-export function ScoreViewer({ wrapperRef, hasNoScore }: ScoreViewerProps) {
+export function AlphaTabContainer({ wrapperRef, hasNoScore }: AlphaTabContainerProps) {
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -18,18 +18,14 @@ export function ScoreViewer({ wrapperRef, hasNoScore }: ScoreViewerProps) {
         const observer = new ResizeObserver((entries) => {
             for (const entry of entries) {
                 const newWidth = entry.contentRect.width;
-                
-                // Solo disparamos el redibujado si el contenedor cambia más de 30px
-                // (Ignora apariciones de scrollbars o sub-píxeles que causan bucles infinitos)
+
                 if (Math.abs(newWidth - lastWidth) > 30) {
                     lastWidth = newWidth;
-                    
+
                     clearTimeout(resizeTimer);
-                    
-                    // Esperamos 350ms para asegurar que la animación CSS del Sidebar haya terminado
                     resizeTimer = setTimeout(() => {
                         window.dispatchEvent(new Event('resize'));
-                    }, 350); 
+                    }, 350);
                 }
             }
         });
