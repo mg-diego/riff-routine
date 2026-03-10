@@ -429,7 +429,7 @@ export default function LoginPage() {
 
         {/* ── LEFT ── */}
         <div className="login-left">
-          <a href="/" className="left-logo">RiffRoute</a>
+          <a href="/" className="left-logo">RiffRoutine</a>
 
           {/* Widgets Decorativos Flotantes */}
           <div className={`glass-widget widget-1 ${mounted ? 'visible' : ''}`}>
@@ -472,7 +472,7 @@ export default function LoginPage() {
             </div>
           </div>
 
-          <div className="left-bottom">© 2026 RiffRoute</div>
+          <div className="left-bottom">© 2026 RiffRoutine</div>
           <div className="left-deco">RIFF</div>
         </div>
 
@@ -537,7 +537,7 @@ export default function LoginPage() {
 
               <button type="submit" className="btn-primary" disabled={loading}>
                 {loading && <span className="spinner" />}
-                {loading ? 'Cargando...' : isLogin ? 'Entrar a RiffRoute' : 'Crear cuenta gratis'}
+                {loading ? 'Cargando...' : isLogin ? 'Entrar a RiffRoutine' : 'Crear cuenta gratis'}
               </button>
             </form>
 
