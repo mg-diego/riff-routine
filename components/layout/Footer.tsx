@@ -2,6 +2,7 @@
 
 import React from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
 
 export function Footer() {
   return (
@@ -23,8 +24,24 @@ export function Footer() {
         gap: '1rem'
       }}>
         
-        {/* Logo igual que Landing y Nav */}
-        <Link href="/home" style={{ textDecoration: 'none' }}>
+        {/* Logo con Favicon (versión reducida para el footer) */}
+        <Link href="/home" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <div style={{
+            width: '20px',
+            height: '20px',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            opacity: 0.8 // Un poco de transparencia extra para que sea más sutil
+          }}>
+            <Image 
+              src="/favicon.ico" 
+              alt="RiffRoutine Logo" 
+              fill
+              style={{ objectFit: 'contain' }}
+            />
+          </div>
           <div style={{ 
             fontFamily: 'Bebas Neue, sans-serif', 
             fontSize: '1.2rem', 

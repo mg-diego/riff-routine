@@ -15,13 +15,14 @@ export function usePlayerContext() {
             const params = new URLSearchParams(window.location.search);
             const routineId = params.get('routine');
             const fileUrl = params.get('file');
+            const idParam = params.get('id');
             const modeParam = params.get('mode');
 
             if (routineId) {
                 setMode('routine');
                 const { data } = await supabase
                     .from('routine_exercises')
-                    .select('*, exercises(*)')
+                    .select('*, exercises(id, title, technique, file_url, created_at, bpm_goal, difficulty, notes, bpm_suggested, has_bpm)')
                     .eq('routine_id', routineId)
                     .order('order_index', { ascending: true });
 
@@ -29,7 +30,7 @@ export function usePlayerContext() {
                     setRoutineList(data);
                     setActiveExercise(data[0].exercises);
                     setFileName(data[0].exercises.title);
-                    if (data[0].exercises.file_url) setInitialUrlToLoad(data[0].exercises.file_url);
+                    setInitialUrlToLoad(data[0].exercises.file_url || null);
                 }
             } else if (fileUrl) {
                 const decodedUrl = decodeURIComponent(fileUrl);
@@ -43,10 +44,21 @@ export function usePlayerContext() {
                     setMode('free');
                 }
                 setInitialUrlToLoad(decodedUrl);
+            } else if (idParam) {
+                const { data } = await supabase.from('exercises').select('*').eq('id', idParam).single();
+                
+                if (data) {
+                    setMode('library');
+                    setActiveExercise(data);
+                    setFileName(data.title);
+                } else {
+                    setMode('free');
+                }
+                setInitialUrlToLoad(null);
             } else if (modeParam) {
                 setMode(modeParam as any);
                 const titles: Record<string, string> = { 'scales': 'Escalas', 'improvisation': 'Improvisación' };
-                setActiveExercise({ title: titles[modeParam] || modeParam } as Exercise);
+                setActiveExercise({ title: titles[modeParam] || modeParam, has_bpm: false } as Exercise);
             } else {
                 setMode('free');
             }
@@ -61,7 +73,7 @@ export function usePlayerContext() {
             const ex = routineList[index].exercises;
             setActiveExercise(ex);
             setFileName(ex.title);
-            if (ex.file_url) setInitialUrlToLoad(ex.file_url);
+            setInitialUrlToLoad(ex.file_url || null);
         }
     };
 

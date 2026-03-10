@@ -10,6 +10,7 @@ export interface Exercise {
   difficulty: number;
   notes: string | null;
   created_at: string;
+  has_bpm?: boolean;
 }
 
 export interface Routine {

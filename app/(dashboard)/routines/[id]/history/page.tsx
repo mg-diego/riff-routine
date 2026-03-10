@@ -14,7 +14,6 @@ interface RoutineHistoryProps {
 
 type SortKey = 'date' | 'duration' | 'exercises';
 
-// ── Sparkline minigráfica ──────────────────────────────────────────────────
 function Sparkline({ data, color = '#dcb98a' }: { data: number[]; color?: string }) {
   if (data.length < 2) return (
     <div style={{ height: 40, display: 'flex', alignItems: 'center' }}>
@@ -34,7 +33,6 @@ function Sparkline({ data, color = '#dcb98a' }: { data: number[]; color?: string
   return (
     <svg width={w} height={h} style={{ overflow: 'visible' }}>
       <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      {/* último punto */}
       {(() => {
         const last = pts.split(' ').pop()!.split(',');
         return <circle cx={last[0]} cy={last[1]} r="3" fill={color} />;
@@ -58,12 +56,12 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
   const [sessionLogs, setSessionLogs] = useState<Record<string, any[]>>({});
   const [expandedSessionId, setExpandedSessionId] = useState<string | null>(null);
   const [editingLogId, setEditingLogId] = useState<string | null>(null);
+  const [savingLogId, setSavingLogId] = useState<string | null>(null);
   const [editForm, setEditForm] = useState({ bpm: '', durationMinutes: '' });
   const [sortConfig, setSortConfig] = useState<{ key: SortKey; direction: 'asc' | 'desc' }>({ key: 'date', direction: 'desc' });
   const [currentPage, setCurrentPage] = useState(1);
   const itemsPerPage = 10;
 
-  // Datos derivados por ejercicio: sparkline BPM, tiempo acumulado, mejor/último BPM
   const [exerciseStats, setExerciseStats] = useState<Record<string, {
     bpmHistory: number[];
     totalSeconds: number;
@@ -156,7 +154,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         });
         setLogsMatrix(matrix);
 
-        // ── Calcular estadísticas por ejercicio ───────────────────
         const stats: typeof exerciseStats = {};
         exerciseIds.forEach(exId => {
           const logs = logsByEx[exId] || [];
@@ -193,38 +190,54 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
   const startEditingLog = (log: any, e: React.MouseEvent) => {
     e.stopPropagation();
     setEditingLogId(log.id);
-    setEditForm({ bpm: log.bpm_used?.toString() || '', durationMinutes: Math.floor((log.duration_seconds || 0) / 60).toString() });
+    setEditForm({
+      bpm: log.bpm_used?.toString() || '',
+      durationMinutes: Math.floor((log.duration_seconds || 0) / 60).toString()
+    });
   };
 
   const cancelEditingLog = (e: React.MouseEvent) => { e.stopPropagation(); setEditingLogId(null); };
 
   const handleSaveLog = async (logId: string, sessionId: string, e: React.MouseEvent) => {
     e.stopPropagation();
+    setSavingLogId(logId);
     try {
       const bpm = parseInt(editForm.bpm);
       const mins = parseInt(editForm.durationMinutes);
       const bpmToSave = isNaN(bpm) ? null : bpm;
       const durationSecs = isNaN(mins) ? 0 : mins * 60;
 
-      const { error: updateError } = await supabase.from('practice_logs').update({ bpm_used: bpmToSave, duration_seconds: durationSecs }).eq('id', logId);
+      // 1. Guardar log en DB
+      const { error: updateError } = await supabase
+        .from('practice_logs')
+        .update({ bpm_used: bpmToSave, duration_seconds: durationSecs })
+        .eq('id', logId);
       if (updateError) throw updateError;
 
-      const updatedSessionLogs = sessionLogs[sessionId].map(l => l.id === logId ? { ...l, bpm_used: bpmToSave, duration_seconds: durationSecs } : l);
-      const newTotalSecs = updatedSessionLogs.reduce((acc, l) => acc + (l.duration_seconds || 0), 0);
+      // 2. Recalcular total de la sesión desde DB (fuente de verdad)
+      const { data: allLogs, error: fetchError } = await supabase
+        .from('practice_logs')
+        .select('duration_seconds')
+        .eq('session_id', sessionId);
+      if (fetchError) throw fetchError;
 
-      const { error: sessionError } = await supabase.from('practice_sessions').update({ total_duration_seconds: newTotalSecs }).eq('id', sessionId);
+      const newTotalSecs = (allLogs || []).reduce((acc, l) => acc + (l.duration_seconds || 0), 0);
+
+      // 3. Actualizar total en DB
+      const { error: sessionError } = await supabase
+        .from('practice_sessions')
+        .update({ total_duration_seconds: newTotalSecs })
+        .eq('id', sessionId);
       if (sessionError) throw sessionError;
 
-      setSessionLogs(prev => ({ ...prev, [sessionId]: updatedSessionLogs }));
-      setChartData(prev => prev.map(c => c.id === sessionId ? { ...c, minutos: Math.round(newTotalSecs / 60) } : c));
-      setSessions(prev => prev.map(s => s.id === sessionId ? { ...s, total_duration_seconds: newTotalSecs } : s));
-
-      const logToEdit = sessionLogs[sessionId].find(l => l.id === logId);
-      if (logToEdit) {
-        setLogsMatrix(prev => ({ ...prev, [logToEdit.exercise_id]: { ...prev[logToEdit.exercise_id], [sessionId]: { ...prev[logToEdit.exercise_id]?.[sessionId], bpm: bpmToSave, duration: durationSecs } } }));
-      }
+      // 4. Recargar todo desde DB para asegurar consistencia
       setEditingLogId(null);
-    } catch (err: any) { alert(err.message || 'Error al guardar'); }
+      await fetchHistoryData();
+    } catch (err: any) {
+      alert(err.message || 'Error al guardar');
+    } finally {
+      setSavingLogId(null);
+    }
   };
 
   const getHeatmapColor = (bpm: number | null, targetBpm: number | null) => {
@@ -287,8 +300,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
   const totalSessions = sessions.length;
   const totalSeconds = sessions.reduce((acc, s) => acc + (s.total_duration_seconds || 0), 0);
   const avgSeconds = totalSessions > 0 ? Math.round(totalSeconds / totalSessions) : 0;
-
-  // Mejor sesión
   const bestSession = [...sessions].sort((a, b) => (b.total_duration_seconds || 0) - (a.total_duration_seconds || 0))[0];
 
   const heatmapExercises = exercises.filter(ex => {
@@ -335,19 +346,12 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         </div>
       ) : activeTab === 'stats' ? (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.3s ease' }}>
-
-          {/* ── KPIs (ahora 4) ───────────────────────────────────── */}
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
             {[
               { label: 'Sesiones Completadas', value: totalSessions, color: 'var(--gold)' },
               { label: 'Tiempo Total', value: formatKpiTime(totalSeconds), color: 'var(--text)' },
               { label: 'Promedio por Sesión', value: formatKpiTime(avgSeconds), color: 'var(--text)' },
-              {
-                label: 'Mejor Sesión',
-                value: bestSession ? formatKpiTime(bestSession.total_duration_seconds) : '—',
-                color: '#4ade80',
-                sub: bestSession ? new Date(bestSession.started_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : undefined
-              },
+              { label: 'Mejor Sesión', value: bestSession ? formatKpiTime(bestSession.total_duration_seconds) : '—', color: '#4ade80', sub: bestSession ? new Date(bestSession.started_at).toLocaleDateString('es-ES', { day: '2-digit', month: 'short', year: 'numeric' }) : undefined },
             ].map(({ label, value, color, sub }) => (
               <div key={label} style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
                 <span style={{ fontSize: '0.72rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>{label}</span>
@@ -357,7 +361,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             ))}
           </div>
 
-          {/* ── Gráfico minutos por sesión ────────────────────────── */}
           <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>Minutos por sesión</h2>
             <div style={{ height: 250 }}>
@@ -366,7 +369,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                   <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" tickFormatter={v => chartData.find(d => d.name === v)?.shortDate || v} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} tickLine={false} axisLine={false} dy={10} />
                   <YAxis stroke="rgba(255,255,255,0.2)" tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} tickLine={false} axisLine={false} dx={-10} />
                   <Tooltip labelFormatter={label => { const s = chartData.find(d => d.name === label); return s ? `${s.shortDate} - ${s.time}` : label; }} contentStyle={{ backgroundColor: '#141414', border: '1px solid rgba(220,185,138,0.3)', borderRadius: '8px', color: '#f0e8dc' }} itemStyle={{ color: '#dcb98a', fontWeight: 700 }} />
-                  {/* Línea de promedio */}
                   {avgSeconds > 0 && <ReferenceLine y={Math.round(avgSeconds / 60)} stroke="rgba(220,185,138,0.3)" strokeDasharray="4 4" label={{ value: 'Avg', fill: 'rgba(220,185,138,0.5)', fontSize: 11 }} />}
                   <Line type="monotone" dataKey="minutos" stroke="#dcb98a" strokeWidth={3} dot={{ fill: '#141414', stroke: '#dcb98a', strokeWidth: 2, r: 4 }} activeDot={{ r: 6, fill: '#dcb98a' }} />
                 </LineChart>
@@ -374,7 +376,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             </div>
           </div>
 
-          {/* ── Tarjetas por ejercicio ────────────────────────────── */}
           {exercises.length > 0 && (
             <div>
               <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1rem 0', letterSpacing: '0.05em' }}>Progreso por ejercicio</h2>
@@ -384,22 +385,15 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                   const ed = ex.exercises as any;
                   const title = Array.isArray(ed) ? ed[0]?.title : ed?.title;
                   if (!st) return null;
-
-                  const bpmDelta = st.bpmHistory.length >= 2
-                    ? st.bpmHistory[st.bpmHistory.length - 1] - st.bpmHistory[0]
-                    : null;
+                  const bpmDelta = st.bpmHistory.length >= 2 ? st.bpmHistory[st.bpmHistory.length - 1] - st.bpmHistory[0] : null;
                   const targetBpm = ex.target_bpm;
                   const pctOfGoal = targetBpm && st.lastBpm ? Math.min(100, Math.round((st.lastBpm / targetBpm) * 100)) : null;
-
                   return (
                     <div key={ex.exercise_id} style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
-                      {/* Título */}
                       <div>
                         <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h3>
                         {st.lastSessionDate && <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>Última práctica: {st.lastSessionDate}</span>}
                       </div>
-
-                      {/* Sparkline */}
                       {st.bpmHistory.length >= 2 ? (
                         <div>
                           <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block', marginBottom: '0.35rem' }}>Evolución BPM</span>
@@ -415,8 +409,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                       ) : (
                         <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)' }}>Se necesitan al menos 2 sesiones con BPM para ver la evolución</div>
                       )}
-
-                      {/* Stats row */}
                       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '0.85rem' }}>
                         <div>
                           <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block' }}>Tiempo total</span>
@@ -431,8 +423,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                           <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--gold)', fontFamily: 'Bebas Neue, sans-serif' }}>{st.lastBpm ?? '—'}</span>
                         </div>
                       </div>
-
-                      {/* Barra % hacia objetivo */}
                       {pctOfGoal !== null && (
                         <div>
                           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
@@ -451,7 +441,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             </div>
           )}
 
-          {/* ── Heatmap BPM ──────────────────────────────────────── */}
           {heatmapExercises.length > 0 && (
             <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto' }}>
               <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>Matriz de Progreso (BPM)</h2>
@@ -460,7 +449,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                   <div style={{ width: 250, flexShrink: 0, fontWeight: 700, color: 'var(--muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Ejercicio</div>
                   <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
                     {sessions.map(s => (
-                      <div key={s.id} style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)' }} title={`${new Date(s.started_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}`}>
+                      <div key={s.id} style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)' }}>
                         {new Date(s.started_at).toLocaleDateString('es-ES', { day: '2-digit', month: '2-digit' })}
                       </div>
                     ))}
@@ -505,7 +494,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         </div>
 
       ) : (
-        /* ── Historial detallado ─────────────────────────────────── */
         <div style={{ background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', animation: 'fadeIn 0.3s ease' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
             <thead>
@@ -533,7 +521,6 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                       </button>
                     </td>
                   </tr>
-
                   {expandedSessionId === session.id && (
                     <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                       <td colSpan={5} style={{ padding: 0 }}>
@@ -557,16 +544,58 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                                     {editingLogId === log.id ? (
                                       <>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600 }}>{log.title}</td>
-                                        <td style={{ padding: '0.6rem 1rem' }}><input type="number" value={editForm.bpm} onChange={e => setEditForm({ ...editForm, bpm: e.target.value })} style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', borderRadius: '4px', width: 70, outline: 'none', fontFamily: 'DM Sans, sans-serif' }} /></td>
-                                        <td style={{ padding: '0.6rem 1rem' }}><div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}><input type="number" value={editForm.durationMinutes} onChange={e => setEditForm({ ...editForm, durationMinutes: e.target.value })} style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', borderRadius: '4px', width: 60, outline: 'none', fontFamily: 'DM Sans, sans-serif' }} /><span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>min</span></div></td>
-                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }}><div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}><button onClick={cancelEditingLog} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '4px', cursor: 'pointer' }} title="Cancelar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button><button onClick={e => handleSaveLog(log.id, session.id, e)} style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.3)', padding: '0.4rem', borderRadius: '4px', cursor: 'pointer' }} title="Guardar"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg></button></div></td>
+                                        <td style={{ padding: '0.6rem 1rem' }}>
+                                          <input
+                                            type="number"
+                                            value={editForm.bpm}
+                                            onChange={e => setEditForm({ ...editForm, bpm: e.target.value })}
+                                            disabled={savingLogId === log.id}
+                                            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', borderRadius: '4px', width: 70, outline: 'none', fontFamily: 'DM Sans, sans-serif', opacity: savingLogId === log.id ? 0.5 : 1 }}
+                                          />
+                                        </td>
+                                        <td style={{ padding: '0.6rem 1rem' }}>
+                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                            <input
+                                              type="number"
+                                              value={editForm.durationMinutes}
+                                              onChange={e => setEditForm({ ...editForm, durationMinutes: e.target.value })}
+                                              disabled={savingLogId === log.id}
+                                              style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', borderRadius: '4px', width: 60, outline: 'none', fontFamily: 'DM Sans, sans-serif', opacity: savingLogId === log.id ? 0.5 : 1 }}
+                                            />
+                                            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>min</span>
+                                          </div>
+                                        </td>
+                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }}>
+                                          <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                                            <button
+                                              onClick={cancelEditingLog}
+                                              disabled={savingLogId === log.id}
+                                              style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '4px', cursor: savingLogId === log.id ? 'not-allowed' : 'pointer', opacity: savingLogId === log.id ? 0.4 : 1 }}
+                                            >
+                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                            </button>
+                                            <button
+                                              onClick={e => handleSaveLog(log.id, session.id, e)}
+                                              disabled={savingLogId === log.id}
+                                              style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.3)', padding: '0.4rem 0.6rem', borderRadius: '4px', cursor: savingLogId === log.id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', minWidth: 32 }}
+                                            >
+                                              {savingLogId === log.id ? (
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.7s linear infinite' }}>
+                                                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                                                </svg>
+                                              ) : (
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                              )}
+                                            </button>
+                                          </div>
+                                        </td>
                                       </>
                                     ) : (
                                       <>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--text)', fontSize: '0.9rem' }}>{log.title}</td>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--gold)', fontWeight: 700, fontSize: '0.9rem' }}>{log.bpm_used ?? '---'}</td>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--muted)', fontSize: '0.9rem' }}>{Math.floor(log.duration_seconds / 60)} min</td>
-                                        <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}><button onClick={e => startEditingLog(log, e)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', padding: '0.3rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'} title="Editar"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>
+                                        <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}><button onClick={e => startEditingLog(log, e)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', padding: '0.3rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>
                                       </>
                                     )}
                                   </tr>
@@ -597,6 +626,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
 
       <style>{`
         @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes spin { to { transform: rotate(360deg); } }
       `}</style>
     </div>
   );

@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect, useRef, useCallback } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Exercise } from '../../lib/types';
 import { supabase } from '../../lib/supabase';
 import { DropZone } from './DropZone';
+import { useMetronome } from '../../hooks/useMetronome';
+import { EndSessionModal } from './EndSessionModal';
 
 interface PlayerHeaderProps {
   mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation';
@@ -47,11 +49,10 @@ function formatTime(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
-// ── Sonido: 3 pitidos cortos ascendentes via Web Audio API ──────────────────
 function playTimerAlert() {
   try {
     const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
-    const beeps = [880, 1046, 1318]; // La5 → Do6 → Mi6
+    const beeps = [880, 1046, 1318];
     beeps.forEach((freq, i) => {
       const osc  = ctx.createOscillator();
       const gain = ctx.createGain();
@@ -67,9 +68,7 @@ function playTimerAlert() {
       osc.stop(t + 0.18);
     });
     setTimeout(() => ctx.close(), 900);
-  } catch (e) {
-    console.warn('[PlayerHeader] Web Audio not available:', e);
-  }
+  } catch (e) {}
 }
 
 export function PlayerHeader({
@@ -91,12 +90,10 @@ export function PlayerHeader({
   const [timerDone, setTimerDone] = useState(false);
 
   const [showEndModal, setShowEndModal] = useState(false);
-  const [finalLogs, setFinalLogs] = useState<any[]>([]);
-  const [loadingLogs, setLoadingLogs] = useState(false);
-
   const [exerciseTimes, setExerciseTimes] = useState<Record<string, number>>({});
+  
+  const [metronomeBpm, setMetronomeBpm] = useState<number>(100);
 
-  // Ref para disparar la alerta solo una vez por ejercicio
   const alertedRef = useRef(false);
 
   const currentExerciseKey = exercise?.id || 'free-mode';
@@ -104,13 +101,22 @@ export function PlayerHeader({
     ? exerciseTimes[currentExerciseKey]
     : propElapsedSeconds;
 
-  // ── Resetear alerta al cambiar de ejercicio ─────────────────────────────
+  const isMissingFile = !exercise?.file_url;
+  const showBpmInputs = exercise?.has_bpm !== false;
+  const showMetronome = exercise?.has_bpm === false || (mode === 'library' && isMissingFile);
+
+  const activeMetronomeBpm = showBpmInputs 
+    ? (parseInt(bpmCurrent) || exercise?.bpm_goal || exercise?.bpm_suggested || 100)
+    : metronomeBpm;
+
+  const { isMetronomePlaying, setIsMetronomePlaying, handleToggleMetronome } = useMetronome(activeMetronomeBpm);
+
   useEffect(() => {
     alertedRef.current = false;
     setTimerDone(false);
-  }, [exercise?.id]);
+    setIsMetronomePlaying(false); 
+  }, [exercise?.id, setIsMetronomePlaying]);
 
-  // ── Disparar aviso cuando se alcanza el tiempo objetivo ─────────────────
   useEffect(() => {
     if (
       routineTargetDuration &&
@@ -125,7 +131,6 @@ export function PlayerHeader({
     }
   }, [displaySeconds, routineTargetDuration]);
 
-  // ── Sync exercise times ─────────────────────────────────────────────────
   useEffect(() => {
     if (isTimerRunning) {
       setExerciseTimes(prev => ({
@@ -139,16 +144,15 @@ export function PlayerHeader({
     if (isRoutine && isTimerRunning) onToggleTimer();
   }, [currentIndex]);
 
-  // ── BPM sync ────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (disableBpmInputs) { setBpmGoal(''); return; }
+    if (disableBpmInputs || !showBpmInputs) { setBpmGoal(''); return; }
     const goal = isRoutine && routineTargetBpm != null ? routineTargetBpm : exercise?.bpm_goal;
     setBpmGoal(goal?.toString() || '');
-  }, [exercise?.id, routineTargetBpm, mode, disableBpmInputs]);
+  }, [exercise?.id, routineTargetBpm, mode, disableBpmInputs, showBpmInputs]);
 
   useEffect(() => {
     let mounted = true;
-    if (disableBpmInputs || !exercise?.id) { setBpmCurrent(''); onBpmChange(null); return; }
+    if (disableBpmInputs || !exercise?.id || !showBpmInputs) { setBpmCurrent(''); onBpmChange(null); return; }
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !mounted) return;
@@ -161,28 +165,27 @@ export function PlayerHeader({
       else setBpmCurrent('');
     })();
     return () => { mounted = false; };
-  }, [exercise?.id, disableBpmInputs]);
+  }, [exercise?.id, disableBpmInputs, showBpmInputs]);
 
   useEffect(() => {
-    if (originalBpm && !bpmCurrent && !disableBpmInputs) {
+    if (originalBpm && !bpmCurrent && !disableBpmInputs && showBpmInputs) {
       setBpmCurrent(originalBpm.toString());
       onBpmChange(originalBpm);
     }
-  }, [originalBpm, disableBpmInputs]);
+  }, [originalBpm, disableBpmInputs, showBpmInputs]);
 
-  // ── Helpers ─────────────────────────────────────────────────────────────
   const autoSaveLog = async () => {
     if (!exercise || displaySeconds === 0) return;
     try {
       let cur: number | null = null;
       let goal: number | null = null;
-      if (!disableBpmInputs) {
+      if (!disableBpmInputs && showBpmInputs) {
         const parsedCur = parseInt(bpmCurrent);
         cur = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
         goal = bpmGoal ? parseInt(bpmGoal) : null;
       }
       await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
-    } catch (err) { console.error(err); }
+    } catch (err) {}
   };
 
   const handleNext = async () => { if (isRoutine) await autoSaveLog(); onNext(); };
@@ -199,59 +202,7 @@ export function PlayerHeader({
     if (isTimerRunning) onToggleTimer();
     await autoSaveLog();
     if (!sessionId) { onEndSession(); return; }
-    setLoadingLogs(true);
     setShowEndModal(true);
-    try {
-      const { data: sessionData } = await supabase.from('practice_sessions').select('routine_id').eq('id', sessionId).single();
-      if (!sessionData?.routine_id) { onEndSession(); return; }
-      const { data: routineExercises } = await supabase.from('routine_exercises').select('exercise_id, exercises(title, file_url)').eq('routine_id', sessionData.routine_id).order('order_index', { ascending: true });
-      const { data: existingLogs } = await supabase.from('practice_logs').select('id, exercise_id, bpm_used, duration_seconds').eq('session_id', sessionId);
-      const grouped: Record<string, any> = {};
-      routineExercises?.forEach(re => {
-        const ed = re.exercises as any;
-        grouped[re.exercise_id] = { exercise_id: re.exercise_id, title: (Array.isArray(ed) ? ed[0]?.title : ed?.title) || 'Ejercicio', hasFile: !!(Array.isArray(ed) ? ed[0]?.file_url : ed?.file_url), bpm_used: '', duration_seconds: 0, idsToDelete: [] };
-      });
-      existingLogs?.forEach(log => {
-        if (grouped[log.exercise_id]) {
-          grouped[log.exercise_id].duration_seconds += log.duration_seconds;
-          grouped[log.exercise_id].bpm_used = log.bpm_used?.toString() || '';
-          grouped[log.exercise_id].idsToDelete.push(log.id);
-        }
-      });
-      setFinalLogs(Object.values(grouped).map(g => ({ ...g, minutes: g.duration_seconds > 0 ? Math.floor(g.duration_seconds / 60).toString() : '', seconds: g.duration_seconds > 0 ? (g.duration_seconds % 60).toString() : '' })));
-    } catch (err) { console.error(err); }
-    finally { setLoadingLogs(false); }
-  };
-
-  const updateFinalLog = (index: number, field: string, value: string) => {
-    const updated = [...finalLogs]; updated[index][field] = value; setFinalLogs(updated);
-  };
-
-  const confirmEndSession = async () => {
-    setIsSaving(true);
-    try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error("User auth error");
-      let totalRoutineSeconds = 0;
-      for (const log of finalLogs) {
-        const totalSecs = (parseInt(log.minutes) || 0) * 60 + (parseInt(log.seconds) || 0);
-        let bpmVal: number | null = parseInt(log.bpm_used);
-        if (isNaN(bpmVal)) bpmVal = null;
-        if (totalSecs === 0) { if (log.idsToDelete.length > 0) await supabase.from('practice_logs').delete().in('id', log.idsToDelete); continue; }
-        totalRoutineSeconds += totalSecs;
-        if (log.idsToDelete.length > 0) {
-          const mainId = log.idsToDelete[0];
-          const dups = log.idsToDelete.slice(1);
-          if (dups.length > 0) await supabase.from('practice_logs').delete().in('id', dups);
-          await supabase.from('practice_logs').update({ bpm_used: bpmVal, duration_seconds: totalSecs }).eq('id', mainId);
-        } else {
-          await supabase.from('practice_logs').insert({ user_id: user.id, session_id: sessionId, exercise_id: log.exercise_id, bpm_used: bpmVal, duration_seconds: totalSecs, created_at: new Date().toISOString() });
-        }
-      }
-      setShowEndModal(false);
-      onEndSession(totalRoutineSeconds);
-    } catch (e) { console.error(e); alert('Error'); }
-    finally { setIsSaving(false); }
   };
 
   const handleSave = async () => {
@@ -259,7 +210,7 @@ export function PlayerHeader({
     setErrorMsg(''); setIsSaving(true);
     try {
       let cur: number | null = null, goal: number | null = null;
-      if (!disableBpmInputs) {
+      if (!disableBpmInputs && showBpmInputs) {
         cur = parseInt(bpmCurrent);
         if (isNaN(cur) || cur <= 0) throw new Error('BPM inválido');
         goal = bpmGoal ? parseInt(bpmGoal) : null;
@@ -293,8 +244,8 @@ export function PlayerHeader({
         .ph-nav-counter { font-size: 0.72rem; font-weight: 700; color: var(--muted, #6a5f52); padding: 0 0.6rem; letter-spacing: 0.04em; white-space: nowrap; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); }
         .ph-close-btn { padding: 0.4rem 0.9rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; white-space: nowrap; font-family: 'DM Sans', sans-serif; max-width: 160px; overflow: hidden; text-overflow: ellipsis; background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
         .ph-close-btn:hover { background: rgba(231,76,60,0.2); color: #e74c3c; border-color: rgba(231,76,60,0.5); }
-        .ph-row2 { display: grid; grid-template-columns: 1fr auto 1fr; align-items: center; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); min-height: 64px; position: relative; }
-        .ph-bpm-section { display: flex; align-items: center; gap: 1.5rem; padding: 0.75rem 1.75rem; border-right: 1px solid rgba(255,255,255,0.04); }
+        .ph-row2 { display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); min-height: 64px; position: relative; }
+        .ph-bpm-section { display: flex; align-items: center; gap: 1.5rem; padding: 0.75rem 1.75rem; border-right: 1px solid rgba(255,255,255,0.04); flex-wrap: nowrap; }
         .ph-bpm-block { display: flex; flex-direction: column; gap: 2px; }
         .ph-bpm-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(220,185,138,0.5); }
         .ph-bpm-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; letter-spacing: 0.02em; color: var(--text); }
@@ -302,8 +253,8 @@ export function PlayerHeader({
         .ph-bpm-input:focus { border-color: var(--gold); }
         .ph-bpm-input:disabled { opacity: 0.3; cursor: not-allowed; border-bottom: none; }
         .ph-bpm-sep { width: 1px; height: 32px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
-        .ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; position: relative; }
-        .ph-timer-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: all 0.2s; flex-shrink: 0; background: rgba(255,255,255,0.05); color: var(--text); }
+        .ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; flex: 1; }
+        .ph-timer-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: all 0.2s; flex-shrink: 0; background: rgba(255,255,255,0.05); color: var(--text); }
         .ph-timer-btn:hover { background: rgba(255,255,255,0.1); }
         .ph-timer-display { display: flex; flex-direction: column; align-items: flex-start; }
         .ph-timer-status { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.3s; }
@@ -320,15 +271,12 @@ export function PlayerHeader({
         .ph-save-btn.normal { background: var(--gold); color: #111; }
         .ph-save-btn.normal:hover { background: var(--gold-dark, #c9a676); }
         .ph-save-btn.saved { background: #4ade80; color: #111; }
-
-        /* Timer done pulse ring */
         @keyframes ph-pulse {
           0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
           70%  { box-shadow: 0 0 0 10px rgba(74,222,128,0); }
           100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
         }
         .ph-timer-btn.done { animation: ph-pulse 0.7s ease 3; }
-
         .logs-scroll::-webkit-scrollbar { width: 6px; }
         .logs-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
         .logs-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -336,7 +284,6 @@ export function PlayerHeader({
       `}</style>
 
       <div className="ph-root">
-        {/* ── ROW 1 ─────────────────────────────────────────────────── */}
         <div className="ph-row1">
           <div className="ph-badge" style={{ color: cfg.color }}>
             <span style={{ fontSize: '0.8rem' }}>{cfg.icon}</span>
@@ -383,57 +330,142 @@ export function PlayerHeader({
           </button>
         </div>
 
-        {/* ── ROW 2 ─────────────────────────────────────────────────── */}
         {!isFree && (
           <div className="ph-row2">
-
-            {/* BPM */}
             <div className="ph-bpm-section">
-              <div className="ph-bpm-block">
-                <span className="ph-bpm-label">BPM Actual</span>
-                <input
-                  type={disableBpmInputs ? 'text' : 'number'}
-                  className="ph-bpm-input"
-                  value={disableBpmInputs ? '---' : bpmCurrent}
-                  disabled={disableBpmInputs}
-                  onChange={e => {
-                    if (disableBpmInputs) return;
-                    setBpmCurrent(e.target.value);
-                    const val = parseInt(e.target.value);
-                    if (!isNaN(val) && val > 0) onBpmChange(val);
-                  }}
-                  placeholder="---"
-                />
-              </div>
+              {showBpmInputs && (
+                <>
+                  <div className="ph-bpm-block">
+                    <span className="ph-bpm-label">BPM Actual</span>
+                    <input
+                      type={disableBpmInputs ? 'text' : 'number'}
+                      className="ph-bpm-input"
+                      value={disableBpmInputs ? '---' : bpmCurrent}
+                      disabled={disableBpmInputs}
+                      onChange={e => {
+                        if (disableBpmInputs) return;
+                        setBpmCurrent(e.target.value);
+                        const val = parseInt(e.target.value);
+                        if (!isNaN(val) && val > 0) onBpmChange(val);
+                      }}
+                      placeholder="---"
+                    />
+                  </div>
 
-              <div className="ph-bpm-sep" />
+                  <div className="ph-bpm-sep" />
 
-              <div className="ph-bpm-block">
-                <span className="ph-bpm-label" style={{ color: 'rgba(255,255,255,0.3)' }}>Objetivo</span>
-                {isRoutine || disableBpmInputs ? (
-                  <span className="ph-bpm-val" style={{ color: 'rgba(255,255,255,0.4)', opacity: disableBpmInputs ? 0.3 : 1 }}>
-                    {disableBpmInputs ? '---' : (bpmGoal || '---')}
-                  </span>
-                ) : (
-                  <input
-                    type="number"
-                    className="ph-bpm-input"
-                    style={{ color: 'rgba(255,255,255,0.6)', borderBottomColor: 'rgba(255,255,255,0.1)' }}
-                    value={bpmGoal}
-                    onChange={e => setBpmGoal(e.target.value)}
-                    placeholder="---"
-                  />
-                )}
-              </div>
+                  <div className="ph-bpm-block">
+                    <span className="ph-bpm-label" style={{ color: 'rgba(255,255,255,0.3)' }}>Objetivo</span>
+                    {isRoutine || disableBpmInputs ? (
+                      <span className="ph-bpm-val" style={{ color: 'rgba(255,255,255,0.4)', opacity: disableBpmInputs ? 0.3 : 1 }}>
+                        {disableBpmInputs ? '---' : (bpmGoal || '---')}
+                      </span>
+                    ) : (
+                      <input
+                        type="number"
+                        className="ph-bpm-input"
+                        style={{ color: 'rgba(255,255,255,0.6)', borderBottomColor: 'rgba(255,255,255,0.1)' }}
+                        value={bpmGoal}
+                        onChange={e => setBpmGoal(e.target.value)}
+                        placeholder="---"
+                      />
+                    )}
+                  </div>
 
-              {bpmSuggested && !disableBpmInputs && (
-                <div style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', maxWidth: '80px', lineHeight: 1.2 }}>
-                  Sugerido:<br /><strong style={{ color: 'rgba(255,255,255,0.5)' }}>{bpmSuggested} BPM</strong>
+                  {bpmSuggested && !disableBpmInputs && (
+                    <div style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', maxWidth: '80px', lineHeight: 1.2 }}>
+                      Sugerido:<br /><strong style={{ color: 'rgba(255,255,255,0.5)' }}>{bpmSuggested} BPM</strong>
+                    </div>
+                  )}
+                </>
+              )}
+
+              {showBpmInputs && showMetronome && (
+                <div className="ph-bpm-sep" style={{ margin: '0 0.5rem' }} />
+              )}
+
+              {showMetronome && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  
+                  {!showBpmInputs && (
+                    <div className="ph-bpm-block">
+                      <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9 }}>Auxiliar</span>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                        <input
+                          type="number"
+                          min="30"
+                          max="240"
+                          className="ph-bpm-input"
+                          value={metronomeBpm || ''}
+                          onChange={e => {
+                            const val = parseInt(e.target.value);
+                            setMetronomeBpm(isNaN(val) ? 0 : val);
+                          }}
+                          onBlur={() => {
+                            let val = metronomeBpm;
+                            if (!val || val < 30) val = 30;
+                            if (val > 240) val = 240;
+                            setMetronomeBpm(val);
+                          }}
+                          style={{ width: '60px', textAlign: 'center', borderBottom: 'none', background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.2rem' }}
+                        />
+                        <span style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em' }}>BPM</span>
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="ph-bpm-block" style={{ alignItems: 'center', justifyContent: 'center' }}>
+                    {showBpmInputs && <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9, marginBottom: '4px' }}>Metrónomo</span>}
+                    <button
+                      onClick={handleToggleMetronome}
+                      style={{
+                        width: '42px', height: '42px', borderRadius: '50%',
+                        background: isMetronomePlaying ? 'rgba(231,76,60,0.15)' : 'var(--gold)',
+                        color: isMetronomePlaying ? '#e74c3c' : '#111',
+                        border: isMetronomePlaying ? '1px solid rgba(231,76,60,0.4)' : 'none',
+                        cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        transition: 'all 0.2s',
+                        boxShadow: isMetronomePlaying ? 'none' : '0 4px 12px rgba(220,185,138,0.25)',
+                        flexShrink: 0
+                      }}
+                      onMouseEnter={e => {
+                        if(!isMetronomePlaying) {
+                          e.currentTarget.style.transform = 'scale(1.05)';
+                          e.currentTarget.style.background = '#c9a676';
+                        } else {
+                          e.currentTarget.style.background = 'rgba(231,76,60,0.25)';
+                        }
+                      }}
+                      onMouseLeave={e => {
+                        if(!isMetronomePlaying) {
+                          e.currentTarget.style.transform = 'scale(1)';
+                          e.currentTarget.style.background = 'var(--gold)';
+                        } else {
+                          e.currentTarget.style.background = 'rgba(231,76,60,0.15)';
+                        }
+                      }}
+                      title={isMetronomePlaying ? 'Pausar metrónomo' : 'Iniciar metrónomo'}
+                    >
+                      {isMetronomePlaying ? (
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M8.5 3h7l3 18h-13z" />
+                          <path d="M12 21l4.5-16" />
+                          <circle cx="14.25" cy="13" r="2.5" fill="currentColor" stroke="none" />
+                          <path d="M4.5 12.5A8.5 8.5 0 0 1 9 9" opacity="0.7" />
+                        </svg>
+                      ) : (
+                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+                          <path d="M8.5 3h7l3 18h-13z" />
+                          <path d="M12 21V4" />
+                          <circle cx="12" cy="13" r="2.5" fill="currentColor" stroke="none" />
+                        </svg>
+                      )}
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
 
-            {/* Timer */}
             <div className="ph-timer-section">
               <button
                 className={`ph-timer-btn${timerDone ? ' done' : ''}`}
@@ -446,15 +478,22 @@ export function PlayerHeader({
                       ? 'rgba(231,76,60,0.1)'
                       : 'rgba(255,255,255,0.05)',
                   border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center'
                 }}
               >
                 {timerDone ? (
-                  // Checkmark cuando el tiempo se completó
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
                 ) : isTimerRunning ? (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                    <rect x="4" y="3" width="6" height="18" rx="1" />
+                    <rect x="14" y="3" width="6" height="18" rx="1" />
+                  </svg>
                 ) : (
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}>
+                    <path d="M5 3L19 12L5 21V3Z" />
+                  </svg>
                 )}
               </button>
 
@@ -481,7 +520,6 @@ export function PlayerHeader({
               </div>
             </div>
 
-            {/* Right: progress / save */}
             <div className="ph-right-section">
               {isRoutine ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
@@ -504,7 +542,6 @@ export function PlayerHeader({
               )}
             </div>
 
-            {/* Barra de progreso del timer */}
             {timerPct !== null && (
               <div className="ph-timer-track">
                 <div
@@ -520,49 +557,18 @@ export function PlayerHeader({
         )}
       </div>
 
-      {/* ── Modal Finalizar Rutina ──────────────────────────────────── */}
-      {showEndModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-          <div style={{ background: '#141414', border: '1px solid rgba(220,185,138,0.2)', borderRadius: '12px', padding: '2.5rem', width: '100%', maxWidth: '550px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', fontFamily: 'DM Sans, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
-            <div style={{ flexShrink: 0, marginBottom: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: '0 0 0.5rem 0', lineHeight: 1 }}>Finalizar Rutina</h2>
-              <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.95rem' }}>Verifica y ajusta los datos finales de la sesión antes de guardar.</p>
-            </div>
-            <div className="logs-scroll" style={{ overflowY: 'auto', paddingRight: '0.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
-              {loadingLogs ? (
-                <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Cargando ejercicios...</div>
-              ) : (
-                finalLogs.map((log, i) => (
-                  <div key={log.exercise_id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem 1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p style={{ margin: '0 0 1rem 0', color: 'var(--text)', fontWeight: 600, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.title}</p>
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', fontWeight: 700 }}>BPM Final</label>
-                        <input type={log.hasFile ? 'number' : 'text'} placeholder="-" value={log.hasFile ? log.bpm_used : '---'} onChange={e => { if (log.hasFile) updateFinalLog(i, 'bpm_used', e.target.value); }} disabled={!log.hasFile} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 700, outline: 'none', opacity: log.hasFile ? 1 : 0.3, cursor: log.hasFile ? 'auto' : 'not-allowed', boxSizing: 'border-box' }} />
-                      </div>
-                      <div>
-                        <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', fontWeight: 700 }}>Tiempo</label>
-                        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-                          <input type="number" placeholder="0" value={log.minutes} onChange={e => updateFinalLog(i, 'minutes', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem', boxSizing: 'border-box' }} />
-                          <span style={{ color: 'var(--muted)', fontWeight: 'bold' }}>:</span>
-                          <input type="number" placeholder="00" value={log.seconds} onChange={e => updateFinalLog(i, 'seconds', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem', boxSizing: 'border-box' }} />
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexShrink: 0 }}>
-              <button onClick={() => { setShowEndModal(false); if (!isTimerRunning) onToggleTimer(); }} disabled={isSaving} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                Volver a la práctica
-              </button>
-              <button onClick={confirmEndSession} disabled={isSaving} style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '1rem', borderRadius: '8px', cursor: isSaving ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: isSaving ? 0.5 : 1, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark, #c9a676)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}>
-                {isSaving ? 'Guardando...' : 'Guardar y Salir'}
-              </button>
-            </div>
-          </div>
-        </div>
+      {showEndModal && sessionId && (
+        <EndSessionModal
+          sessionId={sessionId}
+          showBpmInputs={showBpmInputs}
+          isTimerRunning={isTimerRunning}
+          onToggleTimer={onToggleTimer}
+          onClose={() => setShowEndModal(false)}
+          onEndSession={(overrideTotalSeconds) => {
+            setShowEndModal(false);
+            onEndSession(overrideTotalSeconds);
+          }}
+        />
       )}
     </>
   );

@@ -28,47 +28,71 @@ export default function StatsPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
+    // 1. Obtener sesiones de rutina completadas
     const { data: sessionsData } = await supabase
       .from('practice_sessions')
-      .select('created_at, total_duration_seconds')
+      .select('id, created_at, total_duration_seconds')
       .eq('user_id', user.id);
 
+    // 2. Obtener todos los logs de ejercicios individuales
     const { data: logsData } = await supabase
       .from('practice_logs')
-      .select('created_at, duration_seconds')
+      .select('created_at, duration_seconds, session_id')
       .eq('user_id', user.id);
 
     let totalSecs = 0;
     const allDates = new Set<string>();
-    const getLocalDateStr = (iso: string | number | Date) => new Date(iso).toLocaleDateString('en-CA');
+    
+    // Función segura para evitar problemas de zona horaria al calcular fechas "locales"
+    const getLocalDateStr = (iso: string) => {
+      const d = new Date(iso);
+      return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    };
 
+    // Sumar el tiempo de las Rutinas (Sesiones)
     sessionsData?.forEach(s => {
       totalSecs += s.total_duration_seconds || 0;
       allDates.add(getLocalDateStr(s.created_at));
     });
 
+    // Sumar el tiempo de la Práctica Libre (Logs que NO tienen session_id)
     logsData?.forEach(log => {
       allDates.add(getLocalDateStr(log.created_at));
-      if (totalSecs === 0) totalSecs += log.duration_seconds || 0;
+      
+      // Solo sumamos el tiempo si este log fue de práctica libre
+      // Si tiene session_id, su tiempo ya fue sumado en el bloque de 'sessionsData'
+      if (!log.session_id) {
+        totalSecs += log.duration_seconds || 0;
+      }
     });
 
     setTotalTimeMinutes(Math.floor(totalSecs / 60));
     setActiveDays(allDates.size);
 
-    // Streak
+    // Calcular la racha (Streak)
     const today = new Date();
-    const todayStr = getLocalDateStr(today);
-    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
-    const yesterdayStr = getLocalDateStr(yesterday);
+    const todayStr = getLocalDateStr(today.toISOString());
+    const yesterday = new Date(today); 
+    yesterday.setDate(today.getDate() - 1);
+    const yesterdayStr = getLocalDateStr(yesterday.toISOString());
+    
     let currentStreak = 0;
+    
     if (allDates.has(todayStr) || allDates.has(yesterdayStr)) {
       const startRef = allDates.has(todayStr) ? today : yesterday;
       let d = 0;
       while (true) {
-        const check = new Date(startRef); check.setDate(startRef.getDate() - d);
-        if (allDates.has(getLocalDateStr(check))) { currentStreak++; d++; } else break;
+        const check = new Date(startRef); 
+        check.setDate(startRef.getDate() - d);
+        if (allDates.has(getLocalDateStr(check.toISOString()))) { 
+          currentStreak++; 
+          d++; 
+        } else {
+          break;
+        }
       }
     }
+    
     setStreak(currentStreak);
     setLoading(false);
   };

@@ -1,6 +1,7 @@
 "use client";
 
 import Link from 'next/link';
+import Image from 'next/image'; // Importar Image de Next.js
 import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { useEffect, useState, useRef } from 'react';
@@ -58,8 +59,23 @@ export default function Navbar() {
       top: 0,
       zIndex: 100
     }}>
-      {/* Logo igual que en Landing */}
-      <Link href="/home" style={{ textDecoration: 'none' }}>
+      {/* Logo con Favicon */}
+      <Link href="/home" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+        <div style={{
+            width: '28px',
+            height: '28px',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+        }}>
+           <Image 
+              src="/favicon.ico" // Asegúrate de que la ruta coincida con tu archivo
+              alt="RiffRoutine Logo" 
+              fill
+              style={{ objectFit: 'contain' }}
+           />
+        </div>
         <div style={{ 
           fontFamily: 'Bebas Neue, sans-serif', 
           fontSize: '1.6rem', 
