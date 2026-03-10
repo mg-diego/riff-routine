@@ -518,7 +518,7 @@ export default function LandingPage() {
           <h1>TOCA<br/><em>MEJOR</em><br/>CADA DÍA</h1>
           <p className="hero-sub">RiffRoutine es tu sala de ensayo personal. Sube tus tabs, construye rutinas, mide tu progreso y nunca más practiques sin rumbo.</p>
           <div className="hero-actions">
-            <a href="/register" className="btn-primary">Empieza gratis ahora</a>
+            <a href="/login" className="btn-primary">Empieza gratis ahora</a>
             <a href="#features" className="btn-ghost">Ver cómo funciona</a>
           </div>
           <div className="hero-scroll-hint">
@@ -769,7 +769,7 @@ export default function LandingPage() {
           <h2 className="section-title reveal">DEJA DE<br/>TOCAR AL<br/><em>AZAR</em></h2>
           <p className="reveal">Únete a miles de guitarristas que practican con intención, miden su progreso y mejoran cada semana.</p>
           <div className="reveal">
-            <a href="/register" className="btn-primary" style={{fontSize: "1.1rem", padding: "1.1rem 3rem"}}>Empieza gratis — sin tarjeta</a>
+            <a href="/login" className="btn-primary" style={{fontSize: "1.1rem", padding: "1.1rem 3rem"}}>Empieza gratis — sin tarjeta</a>
             <p className="cta-note">✓ Gratis para siempre &nbsp;·&nbsp; ✓ Sin instalación &nbsp;·&nbsp; ✓ Cancela cuando quieras</p>
           </div>
         </section>
