@@ -16,3 +16,12 @@ export const formatTime = (totalMinutes: number) => {
 
     return parts.slice(0, 2);
 };
+
+export function getStartDate(filter: string): string | null {
+  if (filter === 'all') return null;
+  const days = parseInt(filter);
+  const d = new Date();
+  d.setDate(d.getDate() - days);
+  d.setHours(0, 0, 0, 0);
+  return d.toISOString();
+}

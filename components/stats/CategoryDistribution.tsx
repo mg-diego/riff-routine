@@ -3,59 +3,52 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
+import { getStartDate } from '../../lib/utils';
 
-interface DistributionData {
-  name: string;
-  value: number;
-}
-
+interface DistributionData { name: string; value: number; }
 const COLORS = ['#dcb98a', '#a78bfa', '#34d399', '#f87171', '#fbbf24', '#818cf8'];
 
-export function CategoryDistribution() {
+interface Props { dateFilter: string; }
+
+export function CategoryDistribution({ dateFilter }: Props) {
   const [data, setData] = useState<DistributionData[]>([]);
   const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    fetchDistribution();
-  }, []);
+  useEffect(() => { fetchDistribution(); }, [dateFilter]);
 
   const fetchDistribution = async () => {
+    setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) { setLoading(false); return; }
 
-    const { data: logs } = await supabase
+    let query = supabase
       .from('practice_logs')
       .select('duration_seconds, exercises(technique)')
       .eq('user_id', user.id);
 
+    const startDate = getStartDate(dateFilter);
+    if (startDate) query = query.gte('created_at', startDate);
+
+    const { data: logs } = await query;
+
     if (logs) {
       const stats: Record<string, number> = {};
-
       logs.forEach((log: any) => {
-        const techniqueField = Array.isArray(log.exercises)
+        const techniqueField = (Array.isArray(log.exercises)
           ? log.exercises[0]?.technique
-          : log.exercises?.technique || 'General';
-
+          : log.exercises?.technique) || 'General';
         const seconds = log.duration_seconds || 0;
-
-        const techniqueList = techniqueField
-          .split(',')
-          .map((t: string) => t.trim())
-          .filter((t: string) => t !== '');
-
-        const secondsPerTechnique = seconds / techniqueList.length;
-
-        techniqueList.forEach((tech: string) => {
-          stats[tech] = (stats[tech] || 0) + secondsPerTechnique;
-        });
+        const techniqueList = techniqueField.split(',').map((t: string) => t.trim()).filter(Boolean);
+        const secsEach = seconds / techniqueList.length;
+        techniqueList.forEach((tech: string) => { stats[tech] = (stats[tech] || 0) + secsEach; });
       });
 
-      const formattedData = Object.keys(stats).map(key => ({
-        name: key,
-        value: Number((stats[key] / 60).toFixed(1))
-      })).filter(item => item.value > 0);
-
-      setData(formattedData.sort((a, b) => b.value - a.value));
+      setData(
+        Object.entries(stats)
+          .map(([name, secs]) => ({ name, value: Number((secs / 60).toFixed(1)) }))
+          .filter(d => d.value > 0)
+          .sort((a, b) => b.value - a.value)
+      );
     }
     setLoading(false);
   };
@@ -64,51 +57,42 @@ export function CategoryDistribution() {
     if (!totalMinutes) return '0 min';
     const m = Math.round(totalMinutes);
     if (m < 60) return `${m} min`;
-
-    const months = Math.floor(m / 43200);
-    let rem = m % 43200;
-    const days = Math.floor(rem / 1440);
-    rem = rem % 1440;
-    const hours = Math.floor(rem / 60);
-    const mins = rem % 60;
-
-    const parts = [];
+    const months = Math.floor(m / 43200); let rem = m % 43200;
+    const days = Math.floor(rem / 1440); rem = rem % 1440;
+    const hours = Math.floor(rem / 60); const mins = rem % 60;
+    const parts: string[] = [];
     if (months > 0) parts.push(`${months} mes${months > 1 ? 'es' : ''}`);
     if (days > 0) parts.push(`${days}d`);
     if (hours > 0) parts.push(`${hours}h`);
     if (mins > 0) parts.push(`${mins}min`);
-
     return parts.join(' ');
   };
 
-  if (loading) return null;
+  if (loading) return (
+    <div style={{ background: 'var(--surface)', borderRadius: '12px', height: 450, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <span className="loader" />
+    </div>
+  );
+
+  if (data.length === 0) return (
+    <div style={{ background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: 450, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
+      <span style={{ fontSize: '2rem' }}>🎸</span>
+      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: 0 }}>Sin datos para este período</p>
+    </div>
+  );
 
   return (
-    <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: '450px', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: 450, display: 'flex', flexDirection: 'column' }}>
       <h3 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
         Distribución por Técnica
       </h3>
       <div style={{ flex: 1, width: '100%' }}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
-            <Pie
-              data={data}
-              cx="50%"
-              cy="50%"
-              innerRadius="65%"
-              outerRadius="90%"
-              paddingAngle={3}
-              dataKey="value"
-            >
-              {data.map((entry, index) => (
-                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />
-              ))}
+            <Pie data={data} cx="50%" cy="50%" innerRadius="65%" outerRadius="90%" paddingAngle={3} dataKey="value">
+              {data.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />)}
             </Pie>
-            <Tooltip
-              formatter={(value: any, name: any) => [formatTime(Number(value)), name]}
-              contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }}
-              itemStyle={{ color: 'var(--text)' }}
-            />
+            <Tooltip formatter={(value: any, name: any) => [formatTime(Number(value)), name]} contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text)' }} />
             <Legend verticalAlign="bottom" height={36} iconType="circle" />
           </PieChart>
         </ResponsiveContainer>

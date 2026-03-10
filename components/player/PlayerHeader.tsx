@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useCallback } from 'react';
 import { Exercise } from '../../lib/types';
 import { supabase } from '../../lib/supabase';
 import { DropZone } from './DropZone';
@@ -47,6 +47,31 @@ function formatTime(totalSeconds: number) {
   return `${m}:${s.toString().padStart(2, '0')}`;
 }
 
+// ── Sonido: 3 pitidos cortos ascendentes via Web Audio API ──────────────────
+function playTimerAlert() {
+  try {
+    const ctx = new (window.AudioContext || (window as any).webkitAudioContext)();
+    const beeps = [880, 1046, 1318]; // La5 → Do6 → Mi6
+    beeps.forEach((freq, i) => {
+      const osc  = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.type = 'sine';
+      osc.frequency.value = freq;
+      const t = ctx.currentTime + i * 0.2;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.3, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
+      osc.start(t);
+      osc.stop(t + 0.18);
+    });
+    setTimeout(() => ctx.close(), 900);
+  } catch (e) {
+    console.warn('[PlayerHeader] Web Audio not available:', e);
+  }
+}
+
 export function PlayerHeader({
   mode, routineLength, currentIndex, onPrev, onNext, onEndSession,
   exercise, routineTargetBpm = null, routineTargetDuration = null,
@@ -63,26 +88,44 @@ export function PlayerHeader({
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [errorMsg, setErrorMsg] = useState('');
+  const [timerDone, setTimerDone] = useState(false);
 
   const [showEndModal, setShowEndModal] = useState(false);
   const [finalLogs, setFinalLogs] = useState<any[]>([]);
   const [loadingLogs, setLoadingLogs] = useState(false);
 
-  // --- NUEVA LÓGICA DE TIEMPO POR EJERCICIO ---
-  // Diccionario para guardar el tiempo acumulado de cada ejercicio { exerciseId: seconds }
   const [exerciseTimes, setExerciseTimes] = useState<Record<string, number>>({});
-  
-  // Usamos el ID del ejercicio actual o un string genérico si es modo libre
-  const currentExerciseKey = exercise?.id || 'free-mode';
 
-  // Obtenemos el tiempo a mostrar: el de las props (si el hook lo sigue manejando centralizado) 
-  // o el guardado en nuestro diccionario.
-  const displaySeconds = exerciseTimes[currentExerciseKey] !== undefined 
-    ? exerciseTimes[currentExerciseKey] 
+  // Ref para disparar la alerta solo una vez por ejercicio
+  const alertedRef = useRef(false);
+
+  const currentExerciseKey = exercise?.id || 'free-mode';
+  const displaySeconds = exerciseTimes[currentExerciseKey] !== undefined
+    ? exerciseTimes[currentExerciseKey]
     : propElapsedSeconds;
 
-  // Efecto para actualizar el diccionario local con el tiempo que viene de propElapsedSeconds
-  // Se asume que propElapsedSeconds es el contador activo
+  // ── Resetear alerta al cambiar de ejercicio ─────────────────────────────
+  useEffect(() => {
+    alertedRef.current = false;
+    setTimerDone(false);
+  }, [exercise?.id]);
+
+  // ── Disparar aviso cuando se alcanza el tiempo objetivo ─────────────────
+  useEffect(() => {
+    if (
+      routineTargetDuration &&
+      displaySeconds > 0 &&
+      displaySeconds >= routineTargetDuration &&
+      !alertedRef.current
+    ) {
+      alertedRef.current = true;
+      setTimerDone(true);
+      playTimerAlert();
+      setTimeout(() => setTimerDone(false), 4000);
+    }
+  }, [displaySeconds, routineTargetDuration]);
+
+  // ── Sync exercise times ─────────────────────────────────────────────────
   useEffect(() => {
     if (isTimerRunning) {
       setExerciseTimes(prev => ({
@@ -92,38 +135,20 @@ export function PlayerHeader({
     }
   }, [propElapsedSeconds, isTimerRunning, currentExerciseKey]);
 
-  // Al cambiar de ejercicio, restauramos el tiempo guardado en el hook padre (si es necesario)
-  // o pausamos el temporizador si estaba corriendo
   useEffect(() => {
-    // Si cambiamos de ejercicio y el timer está corriendo, lo pausamos por defecto
-    if (isRoutine && isTimerRunning) {
-        onToggleTimer();
-    }
-    // Si tienes una función para inyectar el tiempo guardado de vuelta al hook, la llamarías aquí.
-    // Ej: if (onSetTimer) onSetTimer(exerciseTimes[currentExerciseKey] || 0);
+    if (isRoutine && isTimerRunning) onToggleTimer();
   }, [currentIndex]);
-  // ---------------------------------------------
 
-
+  // ── BPM sync ────────────────────────────────────────────────────────────
   useEffect(() => {
-    if (disableBpmInputs) {
-      setBpmGoal('');
-      return;
-    }
-    const goal = isRoutine && routineTargetBpm != null
-      ? routineTargetBpm
-      : exercise?.bpm_goal;
+    if (disableBpmInputs) { setBpmGoal(''); return; }
+    const goal = isRoutine && routineTargetBpm != null ? routineTargetBpm : exercise?.bpm_goal;
     setBpmGoal(goal?.toString() || '');
   }, [exercise?.id, routineTargetBpm, mode, disableBpmInputs]);
 
   useEffect(() => {
     let mounted = true;
-    if (disableBpmInputs || !exercise?.id) {
-      setBpmCurrent('');
-      onBpmChange(null);
-      return;
-    }
-
+    if (disableBpmInputs || !exercise?.id) { setBpmCurrent(''); onBpmChange(null); return; }
     (async () => {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user || !mounted) return;
@@ -135,7 +160,6 @@ export function PlayerHeader({
       if (data?.bpm_used) { setBpmCurrent(data.bpm_used.toString()); onBpmChange(data.bpm_used); }
       else setBpmCurrent('');
     })();
-
     return () => { mounted = false; };
   }, [exercise?.id, disableBpmInputs]);
 
@@ -146,131 +170,61 @@ export function PlayerHeader({
     }
   }, [originalBpm, disableBpmInputs]);
 
+  // ── Helpers ─────────────────────────────────────────────────────────────
   const autoSaveLog = async () => {
-    if (!exercise || displaySeconds === 0) return; // Cambiado a displaySeconds
+    if (!exercise || displaySeconds === 0) return;
     try {
       let cur: number | null = null;
       let goal: number | null = null;
-
       if (!disableBpmInputs) {
         const parsedCur = parseInt(bpmCurrent);
-        cur = !isNaN(parsedCur) && parsedCur > 0
-          ? parsedCur
-          : (originalBpm || exercise.bpm_goal || null);
-
+        cur = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
         goal = bpmGoal ? parseInt(bpmGoal) : null;
       }
-
-      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds); // Pasamos el tiempo real
-    } catch (err) {
-      console.error(err);
-    }
+      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
+    } catch (err) { console.error(err); }
   };
 
-  const handleNext = async () => {
-    if (isRoutine) await autoSaveLog();
-    // Quitamos el resetTimer para que no se ponga a 0 en el padre
-    // if (onResetTimer) onResetTimer(); 
-    onNext();
-  };
-
-  const handlePrev = async () => {
-    if (isRoutine) await autoSaveLog();
-    // if (onResetTimer) onResetTimer();
-    onPrev();
-  };
+  const handleNext = async () => { if (isRoutine) await autoSaveLog(); onNext(); };
+  const handlePrev = async () => { if (isRoutine) await autoSaveLog(); onPrev(); };
 
   const handleCloseClick = async () => {
-    if (isFree) {
-      onEndSession();
-      return;
-    }
-
+    if (isFree) { onEndSession(); return; }
     if (!isRoutine) {
       if (displaySeconds > 0 && !saved) {
         if (!window.confirm('Tienes tiempo sin registrar. ¿Seguro que quieres salir?')) return;
       }
-      onEndSession();
-      return;
+      onEndSession(); return;
     }
-
     if (isTimerRunning) onToggleTimer();
     await autoSaveLog();
-
-    if (!sessionId) {
-      onEndSession();
-      return;
-    }
-
+    if (!sessionId) { onEndSession(); return; }
     setLoadingLogs(true);
     setShowEndModal(true);
-
     try {
-      const { data: sessionData } = await supabase
-        .from('practice_sessions')
-        .select('routine_id')
-        .eq('id', sessionId)
-        .single();
-
-      if (!sessionData?.routine_id) {
-        onEndSession();
-        return;
-      }
-
-      const { data: routineExercises } = await supabase
-        .from('routine_exercises')
-        .select('exercise_id, exercises(title, file_url)')
-        .eq('routine_id', sessionData.routine_id)
-        .order('order_index', { ascending: true });
-
-      const { data: existingLogs } = await supabase
-        .from('practice_logs')
-        .select('id, exercise_id, bpm_used, duration_seconds')
-        .eq('session_id', sessionId);
-
+      const { data: sessionData } = await supabase.from('practice_sessions').select('routine_id').eq('id', sessionId).single();
+      if (!sessionData?.routine_id) { onEndSession(); return; }
+      const { data: routineExercises } = await supabase.from('routine_exercises').select('exercise_id, exercises(title, file_url)').eq('routine_id', sessionData.routine_id).order('order_index', { ascending: true });
+      const { data: existingLogs } = await supabase.from('practice_logs').select('id, exercise_id, bpm_used, duration_seconds').eq('session_id', sessionId);
       const grouped: Record<string, any> = {};
-
       routineExercises?.forEach(re => {
-        const exerciseData = re.exercises as any;
-        const exTitle = Array.isArray(exerciseData) ? exerciseData[0]?.title : exerciseData?.title;
-        const exFileUrl = Array.isArray(exerciseData) ? exerciseData[0]?.file_url : exerciseData?.file_url;
-
-        grouped[re.exercise_id] = {
-          exercise_id: re.exercise_id,
-          title: exTitle || 'Ejercicio Desconocido',
-          hasFile: !!exFileUrl,
-          bpm_used: '',
-          duration_seconds: 0,
-          idsToDelete: []
-        };
+        const ed = re.exercises as any;
+        grouped[re.exercise_id] = { exercise_id: re.exercise_id, title: (Array.isArray(ed) ? ed[0]?.title : ed?.title) || 'Ejercicio', hasFile: !!(Array.isArray(ed) ? ed[0]?.file_url : ed?.file_url), bpm_used: '', duration_seconds: 0, idsToDelete: [] };
       });
-
       existingLogs?.forEach(log => {
         if (grouped[log.exercise_id]) {
           grouped[log.exercise_id].duration_seconds += log.duration_seconds;
-          grouped[log.exercise_id].bpm_used = log.bpm_used ? log.bpm_used.toString() : '';
+          grouped[log.exercise_id].bpm_used = log.bpm_used?.toString() || '';
           grouped[log.exercise_id].idsToDelete.push(log.id);
         }
       });
-
-      const logsArray = Object.values(grouped).map(g => ({
-        ...g,
-        minutes: g.duration_seconds > 0 ? Math.floor(g.duration_seconds / 60).toString() : '',
-        seconds: g.duration_seconds > 0 ? (g.duration_seconds % 60).toString() : ''
-      }));
-
-      setFinalLogs(logsArray);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setLoadingLogs(false);
-    }
+      setFinalLogs(Object.values(grouped).map(g => ({ ...g, minutes: g.duration_seconds > 0 ? Math.floor(g.duration_seconds / 60).toString() : '', seconds: g.duration_seconds > 0 ? (g.duration_seconds % 60).toString() : '' })));
+    } catch (err) { console.error(err); }
+    finally { setLoadingLogs(false); }
   };
 
   const updateFinalLog = (index: number, field: string, value: string) => {
-    const updated = [...finalLogs];
-    updated[index][field] = value;
-    setFinalLogs(updated);
+    const updated = [...finalLogs]; updated[index][field] = value; setFinalLogs(updated);
   };
 
   const confirmEndSession = async () => {
@@ -278,89 +232,47 @@ export function PlayerHeader({
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("User auth error");
-
       let totalRoutineSeconds = 0;
-
       for (const log of finalLogs) {
         const totalSecs = (parseInt(log.minutes) || 0) * 60 + (parseInt(log.seconds) || 0);
         let bpmVal: number | null = parseInt(log.bpm_used);
-
         if (isNaN(bpmVal)) bpmVal = null;
-
-        if (totalSecs === 0) {
-          if (log.idsToDelete.length > 0) {
-            await supabase.from('practice_logs').delete().in('id', log.idsToDelete);
-          }
-          continue;
-        }
-
+        if (totalSecs === 0) { if (log.idsToDelete.length > 0) await supabase.from('practice_logs').delete().in('id', log.idsToDelete); continue; }
         totalRoutineSeconds += totalSecs;
-
         if (log.idsToDelete.length > 0) {
           const mainId = log.idsToDelete[0];
-          const duplicates = log.idsToDelete.slice(1);
-
-          if (duplicates.length > 0) {
-            await supabase.from('practice_logs').delete().in('id', duplicates);
-          }
-
-          await supabase.from('practice_logs')
-            .update({
-              bpm_used: bpmVal,
-              duration_seconds: totalSecs
-            })
-            .eq('id', mainId);
+          const dups = log.idsToDelete.slice(1);
+          if (dups.length > 0) await supabase.from('practice_logs').delete().in('id', dups);
+          await supabase.from('practice_logs').update({ bpm_used: bpmVal, duration_seconds: totalSecs }).eq('id', mainId);
         } else {
-          await supabase.from('practice_logs').insert({
-            user_id: user.id,
-            session_id: sessionId,
-            exercise_id: log.exercise_id,
-            bpm_used: bpmVal,
-            duration_seconds: totalSecs,
-            created_at: new Date().toISOString()
-          });
+          await supabase.from('practice_logs').insert({ user_id: user.id, session_id: sessionId, exercise_id: log.exercise_id, bpm_used: bpmVal, duration_seconds: totalSecs, created_at: new Date().toISOString() });
         }
       }
-
       setShowEndModal(false);
       onEndSession(totalRoutineSeconds);
-    } catch (e) {
-      console.error(e);
-      alert('Error');
-    } finally {
-      setIsSaving(false);
-    }
+    } catch (e) { console.error(e); alert('Error'); }
+    finally { setIsSaving(false); }
   };
 
   const handleSave = async () => {
     if (!exercise || isRoutine) return;
-    setErrorMsg('');
-    setIsSaving(true);
+    setErrorMsg(''); setIsSaving(true);
     try {
-      let cur: number | null = null;
-      let goal: number | null = null;
-
+      let cur: number | null = null, goal: number | null = null;
       if (!disableBpmInputs) {
         cur = parseInt(bpmCurrent);
         if (isNaN(cur) || cur <= 0) throw new Error('BPM inválido');
         goal = bpmGoal ? parseInt(bpmGoal) : null;
       }
-
       await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
-      setSaved(true);
-      setTimeout(() => setSaved(false), 2500);
-    } catch (err: any) {
-      setErrorMsg(err.message || 'Error al guardar');
-    } finally {
-      setIsSaving(false);
-    }
+      setSaved(true); setTimeout(() => setSaved(false), 2500);
+    } catch (err: any) { setErrorMsg(err.message || 'Error al guardar'); }
+    finally { setIsSaving(false); }
   };
 
   const bpmSuggested = exercise?.bpm_suggested || exercise?.bpm_initial || null;
   const diff = exercise?.difficulty;
-  const timerPct = routineTargetDuration
-    ? Math.min(100, (displaySeconds / routineTargetDuration) * 100)
-    : null;
+  const timerPct = routineTargetDuration ? Math.min(100, (displaySeconds / routineTargetDuration) * 100) : null;
 
   return (
     <>
@@ -390,15 +302,15 @@ export function PlayerHeader({
         .ph-bpm-input:focus { border-color: var(--gold); }
         .ph-bpm-input:disabled { opacity: 0.3; cursor: not-allowed; border-bottom: none; }
         .ph-bpm-sep { width: 1px; height: 32px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
-        .ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; }
+        .ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; position: relative; }
         .ph-timer-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: all 0.2s; flex-shrink: 0; background: rgba(255,255,255,0.05); color: var(--text); }
         .ph-timer-btn:hover { background: rgba(255,255,255,0.1); }
         .ph-timer-display { display: flex; flex-direction: column; align-items: flex-start; }
-        .ph-timer-status { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(255,255,255,0.4); }
-        .ph-timer-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; color: var(--text, #f0e8dc); }
+        .ph-timer-status { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.3s; }
+        .ph-timer-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; transition: color 0.3s; }
         .ph-timer-target { color: var(--muted, #6a5f52); font-size: 1.2rem; }
         .ph-timer-track { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.05); }
-        .ph-timer-fill { height: 100%; background: #a78bfa; transition: width 1s linear; }
+        .ph-timer-fill { height: 100%; transition: width 1s linear, background 0.5s; }
         .ph-right-section { display: flex; align-items: center; justify-content: flex-end; gap: 1.5rem; padding: 0.75rem 1.75rem; }
         .ph-steps { display: flex; align-items: center; gap: 5px; }
         .ph-step { height: 4px; border-radius: 99px; transition: all 0.3s ease; background: rgba(255,255,255,0.1); flex: 1; min-width: 15px; max-width: 40px; }
@@ -408,7 +320,15 @@ export function PlayerHeader({
         .ph-save-btn.normal { background: var(--gold); color: #111; }
         .ph-save-btn.normal:hover { background: var(--gold-dark, #c9a676); }
         .ph-save-btn.saved { background: #4ade80; color: #111; }
-        
+
+        /* Timer done pulse ring */
+        @keyframes ph-pulse {
+          0%   { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); }
+          70%  { box-shadow: 0 0 0 10px rgba(74,222,128,0); }
+          100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); }
+        }
+        .ph-timer-btn.done { animation: ph-pulse 0.7s ease 3; }
+
         .logs-scroll::-webkit-scrollbar { width: 6px; }
         .logs-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
         .logs-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
@@ -416,6 +336,7 @@ export function PlayerHeader({
       `}</style>
 
       <div className="ph-root">
+        {/* ── ROW 1 ─────────────────────────────────────────────────── */}
         <div className="ph-row1">
           <div className="ph-badge" style={{ color: cfg.color }}>
             <span style={{ fontSize: '0.8rem' }}>{cfg.icon}</span>
@@ -426,10 +347,7 @@ export function PlayerHeader({
 
           {isFree ? (
             <div style={{ flex: 1 }}>
-              <DropZone
-                onFileLoaded={onFileLoaded ?? (() => { })}
-                fileName={fileName ?? null}
-              />
+              <DropZone onFileLoaded={onFileLoaded ?? (() => {})} fileName={fileName ?? null} />
             </div>
           ) : (
             <div className="ph-title-stack">
@@ -445,9 +363,7 @@ export function PlayerHeader({
           )}
 
           {!isFree && exercise && diff && (
-            <div className="ph-diff" style={{ color: DIFF_COLORS[diff] }}>
-              Nv. {diff}
-            </div>
+            <div className="ph-diff" style={{ color: DIFF_COLORS[diff] }}>Nv. {diff}</div>
           )}
 
           {!isFree && isRoutine && routineLength > 1 && (
@@ -467,17 +383,20 @@ export function PlayerHeader({
           </button>
         </div>
 
+        {/* ── ROW 2 ─────────────────────────────────────────────────── */}
         {!isFree && (
           <div className="ph-row2">
+
+            {/* BPM */}
             <div className="ph-bpm-section">
               <div className="ph-bpm-block">
                 <span className="ph-bpm-label">BPM Actual</span>
                 <input
-                  type={disableBpmInputs ? "text" : "number"}
+                  type={disableBpmInputs ? 'text' : 'number'}
                   className="ph-bpm-input"
-                  value={disableBpmInputs ? "---" : bpmCurrent}
+                  value={disableBpmInputs ? '---' : bpmCurrent}
                   disabled={disableBpmInputs}
-                  onChange={(e) => {
+                  onChange={e => {
                     if (disableBpmInputs) return;
                     setBpmCurrent(e.target.value);
                     const val = parseInt(e.target.value);
@@ -501,7 +420,7 @@ export function PlayerHeader({
                     className="ph-bpm-input"
                     style={{ color: 'rgba(255,255,255,0.6)', borderBottomColor: 'rgba(255,255,255,0.1)' }}
                     value={bpmGoal}
-                    onChange={(e) => setBpmGoal(e.target.value)}
+                    onChange={e => setBpmGoal(e.target.value)}
                     placeholder="---"
                   />
                 )}
@@ -514,13 +433,25 @@ export function PlayerHeader({
               )}
             </div>
 
+            {/* Timer */}
             <div className="ph-timer-section">
               <button
-                className="ph-timer-btn"
+                className={`ph-timer-btn${timerDone ? ' done' : ''}`}
                 onClick={onToggleTimer}
-                style={{ color: isTimerRunning ? '#e74c3c' : '#4ade80' }}
+                style={{
+                  color: timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80',
+                  background: timerDone
+                    ? 'rgba(74,222,128,0.12)'
+                    : isTimerRunning
+                      ? 'rgba(231,76,60,0.1)'
+                      : 'rgba(255,255,255,0.05)',
+                  border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                }}
               >
-                {isTimerRunning ? (
+                {timerDone ? (
+                  // Checkmark cuando el tiempo se completó
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                ) : isTimerRunning ? (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="4" width="4" height="16" /><rect x="14" y="4" width="4" height="16" /></svg>
                 ) : (
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
@@ -528,11 +459,21 @@ export function PlayerHeader({
               </button>
 
               <div className="ph-timer-display">
-                <span className="ph-timer-status" style={{ color: isTimerRunning ? 'var(--gold)' : 'rgba(255,255,255,0.3)' }}>
-                  {isTimerRunning ? 'Practicando' : 'Pausado'}
+                <span
+                  className="ph-timer-status"
+                  style={{
+                    color: timerDone ? '#4ade80' : isTimerRunning ? 'var(--gold)' : 'rgba(255,255,255,0.3)',
+                  }}
+                >
+                  {timerDone ? '✓ ¡Tiempo completado!' : isTimerRunning ? 'Practicando' : 'Pausado'}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem' }}>
-                  <span className="ph-timer-val">{formatTime(displaySeconds || 0)}</span>
+                  <span
+                    className="ph-timer-val"
+                    style={{ color: timerDone ? '#4ade80' : 'var(--text, #f0e8dc)' }}
+                  >
+                    {formatTime(displaySeconds || 0)}
+                  </span>
                   {routineTargetDuration && (
                     <span className="ph-timer-target">/ {formatTime(routineTargetDuration)}</span>
                   )}
@@ -540,6 +481,7 @@ export function PlayerHeader({
               </div>
             </div>
 
+            {/* Right: progress / save */}
             <div className="ph-right-section">
               {isRoutine ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
@@ -548,99 +490,62 @@ export function PlayerHeader({
                   </span>
                   <div className="ph-steps" style={{ width: '100%' }}>
                     {Array.from({ length: routineLength }).map((_, i) => (
-                      <div
-                        key={i}
-                        className={`ph-step ${i < currentIndex ? 'done' : i === currentIndex ? 'active' : ''}`}
-                      />
+                      <div key={i} className={`ph-step ${i < currentIndex ? 'done' : i === currentIndex ? 'active' : ''}`} />
                     ))}
                   </div>
                 </div>
               ) : (
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   {errorMsg && <span style={{ color: '#e74c3c', fontSize: '0.75rem', fontWeight: 600 }}>{errorMsg}</span>}
-                  <button
-                    className={`ph-save-btn ${saved ? 'saved' : 'normal'}`}
-                    onClick={handleSave}
-                    disabled={isSaving || saved}
-                  >
+                  <button className={`ph-save-btn ${saved ? 'saved' : 'normal'}`} onClick={handleSave} disabled={isSaving || saved}>
                     {isSaving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar progreso'}
                   </button>
                 </div>
               )}
             </div>
 
+            {/* Barra de progreso del timer */}
             {timerPct !== null && (
               <div className="ph-timer-track">
-                <div className="ph-timer-fill" style={{ width: `${timerPct}%` }} />
+                <div
+                  className="ph-timer-fill"
+                  style={{
+                    width: `${timerPct}%`,
+                    background: timerDone ? '#4ade80' : '#a78bfa',
+                  }}
+                />
               </div>
             )}
           </div>
         )}
       </div>
 
+      {/* ── Modal Finalizar Rutina ──────────────────────────────────── */}
       {showEndModal && (
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
           <div style={{ background: '#141414', border: '1px solid rgba(220,185,138,0.2)', borderRadius: '12px', padding: '2.5rem', width: '100%', maxWidth: '550px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', fontFamily: 'DM Sans, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
-
             <div style={{ flexShrink: 0, marginBottom: '1.5rem' }}>
               <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: '0 0 0.5rem 0', lineHeight: 1 }}>Finalizar Rutina</h2>
               <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.95rem' }}>Verifica y ajusta los datos finales de la sesión antes de guardar.</p>
             </div>
-
             <div className="logs-scroll" style={{ overflowY: 'auto', paddingRight: '0.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
               {loadingLogs ? (
                 <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>Cargando ejercicios...</div>
               ) : (
                 finalLogs.map((log, i) => (
                   <div key={log.exercise_id} style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem 1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                    <p style={{ margin: '0 0 1rem 0', color: 'var(--text)', fontWeight: 600, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                      {log.title}
-                    </p>
+                    <p style={{ margin: '0 0 1rem 0', color: 'var(--text)', fontWeight: 600, fontSize: '1rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{log.title}</p>
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', fontWeight: 700 }}>BPM Final</label>
-                        <input
-                          type={log.hasFile ? "number" : "text"}
-                          placeholder="-"
-                          value={log.hasFile ? log.bpm_used : "---"}
-                          onChange={e => {
-                            if (log.hasFile) updateFinalLog(i, 'bpm_used', e.target.value);
-                          }}
-                          disabled={!log.hasFile}
-                          style={{
-                            width: '100%',
-                            background: 'rgba(0,0,0,0.2)',
-                            border: '1px solid rgba(255,255,255,0.1)',
-                            color: 'var(--gold)',
-                            padding: '0.7rem',
-                            borderRadius: '6px',
-                            textAlign: 'center',
-                            fontSize: '1.2rem',
-                            fontWeight: 700,
-                            outline: 'none',
-                            opacity: log.hasFile ? 1 : 0.3,
-                            cursor: log.hasFile ? 'auto' : 'not-allowed'
-                          }}
-                        />
+                        <input type={log.hasFile ? 'number' : 'text'} placeholder="-" value={log.hasFile ? log.bpm_used : '---'} onChange={e => { if (log.hasFile) updateFinalLog(i, 'bpm_used', e.target.value); }} disabled={!log.hasFile} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', fontSize: '1.2rem', fontWeight: 700, outline: 'none', opacity: log.hasFile ? 1 : 0.3, cursor: log.hasFile ? 'auto' : 'not-allowed', boxSizing: 'border-box' }} />
                       </div>
                       <div>
                         <label style={{ display: 'block', fontSize: '0.65rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.4rem', fontWeight: 700 }}>Tiempo</label>
                         <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-                          <input
-                            type="number"
-                            placeholder="0"
-                            value={log.minutes}
-                            onChange={e => updateFinalLog(i, 'minutes', e.target.value)}
-                            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem' }}
-                          />
+                          <input type="number" placeholder="0" value={log.minutes} onChange={e => updateFinalLog(i, 'minutes', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem', boxSizing: 'border-box' }} />
                           <span style={{ color: 'var(--muted)', fontWeight: 'bold' }}>:</span>
-                          <input
-                            type="number"
-                            placeholder="00"
-                            value={log.seconds}
-                            onChange={e => updateFinalLog(i, 'seconds', e.target.value)}
-                            style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem' }}
-                          />
+                          <input type="number" placeholder="00" value={log.seconds} onChange={e => updateFinalLog(i, 'seconds', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.7rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1.1rem', boxSizing: 'border-box' }} />
                         </div>
                       </div>
                     </div>
@@ -648,31 +553,14 @@ export function PlayerHeader({
                 ))
               )}
             </div>
-
             <div style={{ display: 'flex', gap: '1rem', marginTop: '2rem', flexShrink: 0 }}>
-              <button
-                onClick={() => {
-                  setShowEndModal(false);
-                  if (!isTimerRunning) onToggleTimer();
-                }}
-                disabled={isSaving}
-                style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-              >
+              <button onClick={() => { setShowEndModal(false); if (!isTimerRunning) onToggleTimer(); }} disabled={isSaving} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '1rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
                 Volver a la práctica
               </button>
-              <button
-                onClick={confirmEndSession}
-                disabled={isSaving}
-                style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '1rem', borderRadius: '8px', cursor: isSaving ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: isSaving ? 0.5 : 1, transition: 'all 0.2s' }}
-                onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark)'}
-                onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
-              >
+              <button onClick={confirmEndSession} disabled={isSaving} style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '1rem', borderRadius: '8px', cursor: isSaving ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: isSaving ? 0.5 : 1, transition: 'all 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark, #c9a676)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}>
                 {isSaving ? 'Guardando...' : 'Guardar y Salir'}
               </button>
             </div>
-
           </div>
         </div>
       )}

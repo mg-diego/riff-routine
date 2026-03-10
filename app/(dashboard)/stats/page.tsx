@@ -7,26 +7,26 @@ import { RecentActivity } from '@/components/stats/RecentActivity';
 import { ConsistencyHeatmap } from '@/components/stats/ConsistencyHeatmap';
 import { StatsCarousel } from '@/components/stats/StatsCarousel';
 
+const DATE_OPTIONS = [
+  { value: '7',   label: 'Últimos 7 días' },
+  { value: '30',  label: 'Últimos 30 días' },
+  { value: '90',  label: 'Últimos 3 meses' },
+  { value: 'all', label: 'Todo el tiempo' },
+];
+
 export default function StatsPage() {
   const [dateFilter, setDateFilter] = useState('30');
   const [loading, setLoading] = useState(true);
-
   const [totalTimeMinutes, setTotalTimeMinutes] = useState(0);
   const [streak, setStreak] = useState(0);
   const [activeDays, setActiveDays] = useState(0);
 
-  useEffect(() => {
-    fetchGlobalStats();
-  }, []);
+  useEffect(() => { fetchGlobalStats(); }, []);
 
   const fetchGlobalStats = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
-
-    if (!user) {
-      setLoading(false);
-      return;
-    }
+    if (!user) { setLoading(false); return; }
 
     const { data: sessionsData } = await supabase
       .from('practice_sessions')
@@ -40,129 +40,107 @@ export default function StatsPage() {
 
     let totalSecs = 0;
     const allDates = new Set<string>();
+    const getLocalDateStr = (iso: string | number | Date) => new Date(iso).toLocaleDateString('en-CA');
 
-    const getLocalDateStr = (isoString: string | number | Date) => {
-      const d = new Date(isoString);
-      return d.toLocaleDateString('en-CA');
-    };
+    sessionsData?.forEach(s => {
+      totalSecs += s.total_duration_seconds || 0;
+      allDates.add(getLocalDateStr(s.created_at));
+    });
 
-    if (sessionsData) {
-      sessionsData.forEach(s => {
-        totalSecs += s.total_duration_seconds || 0;
-        allDates.add(getLocalDateStr(s.created_at));
-      });
-    }
-
-    if (logsData) {
-      logsData.forEach(log => {
-        allDates.add(getLocalDateStr(log.created_at));
-      });
-
-      if (totalSecs === 0) {
-        logsData.forEach(log => {
-          totalSecs += log.duration_seconds || 0;
-        });
-      }
-    }
+    logsData?.forEach(log => {
+      allDates.add(getLocalDateStr(log.created_at));
+      if (totalSecs === 0) totalSecs += log.duration_seconds || 0;
+    });
 
     setTotalTimeMinutes(Math.floor(totalSecs / 60));
     setActiveDays(allDates.size);
 
-    let currentStreak = 0;
+    // Streak
     const today = new Date();
     const todayStr = getLocalDateStr(today);
-    const yesterday = new Date(today);
-    yesterday.setDate(yesterday.getDate() - 1);
+    const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
     const yesterdayStr = getLocalDateStr(yesterday);
-
+    let currentStreak = 0;
     if (allDates.has(todayStr) || allDates.has(yesterdayStr)) {
       const startRef = allDates.has(todayStr) ? today : yesterday;
       let d = 0;
       while (true) {
-        const checkDate = new Date(startRef);
-        checkDate.setDate(startRef.getDate() - d);
-        if (allDates.has(getLocalDateStr(checkDate))) {
-          currentStreak++;
-          d++;
-        } else {
-          break;
-        }
+        const check = new Date(startRef); check.setDate(startRef.getDate() - d);
+        if (allDates.has(getLocalDateStr(check))) { currentStreak++; d++; } else break;
       }
     }
-
     setStreak(currentStreak);
     setLoading(false);
   };
 
   return (
-    <div style={{
-      display: 'flex',
-      flexDirection: 'column',
-      width: '100%',
-      paddingBottom: '3rem',
-      overflowX: 'hidden'
-    }}>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '4rem', overflowX: 'hidden' }}>
+
+      {/* ── Header ───────────────────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
         <div>
           <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>Estadísticas</h1>
-          <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
-            Métricas globales de rendimiento y consistencia.
+          <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>Métricas globales de rendimiento y consistencia.</p>
+        </div>
+      </div>
+
+      {/* ── KPIs globales ────────────────────────────────────────────── */}
+      <GlobalKpis
+        totalTimeMinutes={totalTimeMinutes}
+        activeDays={activeDays}
+        streak={streak}
+        loading={loading}
+      />
+
+      {/* ── Heatmap ──────────────────────────────────────────────────── */}
+      <div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
+        <ConsistencyHeatmap />
+      </div>
+
+      {/* ── Análisis detallado ───────────────────────────────────────── */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', margin: 0, lineHeight: 1 }}>
+            Análisis Detallado
+          </h2>
+          <p style={{ color: 'var(--muted)', margin: '0.3rem 0 0', fontSize: '0.85rem' }}>
+            Distribución por técnica, habilidades y actividad reciente.
           </p>
         </div>
-      </div>
-
-      {/* SECCIÓN SUPERIOR: KPIs Y MAPA DE CALOR (HISTÓRICO) */}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', marginBottom: '3rem' }}>
-        <GlobalKpis
-          totalTimeMinutes={totalTimeMinutes}
-          activeDays={activeDays}
-          streak={streak}
-          loading={loading}
-        />
-        <div style={{ marginTop: '1rem' }}>
-          <ConsistencyHeatmap />
+        <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '0.3rem', gap: '0.25rem' }}>
+          {DATE_OPTIONS.map(opt => (
+            <button
+              key={opt.value}
+              onClick={() => setDateFilter(opt.value)}
+              style={{
+                background: dateFilter === opt.value ? 'rgba(255,255,255,0.08)' : 'transparent',
+                color: dateFilter === opt.value ? 'var(--text)' : 'var(--muted)',
+                border: 'none',
+                padding: '0.45rem 0.9rem',
+                borderRadius: '7px',
+                cursor: 'pointer',
+                fontSize: '0.82rem',
+                fontFamily: 'DM Sans, sans-serif',
+                fontWeight: dateFilter === opt.value ? 700 : 400,
+                transition: 'all 0.15s',
+                whiteSpace: 'nowrap',
+              }}
+            >
+              {opt.label}
+            </button>
+          ))}
         </div>
       </div>
 
-      {/* TABS DE NAVEGACIÓN */}
-      <main style={{ width: '100%', minWidth: 0 }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '2.5rem' }}>
-
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-              <h2 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', margin: 0 }}>
-                Análisis Detallado
-              </h2>
-              <select
-                value={dateFilter}
-                onChange={(e) => setDateFilter(e.target.value)}
-                style={{
-                  background: 'var(--surface)',
-                  color: 'var(--text)',
-                  border: '1px solid rgba(255,255,255,0.1)',
-                  padding: '0.6rem 1.2rem',
-                  borderRadius: '8px',
-                  outline: 'none',
-                  cursor: 'pointer',
-                  fontSize: '0.9rem'
-                }}
-              >
-                <option value="7">Últimos 7 días</option>
-                <option value="30">Últimos 30 días</option>
-                <option value="90">Últimos 3 meses</option>
-                <option value="all">Todo el tiempo</option>
-              </select>
-            </div>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(350px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
-              <div style={{ minWidth: 0 }}>
-                <StatsCarousel />
-              </div>
-              <div style={{ minWidth: 0 }}>
-                <RecentActivity />
-              </div>
-            </div>
-          </div>
-      </main>
+      {/* ── Grid: Carousel + Activity ─────────────────────────────────── */}
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
+        <div style={{ minWidth: 0 }}>
+          <StatsCarousel dateFilter={dateFilter} />
+        </div>
+        <div style={{ minWidth: 0 }}>
+          <RecentActivity dateFilter={dateFilter} />
+        </div>
+      </div>
     </div>
   );
 }

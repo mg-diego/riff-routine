@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
+import { SpeedSelect } from '../player/SpeedSelect';
 
 interface SidebarControlsProps {
   apiRef: React.MutableRefObject<any>;
@@ -383,14 +384,7 @@ export function SidebarControls({
           {/* Velocidad */}
           <div>
             <p className="sb-section-label">Velocidad</p>
-            <select className="sb-select" value={speed} onChange={e => setSpeed(e.target.value)} disabled={!isLoaded}>
-              <option value="0.25">× 0.25</option>
-              <option value="0.5">× 0.50</option>
-              <option value="0.75">× 0.75</option>
-              <option value="1">× 1.00</option>
-              <option value="1.25">× 1.25</option>
-              <option value="1.5">× 1.50</option>
-            </select>
+            <SpeedSelect value={speed} onChange={setSpeed} disabled={!isLoaded} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.3rem', marginTop: '0.4rem' }}>
               <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginRight: 'auto', alignSelf: 'center' }}>Atajos:</span>
               <span className="sb-kbd">−</span>
@@ -452,7 +446,7 @@ export function SidebarControls({
                       <div className="sb-track-header">
                         <span className="sb-track-name">{track.name}</span>
                         <button className="sb-track-eye" onClick={() => handleTrackView(track, index)}>
-                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
+                          <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                         </button>
                       </div>
                       <div className="sb-track-vol">
