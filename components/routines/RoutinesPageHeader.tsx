@@ -1,4 +1,7 @@
+"use client";
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface RoutinesPageHeaderProps {
   count: number;
@@ -7,12 +10,16 @@ interface RoutinesPageHeaderProps {
 }
 
 export function RoutinesPageHeader({ count, loading, onCreateClick }: RoutinesPageHeaderProps) {
+  const t = useTranslations('RoutinesPageHeader');
+
   return (
     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
       <div>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>Mis Rutinas</h1>
+        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
+          {t('title')}
+        </h1>
         <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
-          {loading ? 'Cargando...' : `${count} ${count === 1 ? 'rutina' : 'rutinas'} creadas`}
+          {loading ? t('loading') : t('routineCount', { count })}
         </p>
       </div>
       <button onClick={onCreateClick} style={{
@@ -29,7 +36,7 @@ export function RoutinesPageHeader({ count, loading, onCreateClick }: RoutinesPa
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
           <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
         </svg>
-        Nueva Rutina
+        {t('newRoutine')}
       </button>
     </div>
   );

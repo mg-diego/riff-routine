@@ -10,8 +10,10 @@ import { AlphaTabContainer } from './AlphaTabContainer';
 import { usePlayerContext } from '../../hooks/usePlayerContext';
 import { useAlphaTab } from '../../hooks/useAlphaTab';
 import { usePracticeSession } from '../../hooks/usePracticeSession';
+import { useTranslations } from 'next-intl';
 
 export default function GuitarPlayer() {
+    const t = useTranslations('GuitarPlayer');
     const wrapperRef = useRef<HTMLDivElement>(null);
     const mainScrollRef = useRef<HTMLDivElement>(null);
     const [scriptReady, setScriptReady] = useState(false);
@@ -45,32 +47,9 @@ export default function GuitarPlayer() {
         && activeExercise?.title !== 'Escalas'
         && activeExercise?.title !== 'Improvisación';
     
-    // La sidebar se apaga si no hay partitura
     const isSidebarDisabled = !isScoreMode || !!hasNoScore;
     
-    // Los inputs de BPM SOLO se apagan si es modo libre total y no se ha cargado un archivo
     const isBpmDisabled = mode === 'free' && !isLoaded;
-
-    console.log("mode: ", mode)
-    console.log("activeExercise: ", activeExercise)
-    console.log("originalPlaybackBpm: ", originalPlaybackBpm)
-    console.log("currentPlaybackBpm: ", currentPlaybackBpm)
-    console.log("isSidebarDisabled: ", isSidebarDisabled)
-    console.log("isBpmDisabled: ", isBpmDisabled)
-    console.log("isScoreMode: ", isScoreMode)
-    console.log("hasNoScore: ", hasNoScore)
-    console.log("scriptReady: ", scriptReady)
-    console.log("isLoaded: ", isLoaded)
-    console.log("isPlaying: ", isPlaying)
-    console.log("tracks: ", tracks)
-    console.log("filename: ", fileName)
-    console.log("initialUrlToLoad: ", initialUrlToLoad)
-    console.log("routineList: ", routineList)
-    console.log("currentIndex: ", currentIndex)
-    console.log("elapsedSeconds: ", elapsedSeconds)
-    console.log("isTimerRunning: ", isTimerRunning)
-    console.log("routineName: ", routineName)
-    console.log("sessionId: ", sessionId)
 
     return (
         <>
@@ -124,7 +103,6 @@ export default function GuitarPlayer() {
                         flex: 1, overflow: 'auto', display: 'flex',
                         flexDirection: 'column', position: 'relative', width: '100%',
                     }}>
-                        {/* Panels opcionales — no afectan al ScoreViewer */}
                         {(mode === 'scales' || activeExercise?.title === 'Escalas') && (
                             <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><ScalesPanel /></div>
                         )}
@@ -132,17 +110,14 @@ export default function GuitarPlayer() {
                             <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><ImprovPanel /></div>
                         )}
 
-                        {/* Contenedor principal de Partitura / Modo Libre */}
                         <div style={{
                             flex: 1, position: 'relative',
                             width: '100%', minWidth: 0,
-                            // Visible solo en score mode — pero el div permanece en el DOM
                             display: isScoreMode ? 'flex' : 'none',
                             flexDirection: 'column',
                         }}>
                             <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
                             
-                            {/* Placeholder bonito si no hay partitura */}
                             {hasNoScore && (
                                 <div style={{
                                     position: 'absolute', inset: 0,
@@ -156,7 +131,6 @@ export default function GuitarPlayer() {
                                         background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.2)',
                                         display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)' 
                                     }}>
-                                        {/* Icono de guitarra/metrónomo genérico */}
                                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                                             <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -165,10 +139,10 @@ export default function GuitarPlayer() {
                                     </div>
                                     <div>
                                         <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', margin: '0 0 0.5rem 0', color: 'var(--text)', letterSpacing: '0.05em' }}>
-                                            Práctica Sin Partitura
+                                            {t('noScore.title')}
                                         </h2>
                                         <p style={{ margin: 0, maxWidth: '420px', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                                            Este ejercicio no tiene un archivo asociado. Utiliza el metrónomo, el drone pedal y el temporizador superior para guiar tu sesión libremente.
+                                            {t('noScore.description')}
                                         </p>
                                     </div>
                                 </div>

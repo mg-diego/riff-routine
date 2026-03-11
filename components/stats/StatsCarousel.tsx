@@ -3,15 +3,17 @@
 import React, { useState } from 'react';
 import { CategoryDistribution } from './CategoryDistribution';
 import { SkillsRadar } from './SkillsRadar';
+import { useTranslations } from 'next-intl';
 
 interface Props { dateFilter: string; }
 
 export function StatsCarousel({ dateFilter }: Props) {
+  const t = useTranslations('StatsCarousel');
   const [activeSlide, setActiveSlide] = useState(0);
 
   const slides = [
-    { id: 0, component: <CategoryDistribution dateFilter={dateFilter} />, title: 'Foco de Entrenamiento' },
-    { id: 1, component: <SkillsRadar dateFilter={dateFilter} />, title: 'Radar de Habilidades' },
+    { id: 0, component: <CategoryDistribution dateFilter={dateFilter} />, title: t('slides.focus') },
+    { id: 1, component: <SkillsRadar dateFilter={dateFilter} />, title: t('slides.radar') },
   ];
 
   return (

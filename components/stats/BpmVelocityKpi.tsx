@@ -2,8 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useTranslations } from 'next-intl';
 
 export function BpmVelocityKpi() {
+  const t = useTranslations('BpmVelocityKpi');
   const [velocity, setVelocity] = useState<number | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -86,16 +88,16 @@ export function BpmVelocityKpi() {
   return (
     <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
       <h3 style={{ color: 'var(--muted)', marginTop: 0, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-        BPM Velocity (7 días)
+        {t('title')}
       </h3>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
         <p style={{ color: color, fontSize: '3rem', margin: 0, fontFamily: 'Bebas Neue, sans-serif', lineHeight: 1 }}>
           {sign}{velocity}
         </p>
-        <span style={{ fontSize: '1.2rem', color: 'var(--muted)', fontWeight: 600 }}>BPM</span>
+        <span style={{ fontSize: '1.2rem', color: 'var(--muted)', fontWeight: 600 }}>{t('unit')}</span>
       </div>
       <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--muted)' }}>
-        Mejora media por ejercicio
+        {t('description')}
       </p>
     </div>
   );

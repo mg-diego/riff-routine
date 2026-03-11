@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { SpeedSelect } from '../player/SpeedSelect';
+import { useTranslations } from 'next-intl';
 
 interface SidebarControlsProps {
   apiRef: React.MutableRefObject<any>;
@@ -34,6 +35,8 @@ export function SidebarControls({
   originalBpm,
   forceDisabled
 }: SidebarControlsProps) {
+  const t = useTranslations('SidebarControls');
+  
   const [speed, setSpeed] = useState('1');
   const [isMetronomeOn, setIsMetronomeOn] = useState(false);
   const [isCountIn, setIsCountIn] = useState(false);
@@ -45,7 +48,6 @@ export function SidebarControls({
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
   const toastId = useRef(0);
 
-  // ── Toast helper ────────────────────────────────────────────────
   const showToast = useCallback((icon: string, label: string) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
     toastId.current += 1;
@@ -53,7 +55,6 @@ export function SidebarControls({
     toastTimer.current = setTimeout(() => setToast(null), 1400);
   }, []);
 
-  // ── Handlers ────────────────────────────────────────────────────
   const handlePlayPause = useCallback(() => {
     if (!apiRef.current) return;
     apiRef.current.playPause();
@@ -97,7 +98,6 @@ export function SidebarControls({
     });
   }, []);
 
-  // ── Keyboard shortcuts ───────────────────────────────────────────
   useEffect(() => {
     if (!isLoaded) return;
 
@@ -112,22 +112,22 @@ export function SidebarControls({
           handlePlayPause();
           showToast(
             isPlaying ? '⏸' : '▶',
-            isPlaying ? 'Pausar' : 'Reproducir'
+            isPlaying ? t('toasts.pause') : t('toasts.play')
           );
           break;
 
         case 'Escape':
           e.preventDefault();
           handleStop();
-          showToast('⏹', 'Detener');
+          showToast('⏹', t('toasts.stop'));
           break;
 
         case 'KeyM':
           e.preventDefault();
           handleMetronome();
           setIsMetronomeOn(prev => {
-            showToast('🥁', prev ? 'Metrónomo off' : 'Metrónomo on');
-            return prev; // el estado lo maneja handleMetronome
+            showToast('🥁', prev ? t('toasts.metronomeOff') : t('toasts.metronomeOn'));
+            return prev;
           });
           break;
 
@@ -135,32 +135,31 @@ export function SidebarControls({
           e.preventDefault();
           handleLooping();
           setIsLooping(prev => {
-            showToast('🔁', prev ? 'Bucle off' : 'Bucle on');
+            showToast('🔁', prev ? t('toasts.loopOff') : t('toasts.loopOn'));
             return prev;
           });
           break;
 
-        case 'Equal': // + / =
+        case 'Equal':
         case 'NumpadAdd':
           e.preventDefault();
           handleSpeedUp();
-          showToast('⚡', 'Velocidad +');
+          showToast('⚡', t('toasts.speedUp'));
           break;
 
         case 'Minus':
         case 'NumpadSubtract':
           e.preventDefault();
           handleSpeedDown();
-          showToast('🐢', 'Velocidad −');
+          showToast('🐢', t('toasts.speedDown'));
           break;
       }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isLoaded, isPlaying, handlePlayPause, handleStop, handleMetronome, handleLooping, handleSpeedUp, handleSpeedDown, showToast]);
+  }, [isLoaded, isPlaying, handlePlayPause, handleStop, handleMetronome, handleLooping, handleSpeedUp, handleSpeedDown, showToast, t]);
 
-  // ── Resto de efectos ─────────────────────────────────────────────
   useEffect(() => {
     if (forceDisabled) setIsOpen(false);
   }, [forceDisabled]);
@@ -269,7 +268,6 @@ export function SidebarControls({
         }
         .sidebar-root.closed .sidebar-content { opacity: 0; pointer-events: none; }
 
-        /* Shortcut hints */
         .sb-kbd {
           display: inline-flex; align-items: center; justify-content: center;
           padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.6rem;
@@ -278,7 +276,6 @@ export function SidebarControls({
           color: rgba(255,255,255,0.35); margin-left: auto; flex-shrink: 0;
         }
 
-        /* Toast */
         .sb-toast {
           position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
           display: flex; align-items: center; gap: 0.6rem;
@@ -338,7 +335,6 @@ export function SidebarControls({
         .sb-solo { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
         .sb-solo.on { background: #f1c40f; color: #111; }
 
-        /* Shortcuts reference card */
         .sb-shortcuts-card {
           background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
           border-radius: 8px; padding: 0.85rem;
@@ -350,7 +346,6 @@ export function SidebarControls({
         }
       `}</style>
 
-      {/* Toast overlay */}
       {toast && (
         <div key={toast.id} className="sb-toast">
           <span className="sb-toast-icon">{toast.icon}</span>
@@ -377,16 +372,15 @@ export function SidebarControls({
 
         <div className="sidebar-content">
           <div style={{ paddingTop: '2.4rem' }}>
-            <p className="sb-section-label" style={{ opacity: 0.5 }}>Panel</p>
-            <h2 style={{ margin: '0.2rem 0 0', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold,#dcb98a)' }}>Controles</h2>
+            <p className="sb-section-label" style={{ opacity: 0.5 }}>{t('sections.panel')}</p>
+            <h2 style={{ margin: '0.2rem 0 0', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold,#dcb98a)' }}>{t('sections.controls')}</h2>
           </div>
 
-          {/* Velocidad */}
           <div>
-            <p className="sb-section-label">Velocidad</p>
+            <p className="sb-section-label">{t('sections.speed')}</p>
             <SpeedSelect value={speed} onChange={setSpeed} disabled={!isLoaded} />
             <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.3rem', marginTop: '0.4rem' }}>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginRight: 'auto', alignSelf: 'center' }}>Atajos:</span>
+              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginRight: 'auto', alignSelf: 'center' }}>{t('labels.shortcuts')}</span>
               <span className="sb-kbd">−</span>
               <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>/</span>
               <span className="sb-kbd">+</span>
@@ -395,35 +389,33 @@ export function SidebarControls({
 
           {effectiveBpm !== null && (
             <div style={{ textAlign: 'center', background: 'rgba(220,185,138,0.05)', padding: '0.5rem', borderRadius: '7px' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 'bold' }}>BPM: {effectiveBpm}</span>
+              <span style={{ fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 'bold' }}>{t('labels.bpm', { value: effectiveBpm })}</span>
             </div>
           )}
 
-          {/* Herramientas */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p className="sb-section-label">Herramientas</p>
+            <p className="sb-section-label">{t('sections.tools')}</p>
             <button className={`sb-toggle-btn ${isMetronomeOn ? 'on' : ''}`} onClick={handleMetronome} disabled={!isLoaded}>
-              {isMetronomeOn ? '🔴' : '⚪️'} Metrónomo <span className="sb-kbd">M</span>
+              {isMetronomeOn ? '🔴' : '⚪️'} {t('labels.metronome')} <span className="sb-kbd">M</span>
             </button>
             <button className={`sb-toggle-btn ${isCountIn ? 'on' : ''}`} onClick={handleCountIn} disabled={!isLoaded}>
-              {isCountIn ? '🔴' : '⚪️'} Cuenta atrás
+              {isCountIn ? '🔴' : '⚪️'} {t('labels.countIn')}
             </button>
             <button className={`sb-toggle-btn loop ${isLooping ? 'on' : ''}`} onClick={handleLooping} disabled={!isLoaded}>
-              {isLooping ? '🟣' : '⚪️'} Bucle <span className="sb-kbd">L</span>
+              {isLooping ? '🟣' : '⚪️'} {t('labels.loop')} <span className="sb-kbd">L</span>
             </button>
             <button className={`sb-toggle-btn sel ${hasSelection ? 'on' : ''}`} onClick={clearSelection} disabled={!isLoaded || !hasSelection}>
-              {hasSelection ? '✖️ Limpiar selección' : '🖱️ Arrastra para selec.'}
+              {hasSelection ? `✖️ ${t('labels.clearSelection')}` : `🖱️ ${t('labels.dragToSelect')}`}
             </button>
           </div>
 
           <hr className="sb-divider" />
 
-          {/* Reproducción */}
           <div>
-            <p className="sb-section-label">Reproducción</p>
+            <p className="sb-section-label">{t('sections.playback')}</p>
             <div className="sb-transport">
               <button className="sb-play" onClick={handlePlayPause} disabled={!isLoaded}>
-                {isPlaying ? '⏸ Pausar' : '▶ Reproducir'}
+                {isPlaying ? `⏸ ${t('labels.pause')}` : `▶ ${t('labels.play')}`}
               </button>
               <button className="sb-stop" onClick={handleStop} disabled={!isLoaded}>⏹</button>
             </div>
@@ -439,7 +431,7 @@ export function SidebarControls({
             <>
               <hr className="sb-divider" />
               <div>
-                <p className="sb-section-label">Pistas — {tracks.length}</p>
+                <p className="sb-section-label">{t('sections.tracks', { count: tracks.length })}</p>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
                   {tracks.map((track, index) => (
                     <div key={index} className={`sb-track ${activeTrackIndex === index ? 'active' : ''}`}>
@@ -450,12 +442,12 @@ export function SidebarControls({
                         </button>
                       </div>
                       <div className="sb-track-vol">
-                        <span className="sb-vol-label">VOL</span>
+                        <span className="sb-vol-label">{t('labels.vol')}</span>
                         <input type="range" className="sb-vol-slider" min="0" max="2" step="0.1" defaultValue="1" onChange={(e) => changeVolume(track, e.target.value)} />
                       </div>
                       <div className="sb-track-actions">
-                        <button className={`sb-mute ${track.playbackInfo?.isMute ? 'on' : ''}`} onClick={() => toggleMute(track)}>MUTE</button>
-                        <button className={`sb-solo ${track.playbackInfo?.isSolo ? 'on' : ''}`} onClick={() => toggleSolo(track)}>SOLO</button>
+                        <button className={`sb-mute ${track.playbackInfo?.isMute ? 'on' : ''}`} onClick={() => toggleMute(track)}>{t('labels.mute')}</button>
+                        <button className={`sb-solo ${track.playbackInfo?.isSolo ? 'on' : ''}`} onClick={() => toggleSolo(track)}>{t('labels.solo')}</button>
                       </div>
                     </div>
                   ))}

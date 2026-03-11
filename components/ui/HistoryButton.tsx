@@ -1,9 +1,15 @@
+"use client";
+
+import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface HistoryButtonProps {
   onClick: () => void;
 }
 
 export function HistoryButton({ onClick }: HistoryButtonProps) {
+  const t = useTranslations('HistoryButton');
+
   return (
     <button
       onClick={onClick}
@@ -31,7 +37,7 @@ export function HistoryButton({ onClick }: HistoryButtonProps) {
         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
         e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
       }}
-      title="Historial de Práctica"
+      title={t('tooltip')}
     >
       <svg style={{ transform: 'scale(1.8)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <circle cx="12" cy="12" r="10" />

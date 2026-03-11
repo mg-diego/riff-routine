@@ -1,0 +1,1130 @@
+{
+  "LandingPage": {
+    "nav": {
+      "features": "Features",
+      "how": "How it works",
+      "community": "Community",
+      "login": "Log in",
+      "startFree": "Start for free"
+    },
+    "hero": {
+      "eyebrow": "The practice tool for serious guitarists",
+      "title1": "PLAY",
+      "title_em": "BETTER",
+      "title2": "EVERY DAY",
+      "sub": "RiffRoutine is your personal rehearsal room. Upload your tabs, build routines, track your progress, and never practice aimlessly again.",
+      "startBtn": "Start for free now",
+      "howBtn": "See how it works",
+      "scroll": "Scroll"
+    },
+    "ticker": {
+      "tabPlayer": "Tab player",
+      "bpmControl": "BPM control",
+      "routines": "Practice routines",
+      "stats": "Consistency stats",
+      "streak": "Daily streak",
+      "heatmap": "Progress map",
+      "metronome": "Built-in metronome",
+      "loop": "Loop mode"
+    },
+    "stats": {
+      "sessions": "Completed sessions",
+      "hours": "Practice hours",
+      "improve": "% users improve BPM",
+      "active": "Active guitarists"
+    },
+    "features": {
+      "label": "Features",
+      "title1": "Everything you need",
+      "title2": "to",
+      "title_em": "progress",
+      "card1": {
+        "title": "Immersive Player",
+        "desc": "Load any Guitar Pro or tab file and practice it in our player with built-in metronome, speed control, loop mode, and score visualization. Your rehearsal room in the browser.",
+        "tag1": "Metronome",
+        "tag2": "Loop",
+        "tag3": "Multi-track",
+        "mockMode": "PRACTICE MODE",
+        "mockLive": "● LIVE",
+        "mockBpmCurrent": "Current BPM",
+        "mockTarget": "Target",
+        "mockPlay": "▶ Play"
+      },
+      "card2": {
+        "title": "Smart Routines",
+        "desc": "Create practice routines with specific duration and target BPM per exercise. The automatic timer alerts you when it's time to move to the next one.",
+        "mockEx1": "Alternate Picking — Major Scale",
+        "mockEx1Time": "10 min",
+        "mockEx2": "Sweep Picking — Am Arpeggio",
+        "mockEx2Status": "● Active",
+        "mockEx3": "Legato — Satch Lick",
+        "mockEx3Time": "15 min"
+      },
+      "card3": {
+        "title": "BPM Tracking",
+        "desc": "Log your speed in every session and visualize how you improve over time. Percentage towards your goal, history, and comparison between sessions.",
+        "mockSession1": "First session",
+        "mockToday": "Today"
+      },
+      "card4": {
+        "title": "Stats & Consistency",
+        "desc": "Yearly heat map, day streak, total time accumulated by technique, skills radar. Everything so you never lose track of your progress.",
+        "mockStreak": "Streak",
+        "mockStreakVal": "23 days 🔥",
+        "mockWeek": "This week",
+        "mockWeekVal": "4h 20m"
+      }
+    },
+    "how": {
+      "label": "Process",
+      "title1": "In 3 steps you are",
+      "title_em": "practicing",
+      "step1Title": "Create your account",
+      "step1Desc": "Sign up for free in under 30 seconds. No credit card, no commitments. Just you and your guitar.",
+      "step2Title": "Upload your tabs",
+      "step2Desc": "Import your Guitar Pro files, create your own exercises, and organize them in your personal library.",
+      "step3Title": "Practice with focus",
+      "step3Desc": "Launch a routine, follow the timer, and log your BPM. Your progress is saved automatically."
+    },
+    "testimonials": {
+      "label": "Community",
+      "title1": "What",
+      "title_em": "guitarists",
+      "t1Text": "I practiced without structure for years. Since using RiffRoutine, I know exactly how much I've improved and what I need to work on.",
+      "t1Author": "Jorge M.",
+      "t1Role": "Intermediate Guitarist · Madrid",
+      "t2Text": "The routine system is insane. I can play the tab while the timer and metronome run. All in one.",
+      "t2Author": "Sara L.",
+      "t2Role": "Semi-professional · Barcelona",
+      "t3Text": "Watching your BPM go up week by week is addictive. I went from 90 to 145 BPM in alt picking in 3 months with real discipline.",
+      "t3Author": "Alex K.",
+      "t3Role": "Advanced Guitarist · Valencia"
+    },
+    "cta": {
+      "label": "Ready?",
+      "title1": "STOP",
+      "title2": "PLAYING",
+      "title_em": "AIMLESSLY",
+      "desc": "Join thousands of guitarists who practice with intention, track their progress, and improve every week.",
+      "btn": "Start for free — no card required",
+      "note": "✓ Free forever  ·  ✓ No installation  ·  ✓ Cancel anytime"
+    },
+    "footer": {
+      "privacy": "Privacy",
+      "terms": "Terms",
+      "contact": "Contact",
+      "copyright": "© 2026 RiffRoutine. Built for guitarists."
+    }
+  },
+  "LoginPage": {
+    "auth": {
+      "signupSuccess": "Check your inbox to confirm your account.",
+      "demoError": "Demo access is currently unavailable."
+    },
+    "features": {
+      "tabsTitle": "Interactive Tabs",
+      "tabsText": "Full control of speed and loops",
+      "routinesTitle": "Routines",
+      "routinesText": "Structured daily practice",
+      "trackingTitle": "Tracking",
+      "trackingText": "Log your BPM and real time",
+      "statsTitle": "Statistics",
+      "statsText": "Visualize your consistency"
+    },
+    "leftPanel": {
+      "widget1Label": "Practice Streak",
+      "widget1Val": "14 Days in a Row",
+      "widget2Label": "Peak Speed",
+      "widget2Val": "180 BPM",
+      "titleLine1": "YOUR",
+      "titleLine2": "DIGITAL",
+      "titleLine2Gold": "REHEARSAL",
+      "titleLine3": "ROOM."
+    },
+    "form": {
+      "titleLogin": "Welcome Back",
+      "titleSignup": "Join Us",
+      "subLogin": "Access your account to continue",
+      "subSignup": "Create your free account today",
+      "tabLogin": "Log in",
+      "tabSignup": "Sign up",
+      "emailPlaceholder": "you@email.com",
+      "passwordPlaceholder": "Your password",
+      "loading": "Loading...",
+      "btnSubmitLogin": "Enter RiffRoutine",
+      "btnSubmitSignup": "Create free account",
+      "divider": "or",
+      "btnDemo": "Explore as Guest",
+      "backLink": "← Back to landing"
+    }
+  },
+  "StatsPage": {
+    "title": "Statistics",
+    "subtitle": "Global performance and consistency metrics.",
+    "detailedAnalysisTitle": "Detailed Analysis",
+    "detailedAnalysisSubtitle": "Distribution by technique, skills, and recent activity.",
+    "dateOptions": {
+      "7days": "Last 7 days",
+      "30days": "Last 30 days",
+      "90days": "Last 3 months",
+      "allTime": "All time"
+    }
+  },
+  "RoutinesPage": {
+    "errors": {
+      "unauthenticated": "Unauthenticated user"
+    },
+    "emptyState": {
+      "title": "You have no routines",
+      "subtitle": "Group exercises to practice in an organized way"
+    },
+    "deleteModal": {
+      "title": "Delete Routine",
+      "warning": "This action is irreversible. The routine and its configuration will be lost, but your individual exercise practice history will be preserved."
+    }
+  },
+  "CreateRoutinePage": {
+    "backButton": "Back to my routines",
+    "title": "Create Routine",
+    "labels": {
+      "routineName": "Routine Name *",
+      "description": "Description",
+      "optional": "(optional)",
+      "minutes": "Minutes",
+      "targetBpm": "Target BPM",
+      "noCategory": "Uncategorized"
+    },
+    "placeholders": {
+      "routineName": "e.g., Daily Warmup",
+      "description": "e.g., Routine focused on speed gain...",
+      "search": "Search by name or technique...",
+      "targetBpm": "Optional"
+    },
+    "selectedExercises": {
+      "title": "Selected Exercises",
+      "empty": "Add exercises from the library on the right.",
+      "noFileWarning": "This exercise has no interactive sheet music"
+    },
+    "library": {
+      "title": "Library",
+      "loading": "Loading library...",
+      "notFound": "No exercises found.",
+      "noGp": "No GP"
+    },
+    "buttons": {
+      "save": "Save Routine",
+      "saving": "Saving..."
+    },
+    "errors": {
+      "nameRequired": "Routine name is required.",
+      "loginRequired": "You must be logged in."
+    }
+  },
+  "RoutineDetailsPage": {
+    "errors": {
+      "loadFailed": "Could not load the routine.",
+      "saveFailed": "Error saving",
+      "notFound": "Routine not found."
+    },
+    "unsavedChanges": {
+      "label": "You have unsaved changes",
+      "discard": "Discard",
+      "save": "Save changes",
+      "saving": "Saving..."
+    },
+    "success": {
+      "saved": "Changes saved successfully"
+    },
+    "emptyState": {
+      "title": "This routine is empty",
+      "subtitle": "Add exercises to start training"
+    }
+  },
+  "RoutineDetailHistoryPage": {
+    "back": "Back",
+    "performanceIn": "Performance in",
+    "sessionsCompleted": "sessions completed",
+    "tabs": {
+      "stats": "Stats",
+      "detailedHistory": "Detailed History"
+    },
+    "noData": {
+      "title": "No data yet",
+      "description": "Complete your first session to see statistics here."
+    },
+    "stats": {
+      "completedSessions": "Completed Sessions",
+      "totalTime": "Total Time",
+      "avgSession": "Session Average",
+      "bestSession": "Best Session",
+      "minutesPerSession": "Minutes per session",
+      "exerciseProgress": "Progress per exercise",
+      "lastPractice": "Last practice",
+      "bpmEvolution": "BPM Evolution",
+      "insufficientData": "At least 2 sessions with BPM are needed to see evolution",
+      "totalTimeShort": "Total Time",
+      "bestBpm": "Best BPM",
+      "lastBpm": "Last BPM",
+      "towardsGoal": "Towards goal",
+      "progressMatrix": "Progress Matrix (BPM)",
+      "exercise": "Exercise",
+      "notPracticed": "Not practiced",
+      "lessGoal": "Further from goal",
+      "goalReached": "Goal reached"
+    },
+    "table": {
+      "dateTime": "Date & Time",
+      "totalTime": "Total Time",
+      "exercises": "Exercises",
+      "actions": "Actions",
+      "delete": "Delete",
+      "deleteConfirm": "Are you sure you want to delete this session and all its records? This action cannot be undone.",
+      "practicedExercises": "Practiced Exercises",
+      "noExercises": "No exercises registered in this session.",
+      "exercise": "Exercise",
+      "bpm": "BPM",
+      "time": "Time",
+      "min": "min",
+      "prev": "Prev",
+      "next": "Next",
+      "page": "Page",
+      "of": "of"
+    },
+    "errors": {
+      "auth": "User not authenticated",
+      "delete": "Error deleting",
+      "save": "Error saving",
+      "unknownExercise": "Unknown Exercise",
+      "insufficientDataSpark": "Insufficient data"
+    }
+  },
+  "PracticePage": {
+    "title": "Practice Room",
+    "subtitle": "Focus on your technique, follow the metronome, and master the exercise."
+  },
+  "LibraryPage": {
+    "title": "Library",
+    "loading": "Loading exercises...",
+    "foundPlural": "{count} exercises found",
+    "foundSingular": "{count} exercise found",
+    "newExercise": "New exercise",
+    "importList": "Import list",
+    "searchPlaceholder": "Search by name...",
+    "techniquesPlaceholder": "Techniques...",
+    "techniquesSelected": "{count} selected",
+    "techniquesSelectedPlural": "{count} selected",
+    "allTechniques": "All",
+    "difficultyPlaceholder": "Difficulty...",
+    "difficultyLevel": "Lv. {level} - {label}",
+    "sortBy": {
+      "createdDesc": "Newest first",
+      "nameAsc": "Name (A-Z)",
+      "nameDesc": "Name (Z-A)",
+      "difficultyDesc": "Highest difficulty",
+      "difficultyAsc": "Lowest difficulty",
+      "currentBpmDesc": "Highest Current BPM",
+      "goalBpmDesc": "Highest Goal BPM"
+    },
+    "viewList": "List view",
+    "viewGrid": "Grid view",
+    "emptyState": {
+      "title": "Your library is empty",
+      "subtitle": "Upload your first exercise to get started"
+    },
+    "noMatchState": {
+      "title": "No matches found",
+      "subtitle": "Try changing the filters or search term",
+      "clearFilters": "Clear filters"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page",
+      "of": "of"
+    },
+    "deleteModal": {
+      "title": "Delete Exercise",
+      "warning": "This action is irreversible. The exercise, the associated file, and all its practice history will be permanently deleted."
+    },
+    "errors": {
+      "load": "Error loading exercises",
+      "auth": "Unauthenticated user",
+      "rls": "RLS blocked the deletion. Missing DELETE permissions."
+    }
+  },
+  "NewExercisePage": {
+    "back": "Back to library",
+    "title": "New Exercise",
+    "fileDrop": {
+      "invalidFormat": "Invalid format. Use .gp, .gp3, .gp4, .gp5 or .gpx",
+      "readyToUpload": "Ready to upload",
+      "guitarProFile": "Guitar Pro File",
+      "optional": "(optional)",
+      "dragOrClick": "GP3, GP4, GP5, GPX · drag or click"
+    },
+    "form": {
+      "nameRequired": "Name is required.",
+      "categoryRequired": "Select at least one category.",
+      "authRequired": "You must be logged in."
+    },
+    "buttons": {
+      "saving": "Creating exercise...",
+      "save": "Create exercise"
+    }
+  },
+  "ImportExercisesPage": {
+    "back": "Back to library",
+    "title": "Import Exercises",
+    "instructions": {
+      "text": "Paste your list separating the title, technique, and target BPM with two dashes (--). One exercise per line.",
+      "formatRequired": "Required format:",
+      "formatExample": "Name -- Technique1, Technique2 -- Minutes (optional)",
+      "example1": "Spider 1234 -- Alternate Picking -- 120",
+      "example2": "Minor Scale -- Legato, Tapping -- 100",
+      "allowedTechniques": "Allowed techniques:"
+    },
+    "input": {
+      "placeholder": "Spider 1234 -- Alternate Picking -- 100",
+      "analyzeButton": "Analyze Text"
+    },
+    "review": {
+      "title": "Review and Correct ({count})",
+      "backToText": "Back to text",
+      "labels": {
+        "title": "Title *",
+        "technique": "Technique *",
+        "bpm": "BPM",
+        "optional": "Optional",
+        "select": "Select..."
+      },
+      "actions": {
+        "deleteRow": "Delete row",
+        "saving": "Saving...",
+        "confirmSave": "Confirm and Save All"
+      }
+    },
+    "errors": {
+      "techniqueRequired": "You must select at least one technique.",
+      "invalidTechnique": "Invalid technique: {techs}",
+      "noValidExercises": "No valid exercises found to analyze.",
+      "fixErrors": "Fix the errors in the marked rows before continuing.",
+      "auth": "Unauthenticated user."
+    }
+  },
+  "ExerciseDetailsPage": {
+    "back": "Back to library",
+    "title": "Edit Exercise",
+    "notFound": "Exercise not found.",
+    "fileDrop": {
+      "invalidFormat": "Invalid format. Use .gp, .gp3, .gp4, .gp5 or .gpx",
+      "readyToUpload": "Ready to upload",
+      "replaceFile": "Replace file (Optional)",
+      "dragNew": "Drag a new GP or click",
+      "guitarProFile": "Guitar Pro File",
+      "optional": "(optional)",
+      "dragOrClick": "GP3, GP4, GP5, GPX · drag or click"
+    },
+    "form": {
+      "nameRequired": "Name is required.",
+      "categoryRequired": "Select at least one category.",
+      "authRequired": "You must be logged in."
+    },
+    "buttons": {
+      "saving": "Saving changes...",
+      "save": "Save changes"
+    },
+    "errors": {
+      "loadFailed": "Could not load the exercise."
+    }
+  },
+  "ExerciseHistoryPage": {
+    "back": "Back to library",
+    "performanceIn": "Performance in",
+    "practiceLogs": "practice logs",
+    "buttons": {
+      "addLog": "Add log",
+      "importHistory": "Import history",
+      "stats": "Stats",
+      "detailedHistory": "Detailed History"
+    },
+    "noData": {
+      "title": "No data yet",
+      "description": "Practice this exercise to see your progress here."
+    },
+    "stats": {
+      "goalProgress": "Goal Progress",
+      "bpmFormat": "{current} / {target} BPM",
+      "logs": "Logs",
+      "totalTime": "Total Time"
+    },
+    "table": {
+      "dateTime": "Date and Time",
+      "bpm": "BPM",
+      "time": "Time",
+      "actions": "Actions",
+      "min": "min",
+      "page": "Page",
+      "of": "of",
+      "prev": "Previous",
+      "next": "Next"
+    },
+    "import": {
+      "formatRequired": "Required format:",
+      "formatExample": "YYYY-MM-DD -- BPM -- Minutes (optional)",
+      "example": "Example:",
+      "placeholder": "2024-03-01 -- 120\n2024-03-02 -- 125 -- 15\n2024-03-03 -- 130 -- 20",
+      "cancel": "Cancel",
+      "save": "Save History",
+      "saving": "Importing..."
+    },
+    "manualEntry": {
+      "title": "Add Log",
+      "subtitle": "Enter your practice data manually.",
+      "dateTime": "Date and Time",
+      "maxBpm": "Max BPM",
+      "minutes": "Minutes",
+      "cancel": "Cancel",
+      "save": "Save",
+      "saving": "Saving..."
+    },
+    "errors": {
+      "auth": "Unauthenticated user",
+      "invalidDate": "Invalid date",
+      "invalidBpm": "Invalid BPM",
+      "emptyImport": "Paste at least one record.",
+      "invalidLine": "Invalid line {line}. Format: YYYY-MM-DD -- BPM -- Minutes (optional)",
+      "invalidLineDate": "Line {line}: Invalid date ({date}). Use YYYY-MM-DD",
+      "invalidLineBpm": "Line {line}: Invalid BPM ({bpm})",
+      "invalidLineDuration": "Line {line}: Invalid duration ({duration})",
+      "deleteConfirm": "Are you sure you want to delete this log?",
+      "deleteFailed": "Error deleting:",
+      "saveFailed": "Error saving:"
+    },
+    "chart": {
+      "targetBpm": "Target BPM",
+      "achievedBpm": "Achieved BPM"
+    }
+  },
+  "HomePage": {
+    "nav": {
+      "practice": {
+        "label": "Practice",
+        "desc": "Immersive player with tab and metronome"
+      },
+      "routines": {
+        "label": "My Routines",
+        "desc": "Plan and track your practice routines"
+      },
+      "library": {
+        "label": "My Library",
+        "desc": "Your saved and favorite exercises"
+      },
+      "explore": {
+        "label": "Explore",
+        "desc": "Discover new tabs and exercises"
+      },
+      "stats": {
+        "label": "Statistics",
+        "desc": "Analyze your progress and consistency"
+      }
+    },
+    "timeAgo": {
+      "mins": "{mins} min ago",
+      "hours": "{hours}h ago",
+      "yesterday": "yesterday",
+      "days": "{days} days ago"
+    },
+    "time": {
+      "min": "min"
+    },
+    "defaultUser": "Guitarist",
+    "greeting": {
+      "morning": "Good morning",
+      "afternoon": "Good afternoon",
+      "evening": "Good evening"
+    },
+    "hero": {
+      "streakActive": "🔥 You've been practicing for {streak} days in a row. Don't break it!",
+      "noStreak": "What are we playing today?"
+    },
+    "mainCta": {
+      "continue": "Pick up where you left off",
+      "startNow": "Start now",
+      "freePractice": "Free Practice",
+      "lastSession": "Last session {time} · {duration}",
+      "btnContinue": "Continue",
+      "btnOpenPlayer": "Open player"
+    },
+    "kpis": {
+      "streak": "Streak",
+      "days": "{count} day",
+      "daysPlural": "{count} days",
+      "thisWeek": "This week",
+      "vsLastWeek": "{delta} min vs last week",
+      "almostThere": "Almost there",
+      "addBpmGoal": "Add a BPM goal to your exercises"
+    },
+    "secondaryCta": {
+      "title": "Free practice",
+      "desc": "Upload a tab and start playing without a routine",
+      "btn": "Open player"
+    },
+    "quickAccess": "Go to"
+  },
+  "ExplorePage": {
+    "title": "Explore Catalog",
+    "subtitle": "Practice base system exercises designed to improve your technique",
+    "emptyState": "No exercises in the system",
+    "exercise": {
+      "start": "Start",
+      "goal": "Goal",
+      "playButton": "▶ Play"
+    }
+  },
+  "Navbar": {
+    "links": {
+      "home": "Home",
+      "routines": "My Routines",
+      "library": "My Library",
+      "explore": "Explore",
+      "practice": "Practice",
+      "stats": "Stats"
+    },
+    "languageLabel": "Language",
+    "logout": "Log out",
+    "logoAlt": "RiffRoutine Logo"
+  },
+  "Footer": {
+    "logoAlt": "RiffRoutine Logo",
+    "privacy": "Privacy",
+    "terms": "Terms",
+    "contact": "Contact",
+    "copyright": "© {year} RiffRoutine. Built for guitarists."
+  },
+  "ExerciseCard": {
+    "level": "Lv. {level}",
+    "noFile": "No associated sheet music",
+    "bpmStatus": {
+      "current": "Current",
+      "suggested": "Suggested",
+      "initial": "Initial"
+    },
+    "goal": "Goal",
+    "play": "Play",
+    "freePractice": "Free Practice"
+  },
+  "ExerciseForm": {
+    "name": "Exercise Name *",
+    "namePlaceholder": "e.g. Am Sweep Picking",
+    "categories": "Categories *",
+    "selected": "{count} selected",
+    "bpmSuggested": "Suggested BPM",
+    "bpmSuggestedPlaceholder": "e.g. 80",
+    "bpmGoal": "Goal BPM",
+    "bpmGoalPlaceholder": "e.g. 120",
+    "difficulty": "Difficulty",
+    "difficultyLevel": "{level} — {label}",
+    "notes": "Notes / Observations",
+    "notesPlaceholder": "e.g. Practice slowly with metronome..."
+  },
+  "ExerciseHistory": {
+    "title": "Practice History",
+    "loading": "Loading history...",
+    "emptyState": "No practice logs for this exercise yet.",
+    "table": {
+      "date": "Date",
+      "bpm": "BPM",
+      "minutes": "Minutes",
+      "actions": "Actions",
+      "minSuffix": "m"
+    },
+    "actions": {
+      "edit": "Edit",
+      "delete": "Delete",
+      "save": "Save",
+      "cancel": "Cancel"
+    },
+    "errors": {
+      "deleteConfirm": "Are you sure you want to delete this log?",
+      "deleteError": "Error deleting:",
+      "invalidDate": "Invalid date",
+      "invalidBpm": "Invalid BPM",
+      "saveError": "Error saving:"
+    }
+  },
+  "ExerciseRow": {
+    "level": "Lv. {level}",
+    "noFile": "No associated sheet music",
+    "bpmStatus": {
+      "current": "Cur.",
+      "suggested": "Sug.",
+      "initial": "Ini."
+    },
+    "goal": "Goal",
+    "play": "Play",
+    "freePractice": "Free P."
+  },
+  "AlphaTabContainer": {
+    "noScoreMessage": "Exercise without sheet music. Use the timer and start playing!"
+  },
+  "DropZone": {
+    "dragToReplace": "Drag another to replace",
+    "dragFileHere": "Drag your Guitar Pro file here",
+    "supportedFormats": ".gp, .gpx, .gp5"
+  },
+  "EndSessionModal": {
+    "title": "End Routine",
+    "subtitle": "Verify and adjust the final session data before saving.",
+    "loading": "Loading exercises...",
+    "exerciseLabel": "Exercise",
+    "bpmFinalLabel": "Final BPM",
+    "noBpmLog": "No BPM record",
+    "timeLabel": "Time",
+    "actions": {
+      "backToPractice": "Back to practice",
+      "saving": "Saving...",
+      "saveAndExit": "Save and Exit"
+    }
+  },
+  "GuitarPlayer": {
+    "noScore": {
+      "title": "Practice Without Sheet Music",
+      "description": "This exercise has no associated file. Use the metronome, the drone pedal, and the top timer to guide your session freely."
+    }
+  },
+  "ImprovPanel": {
+    "scaleOf": "{scale} of {root}",
+    "joinOr": " or ",
+    "ideaGenerator": "Idea Generator",
+    "tonality": "Key: {note} {type}",
+    "minor": "Minor",
+    "major": "Major",
+    "scaleSuggestionTitle": "💡 Scale Suggestions",
+    "scaleSuggestionText": "Try improvising using: ",
+    "generateButton": "🎲 Another progression",
+    "backingTrackTitle": "Backing Track (YouTube)",
+    "backingTrackPlaceholder": "Paste a YouTube backing track link here...",
+    "notesTitle": "Composition Notepad",
+    "notesPlaceholder": "Jot down chords, frets, or ideas as they come to you..."
+  },
+  "PlayerHeader": {
+    "modes": {
+      "free": "Free Practice",
+      "library": "Exercise",
+      "routine": "Routine",
+      "scales": "Scales",
+      "improvisation": "Improvisation"
+    },
+    "alerts": {
+      "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
+    },
+    "labels": {
+      "routine": "Routine:",
+      "noFile": "No file",
+      "loading": "Loading...",
+      "level": "Lv. {diff}",
+      "endRoutine": "End Routine",
+      "closeExercise": "Close Exercise",
+      "currentBpm": "Current BPM",
+      "targetBpm": "Target",
+      "suggestedBpm": "Suggested:",
+      "metronome": "Metronome",
+      "auxiliary": "Auxiliary",
+      "timerCompleted": "✓ Time completed!",
+      "timerRunning": "Practicing",
+      "timerPaused": "Paused",
+      "progress": "Progress",
+      "saving": "Saving...",
+      "saved": "✓ Saved",
+      "saveProgress": "Save progress"
+    },
+    "tooltips": {
+      "pauseMetronome": "Pause metronome",
+      "startMetronome": "Start metronome"
+    },
+    "errors": {
+      "invalidBpm": "Invalid BPM",
+      "saveError": "Error saving"
+    }
+  },
+  "ScalesPanel": {
+    "playScale": "▶ Play Scale",
+    "viewMode": {
+      "full": "Full",
+      "positions": "Positions"
+    },
+    "labelMode": {
+      "notes": "Notes",
+      "intervals": "Intervals"
+    },
+    "leftyMode": "Lefty",
+    "scaleConfig": "Scale Configuration",
+    "chordType": {
+      "triads": "Triads",
+      "tetrads": "Tetrads"
+    },
+    "labels": {
+      "notes": "Notes",
+      "intervals": "Intervals",
+      "chords": "Chords",
+      "colors": "Colors"
+    },
+    "theory": {
+      "usage": "🎵 Usage:",
+      "targetNotes": "🎯 Notes:",
+      "playOver": "🎸 Play over:",
+      "noInfo": "Select a scale to see its theoretical information."
+    },
+    "fretboard": {
+      "playPosition": "▶ Play Position"
+    },
+    "positionTitle": "Position {pos}",
+    "positionFretTitle": "Position {pos} (fret {fret})"
+  },
+  "SidebarControls": {
+    "toasts": {
+      "pause": "Pause",
+      "play": "Play",
+      "stop": "Stop",
+      "metronomeOff": "Metronome off",
+      "metronomeOn": "Metronome on",
+      "loopOff": "Loop off",
+      "loopOn": "Loop on",
+      "speedUp": "Speed +",
+      "speedDown": "Speed −"
+    },
+    "sections": {
+      "panel": "Panel",
+      "controls": "Controls",
+      "speed": "Speed",
+      "tools": "Tools",
+      "playback": "Playback",
+      "tracks": "Tracks — {count}"
+    },
+    "labels": {
+      "shortcuts": "Shortcuts:",
+      "bpm": "BPM: {value}",
+      "metronome": "Metronome",
+      "countIn": "Count in",
+      "loop": "Loop",
+      "clearSelection": "Clear selection",
+      "dragToSelect": "Drag to select",
+      "pause": "Pause",
+      "play": "Play",
+      "vol": "VOL",
+      "mute": "MUTE",
+      "solo": "SOLO"
+    }
+  },
+  "SpeedSelect": {
+    "format": "× {value}"
+  },
+  "AddExerciseModal": {
+    "title": "Add Exercise",
+    "subtitle": "Select an exercise from the catalog or your personal library",
+    "searchPlaceholder": "Search by name or technique...",
+    "noResults": "No exercises found for this search.",
+    "noFileWarning": "⚠️ No GP file",
+    "catalogBadge": "Catalog",
+    "techniqueFallback": "General",
+    "difficultyLabel": "Difficulty:",
+    "addButton": "+ Add",
+    "addNoFileButton": " (No GP)"
+  },
+  "RoutineExerciseItem": {
+    "techniqueFallback": "General",
+    "difficultyLabel": "Difficulty:",
+    "sessions": "{count, plural, =0 {0 sessions} one {1 session} other {# sessions}}",
+    "durationLabel": "Duration (1–60 min)",
+    "durationUnit": "min",
+    "bpmLabel": "Target BPM",
+    "bpmPlaceholder": "Free"
+  },
+  "RoutineHeader": {
+    "back": "← Back to My Routines",
+    "titlePlaceholder": "Routine Name",
+    "descriptionPlaceholder": "No description — click to add",
+    "estimatedTime": "⏱️ Estimated time:",
+    "exercisesCount": "🎸 Exercises:",
+    "addExercise": "+ Add Exercise"
+  },
+  "CreateRoutineModal": {
+    "title": "New Routine",
+    "subtitle": "Create a collection to organize your exercises",
+    "nameLabel": "Routine Name *",
+    "namePlaceholder": "e.g., Daily Warm-up",
+    "descriptionLabel": "Description",
+    "optional": "(optional)",
+    "descriptionPlaceholder": "e.g., 20-minute routine focused on precision...",
+    "createButton": "Create routine",
+    "errors": {
+      "nameRequired": "Name is required.",
+      "sessionRequired": "You must be logged in."
+    }
+  },
+  "RoutineCard": {
+    "exerciseCount": "{count, plural, =0 {0 exercises} one {1 exercise} other {# exercises}}",
+    "playButton": "Play",
+    "loading": "Loading exercises...",
+    "empty": "No exercises in this routine."
+  },
+  "RoutinesPageHeader": {
+    "title": "My Routines",
+    "loading": "Loading...",
+    "routineCount": "{count, plural, =0 {0 routines created} one {1 routine created} other {# routines created}}",
+    "newRoutine": "New Routine"
+  },
+  "BpmVelocityKpi": {
+    "title": "BPM Velocity (7 days)",
+    "unit": "BPM",
+    "description": "Average improvement per exercise"
+  },
+  "CategoryDistribution": {
+    "title": "Distribution by Technique",
+    "generalFallback": "General",
+    "noData": "No data for this period",
+    "timeUnits": {
+      "month": "month",
+      "months": "months",
+      "day": "d",
+      "hour": "h",
+      "minute": "min"
+    }
+  },
+  "ConsistencyHeatmap": {
+    "title": "Consistency Map (Last Year)",
+    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "weekdays": {
+      "mon": "Mon",
+      "wed": "Wed",
+      "fri": "Fri"
+    },
+    "legend": {
+      "less": "Less",
+      "more": "More"
+    },
+    "tooltip": "{date}: {minutes} min"
+  },
+  "GlobalKpis": {
+    "totalTime": "Total Time",
+    "activeDays": "Active Days",
+    "currentStreak": "Current Streak",
+    "daysUnit": "{count, plural, one {day} other {days}}",
+    "streakMessages": {
+      "epic": "Epic streak!",
+      "incredible": "Incredible!",
+      "great": "Great streak!"
+    }
+  },
+  "RecentActivity": {
+    "title": "Recent Activity",
+    "totalCount": "{count} logs in total",
+    "empty": "No practice logs yet.",
+    "unknownExercise": "Unknown exercise",
+    "timeLabel": "Time",
+    "bpmLabel": "BPM",
+    "pagination": "Page {current} of {total}",
+    "prev": "← Previous",
+    "next": "Next →",
+    "dates": {
+      "today": "Today",
+      "yesterday": "Yesterday"
+    }
+  },
+  "SkillsRadar": {
+    "title": "Skills Radar",
+    "noData": "No data for this period",
+    "footerNote": "The color reflects your main focus in this period.",
+    "tooltipLabel": "Time",
+    "pillars": {
+      "Speed": "Speed",
+      "Expression": "Expression",
+      "Precision": "Precision",
+      "Rhythm": "Rhythm",
+      "Theory": "Theory"
+    }
+  },
+  "StatsCarousel": {
+    "slides": {
+      "focus": "Training Focus",
+      "radar": "Skills Radar"
+    }
+  },
+  "DeleteButton": {
+    "tooltip": "Delete"
+  },
+  "DeleteConfirmModal": {
+    "question": "Are you sure you want to delete {item}?",
+    "cancel": "Cancel",
+    "confirm": "Yes, delete",
+    "deleting": "Deleting..."
+  },
+  "EditButton": {
+    "tooltip": "Edit"
+  },
+  "HistoryButton": {
+    "tooltip": "Practice History"
+  },
+  "Modal": {
+    "close": "Close",
+    "cancel": "Cancel",
+    "saving": "Saving..."
+  },
+  "MusicConstants": {
+    "techniques": {
+      "alternate_picking": "Alternate Picking",
+      "down_picking": "Down Picking",
+      "legato": "Legato",
+      "tapping": "Tapping",
+      "sweep_picking": "Sweep Picking",
+      "rythm": "Rhythm",
+      "song": "Song",
+      "solo": "Solo",
+      "hybrid_picking": "Hybrid Picking",
+      "string_skipping": "String Skipping",
+      "warm_up": "Warm-up",
+      "lick": "Lick",
+      "bending": "Bending",
+      "vibrato": "Vibrato"
+    },
+    "difficulty": {
+      "1": "Beginner",
+      "2": "Basic",
+      "3": "Intermediate",
+      "4": "Advanced",
+      "5": "Expert"
+    },
+    "colors": {
+      "grey": "Gray",
+      "red": "Red",
+      "blue": "Blue",
+      "green": "Green",
+      "yellow": "Yellow",
+      "purple": "Purple",
+      "orange": "Orange",
+      "pink": "Pink"
+    },
+    "scales": {
+      "ionian": {
+        "name": "Ionian (Major)",
+        "desc": "Natural major scale. Bright, happy, and resolute sound. The foundation of Western music."
+      },
+      "dorian": {
+        "name": "Dorian",
+        "desc": "Minor scale with a major 6th. Melancholic sound with a floating, bright touch. Classic in Jazz, Funk, and Blues rock."
+      },
+      "phrygian": {
+        "name": "Phrygian",
+        "desc": "Dark, exotic sound with high tension due to the ♭2. Characteristic of Flamenco and widely used in Metal."
+      },
+      "lydian": {
+        "name": "Lydian",
+        "desc": "Major scale with an augmented 4th. Mysterious, spatial, dreamlike, and very open sound. Common in film scores."
+      },
+      "mixolydian": {
+        "name": "Mixolydian",
+        "desc": "Major scale with a minor 7th. Happy but with a characteristic tension. The quintessential scale for Blues, Rock, and Funk."
+      },
+      "aeolian": {
+        "name": "Aeolian (Minor)",
+        "desc": "Natural minor scale. Sad, melancholic, or epic sound. The most used for minor progressions."
+      },
+      "locrian": {
+        "name": "Locrian",
+        "desc": "The most unstable and dissonant mode because it lacks a perfect 5th. Mostly used in Jazz and high-tension Metal passages."
+      },
+      "blues": {
+        "name": "Blues",
+        "desc": "The minor pentatonic scale with the added \"Blue Note\" (♭5). Provides the characteristic gritty blues sound."
+      },
+      "pentatonic-minor": {
+        "name": "Minor Pentatonic",
+        "desc": "The most popular scale in modern guitar. Five notes without semitones, making it extremely easy to improvise."
+      },
+      "pentatonic-major": {
+        "name": "Major Pentatonic",
+        "desc": "A bright five-note version. Country-like, happy, and sweet sound. The pillar of Country and Pop music."
+      },
+      "harmonic-minor": {
+        "name": "Harmonic Minor",
+        "desc": "Natural minor scale with a raised 7th to generate strong tension. Classical, Baroque, and Arabic sound."
+      },
+      "harmonic-major": {
+        "name": "Harmonic Major",
+        "desc": "A rare and exotic scale that combines major third brightness with minor sixth darkness."
+      },
+      "melodic-minor": {
+        "name": "Melodic Minor",
+        "desc": "Natural minor scale with major 6th and 7th. Very fluid and resolute, used in contemporary Jazz."
+      },
+      "double-harmonic": {
+        "name": "Double Harmonic",
+        "desc": "Byzantine or Arabic sounding scale. Features two augmented seconds, making it very exotic."
+      },
+      "hungarian": {
+        "name": "Hungarian",
+        "desc": "Gypsy minor scale. Essentially harmonic minor but with an augmented fourth (#4). Neoclassical metal sound."
+      },
+      "persian": {
+        "name": "Persian",
+        "desc": "Very tense and semitone-rich sound. Strongly evokes Middle Eastern melodies."
+      },
+      "neopolitan": {
+        "name": "Neapolitan",
+        "desc": "Combines the dissonant start of the Phrygian scale (♭2) with the resolute brightness of the Major scale (7)."
+      },
+      "neopolitan-minor": {
+        "name": "Neapolitan Minor",
+        "desc": "Similar to harmonic minor but with the dark addition of a flat second (♭2). Gothic and dramatic sound."
+      },
+      "diminished": {
+        "name": "Diminished",
+        "desc": "Symmetrical octatonic scale alternating Tone-Semitone. Generates constant and infinite tension."
+      },
+      "augmented": {
+        "name": "Augmented",
+        "desc": "Hexatonic scale formed by overlapping whole tones. Evokes an unreal feeling of buoyancy."
+      },
+      "m7-arpeggio": {
+        "name": "Maj7 Arpeggio",
+        "desc": "The 4 structural notes of a Major 7th chord. Perfect for sweeps in major progressions."
+      },
+      "min7-arpeggio": {
+        "name": "m7 Arpeggio",
+        "desc": "The 4 structural notes of a minor 7th chord. Essential for sweep picking over minor chords."
+      },
+      "dom7-arpeggio": {
+        "name": "Dominant Arpeggio",
+        "desc": "Arpeggio of the dominant chord. Its unstable tritone interval creates a strong need to resolve."
+      },
+      "major-triad": {
+        "name": "Major Triad",
+        "desc": "The basic major chord played linearly. Strong, bright, and static."
+      },
+      "minor-triad": {
+        "name": "Minor Triad",
+        "desc": "The basic minor chord played linearly. Dark and sad."
+      },
+      "hirajoshi": {
+        "name": "Hirajōshi (6th)",
+        "desc": "Traditional Japanese pentatonic scale derived from Koto tuning. Melancholic and epic sound."
+      },
+      "iwato": {
+        "name": "Iwato (7th)",
+        "desc": "Extremely dissonant and dark oriental pentatonic scale, similar to a Locrian mode without a third."
+      },
+      "kumoi": {
+        "name": "Kumoi (1st)",
+        "desc": "Japanese pentatonic variant (Sakura). Offers a ceremonial, ancient, and introspective tone."
+      },
+      "hon-kumoi": {
+        "name": "Hon Kumoi-joshi",
+        "desc": "Traditional scale based on dramatic intervallic leaps. Deep and reflective sound."
+      },
+      "chinese": {
+        "name": "Chinese (4th)",
+        "desc": "Based on traditional oriental tunings. Its structure avoids minor thirds and sixths."
+      }
+    }
+  }
+}

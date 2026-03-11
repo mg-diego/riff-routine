@@ -1,10 +1,15 @@
+"use client";
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface EditButtonProps {
   onClick: () => void;
 }
 
 export function EditButton({ onClick }: EditButtonProps) {
+  const t = useTranslations('EditButton');
+
   return (
     <button
       onClick={onClick}
@@ -32,7 +37,7 @@ export function EditButton({ onClick }: EditButtonProps) {
         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
         e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
       }}
-      title="Editar"
+      title={t('tooltip')}
     >
       <svg style={{ transform: 'scale(1.8)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />

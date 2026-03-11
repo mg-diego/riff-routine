@@ -3,6 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Routine } from '../../../lib/types';
+import { useTranslations } from 'next-intl';
 
 interface RoutineHeaderProps {
   routine: Routine;
@@ -125,6 +126,7 @@ function EditableField({
 
 export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClick, onUpdateRoutine }: RoutineHeaderProps) {
   const router = useRouter();
+  const t = useTranslations('RoutineHeader');
 
   const formatTime = (seconds: number) => {
     const m = Math.floor(seconds / 60);
@@ -135,7 +137,7 @@ export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClic
   return (
     <>
       <button onClick={() => router.push('/routines')} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem' }}>
-        ← Volver a Mis Rutinas
+        {t('back')}
       </button>
 
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
@@ -143,7 +145,7 @@ export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClic
           <EditableField
             as="h1"
             value={routine.title}
-            placeholder="Nombre de la rutina"
+            placeholder={t('titlePlaceholder')}
             onSave={val => onUpdateRoutine?.('title', val)}
             style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}
             inputStyle={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', letterSpacing: '0.02em' }}
@@ -152,7 +154,7 @@ export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClic
           <EditableField
             as="p"
             value={routine.description || ''}
-            placeholder="Sin descripción — click para añadir"
+            placeholder={t('descriptionPlaceholder')}
             onSave={val => onUpdateRoutine?.('description', val)}
             style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.95rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 'normal' }}
             inputStyle={{ color: 'var(--muted)', fontSize: '0.95rem' }}
@@ -160,17 +162,17 @@ export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClic
 
           <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
             <span style={{ background: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text)' }}>
-              ⏱️ Tiempo estimado: <strong style={{ color: 'var(--gold)' }}>{formatTime(totalDuration)}</strong>
+              {t('estimatedTime')} <strong style={{ color: 'var(--gold)' }}>{formatTime(totalDuration)}</strong>
             </span>
             <span style={{ background: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text)' }}>
-              🎸 Ejercicios: <strong style={{ color: 'var(--gold)' }}>{exerciseCount}</strong>
+              {t('exercisesCount')} <strong style={{ color: 'var(--gold)' }}>{exerciseCount}</strong>
             </span>
           </div>
         </div>
 
         <div style={{ display: 'flex', gap: '1rem' }}>
           <button onClick={onAddClick} style={{ background: 'transparent', color: 'var(--text)', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem', border: '1px solid rgba(255,255,255,0.2)' }}>
-            + Añadir Ejercicio
+            {t('addExercise')}
           </button>
         </div>
       </div>

@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { TECHNIQUES, DIFFICULTY_LABELS, DIFFICULTY_COLORS } from '../../lib/constants';
+import { useTranslations } from 'next-intl';
 
 interface ExerciseFormProps {
     name: string;
@@ -34,6 +35,7 @@ const inputStyle: React.CSSProperties = {
 export function ExerciseForm({
     name, setName, categories, setCategories, bpmSuggested, setBpmSuggested, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes
 }: ExerciseFormProps) {
+    const t = useTranslations('ExerciseForm');
 
     const toggleCategory = (cat: string) =>
         setCategories((prev: string[]) => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
@@ -41,19 +43,19 @@ export function ExerciseForm({
     return (
         <>
             <div>
-                <label style={labelStyle}>Nombre del ejercicio *</label>
+                <label style={labelStyle}>{t('name')}</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)}
-                    placeholder="Ej: Sweep picking en Am" style={inputStyle}
+                    placeholder={t('namePlaceholder')} style={inputStyle}
                     onFocus={e => e.target.style.borderColor = 'var(--gold)'}
                     onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
             </div>
 
             <div>
                 <label style={labelStyle}>
-                    Categorías *
+                    {t('categories')}
                     {categories.length > 0 && (
                         <span style={{ color: 'var(--gold)', marginLeft: '0.5rem', fontSize: '0.75rem' }}>
-                            {categories.length} seleccionadas
+                            {t('selected', { count: categories.length })}
                         </span>
                     )}
                 </label>
@@ -97,16 +99,16 @@ export function ExerciseForm({
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
-                    <label style={labelStyle}>BPM Sugerido</label>
+                    <label style={labelStyle}>{t('bpmSuggested')}</label>
                     <input type="number" min="20" max="300" value={bpmSuggested} onChange={e => setBpmSuggested(e.target.value)}
-                        placeholder="Ej: 80" style={inputStyle}
+                        placeholder={t('bpmSuggestedPlaceholder')} style={inputStyle}
                         onFocus={e => e.target.style.borderColor = 'var(--gold)'}
                         onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
                 </div>
                 <div>
-                    <label style={labelStyle}>BPM Objetivo</label>
+                    <label style={labelStyle}>{t('bpmGoal')}</label>
                     <input type="number" min="20" max="300" value={bpmGoal} onChange={e => setBpmGoal(e.target.value)}
-                        placeholder="Ej: 120" style={inputStyle}
+                        placeholder={t('bpmGoalPlaceholder')} style={inputStyle}
                         onFocus={e => e.target.style.borderColor = 'var(--gold)'}
                         onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
                 </div>
@@ -114,9 +116,9 @@ export function ExerciseForm({
 
             <div>
                 <label style={labelStyle}>
-                    Dificultad
+                    {t('difficulty')}
                     <span style={{ marginLeft: '0.6rem', color: DIFFICULTY_COLORS[difficulty], fontWeight: 700 }}>
-                        {difficulty} — {DIFFICULTY_LABELS[difficulty]}
+                        {t('difficultyLevel', { level: difficulty, label: DIFFICULTY_LABELS[difficulty as keyof typeof DIFFICULTY_LABELS] })}
                     </span>
                 </label>
                 <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.5rem' }}>
@@ -135,9 +137,9 @@ export function ExerciseForm({
             </div>
 
             <div>
-                <label style={labelStyle}>Notas / Observaciones</label>
+                <label style={labelStyle}>{t('notes')}</label>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)}
-                    placeholder="Ej: Practicar lento con metrónomo..."
+                    placeholder={t('notesPlaceholder')}
                     rows={3} style={{ ...inputStyle, resize: 'vertical', lineHeight: 1.6 }}
                     onFocus={e => e.target.style.borderColor = 'var(--gold)'}
                     onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />

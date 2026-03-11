@@ -1,11 +1,12 @@
 "use client";
 
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect, useRef, useMemo } from 'react';
 import { Exercise } from '../../lib/types';
 import { supabase } from '../../lib/supabase';
 import { DropZone } from './DropZone';
 import { useMetronome } from '../../hooks/useMetronome';
 import { EndSessionModal } from './EndSessionModal';
+import { useTranslations } from 'next-intl';
 
 interface PlayerHeaderProps {
   mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation';
@@ -30,14 +31,6 @@ interface PlayerHeaderProps {
   sessionId?: string | null;
   disableBpmInputs?: boolean;
 }
-
-const MODE_CONFIG = {
-  free: { label: 'Práctica Libre', icon: '🎸', color: '#7dd3fc' },
-  library: { label: 'Ejercicio', icon: '📚', color: 'var(--gold)' },
-  routine: { label: 'Rutina', icon: '🔁', color: '#a78bfa' },
-  scales: { label: 'Escalas', icon: '🎹', color: 'var(--gold)' },
-  improvisation: { label: 'Improvisación', icon: '🎷', color: 'var(--gold)' },
-};
 
 const DIFF_COLORS: Record<number, string> = {
   1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171',
@@ -78,6 +71,16 @@ export function PlayerHeader({
   onSaveExerciseLog, onBpmChange, originalBpm, routineName,
   fileName, onFileLoaded, onResetTimer, sessionId, disableBpmInputs = false
 }: PlayerHeaderProps) {
+  const t = useTranslations('PlayerHeader');
+  
+  const MODE_CONFIG = useMemo(() => ({
+    free: { label: t('modes.free'), icon: '🎸', color: '#7dd3fc' },
+    library: { label: t('modes.library'), icon: '📚', color: 'var(--gold)' },
+    routine: { label: t('modes.routine'), icon: '🔁', color: '#a78bfa' },
+    scales: { label: t('modes.scales'), icon: '🎹', color: 'var(--gold)' },
+    improvisation: { label: t('modes.improvisation'), icon: '🎷', color: 'var(--gold)' },
+  }), [t]);
+
   const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
   const isRoutine = mode === 'routine';
   const isFree = mode === 'free';
@@ -195,7 +198,7 @@ export function PlayerHeader({
     if (isFree) { onEndSession(); return; }
     if (!isRoutine) {
       if (displaySeconds > 0 && !saved) {
-        if (!window.confirm('Tienes tiempo sin registrar. ¿Seguro que quieres salir?')) return;
+        if (!window.confirm(t('alerts.unsavedTime'))) return;
       }
       onEndSession(); return;
     }
@@ -212,12 +215,12 @@ export function PlayerHeader({
       let cur: number | null = null, goal: number | null = null;
       if (!disableBpmInputs && showBpmInputs) {
         cur = parseInt(bpmCurrent);
-        if (isNaN(cur) || cur <= 0) throw new Error('BPM inválido');
+        if (isNaN(cur) || cur <= 0) throw new Error(t('errors.invalidBpm'));
         goal = bpmGoal ? parseInt(bpmGoal) : null;
       }
       await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
       setSaved(true); setTimeout(() => setSaved(false), 2500);
-    } catch (err: any) { setErrorMsg(err.message || 'Error al guardar'); }
+    } catch (err: any) { setErrorMsg(err.message || t('errors.saveError')); }
     finally { setIsSaving(false); }
   };
 
@@ -300,17 +303,17 @@ export function PlayerHeader({
             <div className="ph-title-stack">
               {isRoutine && routineName && (
                 <div className="ph-routine-name">
-                  Rutina: <span className="ph-routine-name-val">{routineName}</span>
+                  {t('labels.routine')} <span className="ph-routine-name-val">{routineName}</span>
                 </div>
               )}
-              <h1 className="ph-title" title={exercise?.title || fileName || 'Sin archivo'}>
-                {exercise?.title || fileName || 'Cargando...'}
+              <h1 className="ph-title" title={exercise?.title || fileName || t('labels.noFile')}>
+                {exercise?.title || fileName || t('labels.loading')}
               </h1>
             </div>
           )}
 
           {!isFree && exercise && diff && (
-            <div className="ph-diff" style={{ color: DIFF_COLORS[diff] }}>Nv. {diff}</div>
+            <div className="ph-diff" style={{ color: DIFF_COLORS[diff] }}>{t('labels.level', { diff })}</div>
           )}
 
           {!isFree && isRoutine && routineLength > 1 && (
@@ -326,7 +329,7 @@ export function PlayerHeader({
           )}
 
           <button className="ph-close-btn" onClick={handleCloseClick}>
-            {isRoutine ? 'Finalizar Rutina' : 'Cerrar Ejercicio'}
+            {isRoutine ? t('labels.endRoutine') : t('labels.closeExercise')}
           </button>
         </div>
 
@@ -336,7 +339,7 @@ export function PlayerHeader({
               {showBpmInputs && (
                 <>
                   <div className="ph-bpm-block">
-                    <span className="ph-bpm-label">BPM Actual</span>
+                    <span className="ph-bpm-label">{t('labels.currentBpm')}</span>
                     <input
                       type={disableBpmInputs ? 'text' : 'number'}
                       className="ph-bpm-input"
@@ -355,7 +358,7 @@ export function PlayerHeader({
                   <div className="ph-bpm-sep" />
 
                   <div className="ph-bpm-block">
-                    <span className="ph-bpm-label" style={{ color: 'rgba(255,255,255,0.3)' }}>Objetivo</span>
+                    <span className="ph-bpm-label" style={{ color: 'rgba(255,255,255,0.3)' }}>{t('labels.targetBpm')}</span>
                     {isRoutine || disableBpmInputs ? (
                       <span className="ph-bpm-val" style={{ color: 'rgba(255,255,255,0.4)', opacity: disableBpmInputs ? 0.3 : 1 }}>
                         {disableBpmInputs ? '---' : (bpmGoal || '---')}
@@ -374,7 +377,7 @@ export function PlayerHeader({
 
                   {bpmSuggested && !disableBpmInputs && (
                     <div style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', maxWidth: '80px', lineHeight: 1.2 }}>
-                      Sugerido:<br /><strong style={{ color: 'rgba(255,255,255,0.5)' }}>{bpmSuggested} BPM</strong>
+                      {t('labels.suggestedBpm')}<br /><strong style={{ color: 'rgba(255,255,255,0.5)' }}>{bpmSuggested} BPM</strong>
                     </div>
                   )}
                 </>
@@ -389,7 +392,7 @@ export function PlayerHeader({
                   
                   {!showBpmInputs && (
                     <div className="ph-bpm-block">
-                      <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9 }}>Auxiliar</span>
+                      <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9 }}>{t('labels.auxiliary')}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <input
                           type="number"
@@ -415,7 +418,7 @@ export function PlayerHeader({
                   )}
 
                   <div className="ph-bpm-block" style={{ alignItems: 'center', justifyContent: 'center' }}>
-                    {showBpmInputs && <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9, marginBottom: '4px' }}>Metrónomo</span>}
+                    {showBpmInputs && <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9, marginBottom: '4px' }}>{t('labels.metronome')}</span>}
                     <button
                       onClick={handleToggleMetronome}
                       style={{
@@ -444,7 +447,7 @@ export function PlayerHeader({
                           e.currentTarget.style.background = 'rgba(231,76,60,0.15)';
                         }
                       }}
-                      title={isMetronomePlaying ? 'Pausar metrónomo' : 'Iniciar metrónomo'}
+                      title={isMetronomePlaying ? t('tooltips.pauseMetronome') : t('tooltips.startMetronome')}
                     >
                       {isMetronomePlaying ? (
                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -504,7 +507,7 @@ export function PlayerHeader({
                     color: timerDone ? '#4ade80' : isTimerRunning ? 'var(--gold)' : 'rgba(255,255,255,0.3)',
                   }}
                 >
-                  {timerDone ? '✓ ¡Tiempo completado!' : isTimerRunning ? 'Practicando' : 'Pausado'}
+                  {timerDone ? t('labels.timerCompleted') : isTimerRunning ? t('labels.timerRunning') : t('labels.timerPaused')}
                 </span>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem' }}>
                   <span
@@ -524,7 +527,7 @@ export function PlayerHeader({
               {isRoutine ? (
                 <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
                   <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>
-                    Progreso
+                    {t('labels.progress')}
                   </span>
                   <div className="ph-steps" style={{ width: '100%' }}>
                     {Array.from({ length: routineLength }).map((_, i) => (
@@ -536,7 +539,7 @@ export function PlayerHeader({
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   {errorMsg && <span style={{ color: '#e74c3c', fontSize: '0.75rem', fontWeight: 600 }}>{errorMsg}</span>}
                   <button className={`ph-save-btn ${saved ? 'saved' : 'normal'}`} onClick={handleSave} disabled={isSaving || saved}>
-                    {isSaving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar progreso'}
+                    {isSaving ? t('labels.saving') : saved ? t('labels.saved') : t('labels.saveProgress')}
                   </button>
                 </div>
               )}

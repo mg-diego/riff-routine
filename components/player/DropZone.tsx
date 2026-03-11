@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface DropZoneProps {
   fileName: string | null;
@@ -8,6 +9,7 @@ interface DropZoneProps {
 }
 
 export function DropZone({ fileName, onFileLoaded }: DropZoneProps) {
+  const t = useTranslations('DropZone');
   const [isDragOver, setIsDragOver] = useState(false);
 
   const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
@@ -111,13 +113,13 @@ export function DropZone({ fileName, onFileLoaded }: DropZoneProps) {
           <>
             <span style={{ fontSize: '1.1rem' }}>🎵</span> 
             <span className="dz-filename">{fileName}</span>
-            <span className="dz-sub">Arrastra otro para reemplazar</span>
+            <span className="dz-sub">{t('dragToReplace')}</span>
           </>
         ) : (
           <>
             <span style={{ fontSize: '1.1rem' }}>🎸</span> 
-            <span>Arrastra aquí tu archivo Guitar Pro</span>
-            <span className="dz-sub">.gp, .gpx, .gp5</span>
+            <span>{t('dragFileHere')}</span>
+            <span className="dz-sub">{t('supportedFormats')}</span>
           </>
         )}
       </div>

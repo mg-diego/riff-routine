@@ -1,4 +1,7 @@
+"use client";
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface DeleteConfirmModalProps {
   title: string;
@@ -17,6 +20,8 @@ export function DeleteConfirmModal({
   onConfirm, 
   onCancel 
 }: DeleteConfirmModalProps) {
+  const t = useTranslations('DeleteConfirmModal');
+
   return (
     <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(4px)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
       <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(231,76,60,0.4)', maxWidth: '420px', width: '100%', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }}>
@@ -26,7 +31,9 @@ export function DeleteConfirmModal({
         </h3>
         
         <p style={{ color: 'var(--text)', fontSize: '1rem', lineHeight: 1.5, margin: '0 0 1.5rem 0' }}>
-          ¿Estás seguro de que quieres eliminar <strong style={{ color: '#fff' }}>"{itemName}"</strong>?
+          {t.rich('question', {
+            item: (chunks) => <strong style={{ color: '#fff' }}>"{itemName}"</strong>
+          })}
         </p>
         
         <div style={{ background: 'rgba(231,76,60,0.1)', padding: '1rem', borderRadius: '8px', border: '1px dashed rgba(231,76,60,0.3)', marginBottom: '2rem' }}>
@@ -41,14 +48,14 @@ export function DeleteConfirmModal({
             disabled={isDeleting}
             style={{ background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem 1.2rem', borderRadius: '6px', cursor: isDeleting ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'all 0.2s', opacity: isDeleting ? 0.5 : 1 }}
           >
-            Cancelar
+            {t('cancel')}
           </button>
           <button 
             onClick={onConfirm} 
             disabled={isDeleting}
             style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '6px', cursor: isDeleting ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'all 0.2s', opacity: isDeleting ? 0.7 : 1 }}
           >
-            {isDeleting ? 'Eliminando...' : 'Sí, eliminar'}
+            {isDeleting ? t('deleting') : t('confirm')}
           </button>
         </div>
       </div>

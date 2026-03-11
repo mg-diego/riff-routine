@@ -7,6 +7,7 @@ import { supabase } from '../../lib/supabase';
 import { DeleteButton } from '../ui/DeleteButton';
 import { EditButton } from '../ui/EditButton';
 import { HistoryButton } from '../ui/HistoryButton';
+import { useTranslations } from 'next-intl';
 
 interface RoutineCardProps {
   routine: Routine;
@@ -14,6 +15,7 @@ interface RoutineCardProps {
 }
 
 export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
+  const t = useTranslations('RoutineCard');
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
   
@@ -21,7 +23,6 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
   const [exerciseTitles, setExerciseTitles] = useState<string[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(false);
 
-  // Cargar solo el conteo inicial si el componente padre no lo proporciona
   useEffect(() => {
     if ((routine as any).exercise_count !== undefined) {
       setExerciseCount((routine as any).exercise_count);
@@ -30,7 +31,6 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
     }
   }, [routine]);
 
-  // Cargar los títulos solo cuando se abre la tarjeta por primera vez
   useEffect(() => {
     if (isOpen && exerciseTitles.length === 0) {
       fetchExercisePreview();
@@ -57,7 +57,6 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
     if (data) {
       const titles = data.map((item: any) => item.exercises.title);
       setExerciseTitles(titles);
-      // Actualizar el conteo por si acaso difiere de la lectura inicial
       setExerciseCount(titles.length);
     }
     setLoadingExercises(false);
@@ -94,7 +93,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
           <div>
             <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{routine.title}</h3>
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
-              {displayCount} {displayCount === 1 ? 'ejercicio' : 'ejercicios'}
+              {t('exerciseCount', { count: displayCount })}
             </p>
           </div>
         </div>
@@ -125,7 +124,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M5 3l16 9-16 9V3z" />
             </svg>
-            Tocar
+            {t('playButton')}
           </button>
 
           <EditButton onClick={() => router.push(`/routines/${routine.id}`)} />
@@ -150,7 +149,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
 
           <ul style={{ margin: 0, padding: 0, listStyle: 'none' }}>
             {loadingExercises ? (
-              <li style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>Cargando ejercicios...</li>
+              <li style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('loading')}</li>
             ) : exerciseTitles.length > 0 ? (
               exerciseTitles.map((title, i) => (
                 <li key={i} style={{
@@ -166,7 +165,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
                 </li>
               ))
             ) : (
-              <li style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>No hay ejercicios en esta rutina.</li>
+              <li style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('empty')}</li>
             )}
           </ul>
         </div>

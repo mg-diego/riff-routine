@@ -1,6 +1,7 @@
 "use client";
 
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface ModalProps {
   title: string;
@@ -10,6 +11,8 @@ interface ModalProps {
 }
 
 export function Modal({ title, subtitle, onClose, children }: ModalProps) {
+  const t = useTranslations('Modal');
+
   return (
     <div style={{
       position: 'fixed', inset: 0, zIndex: 1000,
@@ -30,11 +33,14 @@ export function Modal({ title, subtitle, onClose, children }: ModalProps) {
             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', color: 'var(--gold)', margin: 0, letterSpacing: '0.05em' }}>{title}</h2>
             <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.82rem' }}>{subtitle}</p>
           </div>
-          <button onClick={onClose} style={{
-            background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--muted)',
-            width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: '1.1rem',
-            display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
-          }}
+          <button 
+            onClick={onClose} 
+            title={t('close')}
+            style={{
+              background: 'rgba(255,255,255,0.05)', border: 'none', color: 'var(--muted)',
+              width: 36, height: 36, borderRadius: '50%', cursor: 'pointer', fontSize: '1.1rem',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s',
+            }}
             onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; e.currentTarget.style.color = 'var(--text)'; }}
             onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; e.currentTarget.style.color = 'var(--muted)'; }}
           >✕</button>
@@ -55,6 +61,8 @@ interface ModalActionsProps {
 }
 
 export function ModalActions({ onClose, onSubmit, uploading, label }: ModalActionsProps) {
+  const t = useTranslations('Modal');
+
   return (
     <div style={{ display: 'flex', gap: '0.75rem', paddingTop: '0.25rem' }}>
       <button onClick={onClose} style={{
@@ -64,7 +72,7 @@ export function ModalActions({ onClose, onSubmit, uploading, label }: ModalActio
       }}
         onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.04)'}
         onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-      >Cancelar</button>
+      >{t('cancel')}</button>
       <button onClick={onSubmit} disabled={uploading} style={{
         flex: 2, padding: '0.85rem', borderRadius: '8px', cursor: uploading ? 'not-allowed' : 'pointer',
         background: uploading ? 'rgba(220,185,138,0.3)' : 'var(--gold)',
@@ -76,7 +84,7 @@ export function ModalActions({ onClose, onSubmit, uploading, label }: ModalActio
         {uploading ? (
           <>
             <span style={{ display: 'inline-block', width: 16, height: 16, border: '2px solid rgba(220,185,138,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
-            Guardando…
+            {t('saving')}
           </>
         ) : label}
       </button>

@@ -1,4 +1,7 @@
+"use client";
+
 import React, { RefObject, useEffect, useRef } from 'react';
+import { useTranslations } from 'next-intl';
 
 interface AlphaTabContainerProps {
     wrapperRef: RefObject<HTMLDivElement | null>;
@@ -6,6 +9,7 @@ interface AlphaTabContainerProps {
 }
 
 export function AlphaTabContainer({ wrapperRef, hasNoScore }: AlphaTabContainerProps) {
+    const t = useTranslations('AlphaTabContainer');
     const containerRef = useRef<HTMLDivElement>(null);
 
     useEffect(() => {
@@ -66,7 +70,7 @@ export function AlphaTabContainer({ wrapperRef, hasNoScore }: AlphaTabContainerP
                     color: 'var(--muted)', flexDirection: 'column', gap: '1rem'
                 }}>
                     <div style={{ fontSize: '3rem' }}>🎸</div>
-                    <p>Ejercicio sin partitura. ¡Usa el cronómetro y a tocar!</p>
+                    <p>{t('noScoreMessage')}</p>
                 </div>
             )}
         </>

@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from 'react';
+import { useTranslations } from 'next-intl';
 
 const SPEEDS = ['0.25', '0.5', '0.75', '1', '1.25', '1.5'];
 
@@ -11,10 +12,10 @@ interface SpeedSelectProps {
 }
 
 export function SpeedSelect({ value, onChange, disabled }: SpeedSelectProps) {
+  const t = useTranslations('SpeedSelect');
   const [open, setOpen] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
 
-  // Cerrar al hacer click fuera
   useEffect(() => {
     const handler = (e: MouseEvent) => {
       if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
@@ -30,7 +31,6 @@ export function SpeedSelect({ value, onChange, disabled }: SpeedSelectProps) {
 
   return (
     <div ref={ref} style={{ position: 'relative', userSelect: 'none' }}>
-      {/* Trigger */}
       <button
         onClick={() => !disabled && setOpen(o => !o)}
         disabled={disabled}
@@ -49,7 +49,7 @@ export function SpeedSelect({ value, onChange, disabled }: SpeedSelectProps) {
           transition: 'border-color 0.15s',
         }}
       >
-        <span>× {parseFloat(value).toFixed(2)}</span>
+        <span>{t('format', { value: parseFloat(value).toFixed(2) })}</span>
         <svg
           width="12" height="12" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
@@ -59,7 +59,6 @@ export function SpeedSelect({ value, onChange, disabled }: SpeedSelectProps) {
         </svg>
       </button>
 
-      {/* Dropdown */}
       {open && (
         <div style={{
           position: 'absolute',
@@ -96,7 +95,7 @@ export function SpeedSelect({ value, onChange, disabled }: SpeedSelectProps) {
                 onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
                 onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
               >
-                × {parseFloat(s).toFixed(2)}
+                {t('format', { value: parseFloat(s).toFixed(2) })}
                 {isActive && <span style={{ float: 'right', opacity: 0.7 }}>✓</span>}
               </button>
             );

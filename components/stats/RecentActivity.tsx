@@ -3,6 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { getStartDate } from '../../lib/utils';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface Props { dateFilter: string; }
 
@@ -39,6 +40,8 @@ function TechniqueTag({ technique }: { technique: string }) {
 }
 
 export function RecentActivity({ dateFilter }: Props) {
+  const t = useTranslations('RecentActivity');
+  const locale = useLocale();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [page, setPage] = useState(1);
@@ -95,12 +98,11 @@ export function RecentActivity({ dateFilter }: Props) {
     const yesterday = new Date(today); yesterday.setDate(today.getDate() - 1);
     const isToday = date.toDateString() === today.toDateString();
     const isYesterday = date.toDateString() === yesterday.toDateString();
-    if (isToday) return 'Hoy';
-    if (isYesterday) return 'Ayer';
-    return date.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    if (isToday) return t('dates.today');
+    if (isYesterday) return t('dates.yesterday');
+    return date.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { weekday: 'long', day: 'numeric', month: 'long' });
   };
 
-  // Group by date
   const grouped: GroupedDay[] = [];
   logs.forEach(log => {
     const label = getDateLabel(log.created_at);
@@ -119,7 +121,7 @@ export function RecentActivity({ dateFilter }: Props) {
 
   if (logs.length === 0 && page === 1) return (
     <div style={{ background: 'var(--surface)', padding: '3rem', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.08)', textAlign: 'center' }}>
-      <p style={{ color: 'var(--muted)', margin: 0 }}>Aún no hay registros de práctica.</p>
+      <p style={{ color: 'var(--muted)', margin: 0 }}>{t('empty')}</p>
     </div>
   );
 
@@ -127,15 +129,14 @@ export function RecentActivity({ dateFilter }: Props) {
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
         <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.6rem', color: 'var(--text)', margin: 0, letterSpacing: '0.05em' }}>
-          Actividad Reciente
+          {t('title')}
         </h2>
-        <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{totalCount} registros en total</span>
+        <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{t('totalCount', { count: totalCount })}</span>
       </div>
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {grouped.map(group => (
           <div key={group.dateLabel}>
-            {/* Date separator */}
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
               <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
                 {group.dateLabel}
@@ -149,34 +150,32 @@ export function RecentActivity({ dateFilter }: Props) {
                   display: 'grid', gridTemplateColumns: '1fr auto',
                   alignItems: 'center', gap: '1rem',
                   background: 'var(--surface)', padding: '0.9rem 1.25rem',
-                  borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)',
+                  borderRadius: '100px', border: '1px solid rgba(255,255,255,0.03)',
                   transition: 'border-color 0.2s',
                 }}
                   onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
                   onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'}
                 >
-                  {/* Left: title + meta */}
                   <div style={{ minWidth: 0 }}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
                       <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {log.exercises?.title || 'Ejercicio desconocido'}
+                        {log.exercises?.title || t('unknownExercise')}
                       </span>
                       {log.exercises?.technique && <TechniqueTag technique={log.exercises.technique} />}
                     </div>
                     <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.15rem', display: 'block' }}>
-                      {new Date(log.created_at).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
+                      {new Date(log.created_at).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                     </span>
                   </div>
 
-                  {/* Right: BPM + time */}
                   <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexShrink: 0 }}>
                     <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', display: 'block' }}>Tiempo</span>
+                      <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', display: 'block' }}>{t('timeLabel')}</span>
                       <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>{formatDuration(log.duration_seconds)}</span>
                     </div>
                     {log.bpm_used != null && (
                       <div style={{ textAlign: 'right', minWidth: '52px' }}>
-                        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block' }}>BPM</span>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block' }}>{t('bpmLabel')}</span>
                         <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold)', lineHeight: 1 }}>{log.bpm_used}</span>
                       </div>
                     )}
@@ -188,11 +187,10 @@ export function RecentActivity({ dateFilter }: Props) {
         ))}
       </div>
 
-      {/* Pagination */}
       {totalPages > 1 && (
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
           <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-            Página {page} de {totalPages}
+            {t('pagination', { current: page, total: totalPages })}
           </span>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
             <button
@@ -200,14 +198,14 @@ export function RecentActivity({ dateFilter }: Props) {
               disabled={page === 1}
               style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: page === 1 ? 'rgba(255,255,255,0.2)' : 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: page === 1 ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem', transition: 'border-color 0.2s' }}
             >
-              ← Anterior
+              {t('prev')}
             </button>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
               style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: page === totalPages ? 'rgba(255,255,255,0.2)' : 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem', transition: 'border-color 0.2s' }}
             >
-              Siguiente →
+              {t('next')}
             </button>
           </div>
         </div>

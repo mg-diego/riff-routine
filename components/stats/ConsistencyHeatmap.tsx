@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
+import { useTranslations, useLocale } from 'next-intl';
 
 interface HeatmapData {
   date: string;
@@ -9,6 +10,8 @@ interface HeatmapData {
 }
 
 export function ConsistencyHeatmap() {
+  const t = useTranslations('ConsistencyHeatmap');
+  const locale = useLocale();
   const [data, setData] = useState<Record<string, number>>({});
   const [loading, setLoading] = useState(true);
 
@@ -77,7 +80,11 @@ export function ConsistencyHeatmap() {
     return 'var(--gold)';
   };
 
-  const months = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
+  const months = [
+    t('months.0'), t('months.1'), t('months.2'), t('months.3'), 
+    t('months.4'), t('months.5'), t('months.6'), t('months.7'), 
+    t('months.8'), t('months.9'), t('months.10'), t('months.11')
+  ];
 
   const columnsCount = Math.ceil(days.length / 7);
   const monthLabels = [];
@@ -101,7 +108,7 @@ export function ConsistencyHeatmap() {
   return (
     <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', overflowX: 'auto' }}>
       <h3 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', margin: '0 0 1.5rem 0' }}>
-        Mapa de Consistencia (Último año)
+        {t('title')}
       </h3>
       
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: 'max-content' }}>
@@ -126,11 +133,11 @@ export function ConsistencyHeatmap() {
         <div style={{ display: 'flex', gap: '0.5rem' }}>
           <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 12px)', gap: '4px', color: 'var(--muted)', fontSize: '0.65rem', paddingRight: '0.2rem', textAlign: 'right', width: '20px' }}>
             <span style={{ lineHeight: '12px' }}></span>
-            <span style={{ lineHeight: '12px' }}>Lun</span>
+            <span style={{ lineHeight: '12px' }}>{t('weekdays.mon')}</span>
             <span style={{ lineHeight: '12px' }}></span>
-            <span style={{ lineHeight: '12px' }}>Mié</span>
+            <span style={{ lineHeight: '12px' }}>{t('weekdays.wed')}</span>
             <span style={{ lineHeight: '12px' }}></span>
-            <span style={{ lineHeight: '12px' }}>Vie</span>
+            <span style={{ lineHeight: '12px' }}>{t('weekdays.fri')}</span>
             <span style={{ lineHeight: '12px' }}></span>
           </div>
 
@@ -142,12 +149,17 @@ export function ConsistencyHeatmap() {
 
               const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
               const minutes = data[dateKey] || 0;
-              const title = `${day.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' })}: ${Math.round(minutes)} min`;
+              
+              const dateStr = day.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { 
+                day: 'numeric', 
+                month: 'long', 
+                year: 'numeric' 
+              });
 
               return (
                 <div
                   key={dateKey}
-                  title={title}
+                  title={t('tooltip', { date: dateStr, minutes: Math.round(minutes) })}
                   style={{
                     width: '12px',
                     height: '12px',
@@ -166,7 +178,7 @@ export function ConsistencyHeatmap() {
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
-        <span>Menos</span>
+        <span>{t('legend.less')}</span>
         <div style={{ display: 'flex', gap: '4px' }}>
           <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(255,255,255,0.03)' }} />
           <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(220,185,138,0.2)' }} />
@@ -174,7 +186,7 @@ export function ConsistencyHeatmap() {
           <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(220,185,138,0.8)' }} />
           <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'var(--gold)' }} />
         </div>
-        <span>Más</span>
+        <span>{t('legend.more')}</span>
       </div>
     </div>
   );

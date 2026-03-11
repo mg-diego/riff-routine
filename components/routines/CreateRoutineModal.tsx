@@ -1,6 +1,9 @@
+"use client";
+
 import React, { useState } from 'react';
 import { supabase } from '../../lib/supabase';
 import { Modal, ModalActions } from '../ui/Modal';
+import { useTranslations } from 'next-intl';
 
 interface CreateRoutineModalProps {
   onClose: () => void;
@@ -8,20 +11,21 @@ interface CreateRoutineModalProps {
 }
 
 export function CreateRoutineModal({ onClose, onSuccess }: CreateRoutineModalProps) {
+  const t = useTranslations('CreateRoutineModal');
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const handleSubmit = async () => {
-    if (!title.trim()) return setError('El nombre es obligatorio.');
+    if (!title.trim()) return setError(t('errors.nameRequired'));
     
     try {
       setSaving(true);
       setError(null);
       
       const { data: { user } } = await supabase.auth.getUser();
-      if (!user) throw new Error('Debes iniciar sesión.');
+      if (!user) throw new Error(t('errors.sessionRequired'));
 
       const { error: dbError } = await supabase
         .from('routines')
@@ -50,17 +54,17 @@ export function CreateRoutineModal({ onClose, onSuccess }: CreateRoutineModalPro
   };
 
   return (
-    <Modal title="Nueva Rutina" subtitle="Crea una colección para organizar tus ejercicios" onClose={onClose}>
+    <Modal title={t('title')} subtitle={t('subtitle')} onClose={onClose}>
       <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
         <div>
           <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-            Nombre de la rutina *
+            {t('nameLabel')}
           </label>
           <input 
             type="text" 
             value={title} 
             onChange={e => setTitle(e.target.value)}
-            placeholder="Ej: Calentamiento Diario" 
+            placeholder={t('namePlaceholder')} 
             style={inputStyle}
             onFocus={e => e.target.style.borderColor = 'var(--gold)'}
             onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} 
@@ -69,12 +73,12 @@ export function CreateRoutineModal({ onClose, onSuccess }: CreateRoutineModalPro
 
         <div>
           <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-            Descripción <span style={{ color: 'var(--muted)', fontWeight: 400 }}>(opcional)</span>
+            {t('descriptionLabel')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('optional')}</span>
           </label>
           <textarea 
             value={description} 
             onChange={e => setDescription(e.target.value)}
-            placeholder="Ej: Rutina de 20 minutos enfocada en precisión..."
+            placeholder={t('descriptionPlaceholder')}
             rows={3} 
             style={{ ...inputStyle, resize: 'vertical' }}
             onFocus={e => e.target.style.borderColor = 'var(--gold)'}
@@ -89,7 +93,7 @@ export function CreateRoutineModal({ onClose, onSuccess }: CreateRoutineModalPro
         )}
       </div>
 
-      <ModalActions onClose={onClose} onSubmit={handleSubmit} uploading={saving} label="Crear rutina" />
+      <ModalActions onClose={onClose} onSubmit={handleSubmit} uploading={saving} label={t('createButton')} />
     </Modal>
   );
 }

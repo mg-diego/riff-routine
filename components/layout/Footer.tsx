@@ -3,8 +3,11 @@
 import React from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
+import { useTranslations } from 'next-intl';
 
 export function Footer() {
+  const t = useTranslations('Footer');
+
   return (
     <footer style={{
       background: 'var(--bg, #0d0d0d)',
@@ -24,7 +27,6 @@ export function Footer() {
         gap: '1rem'
       }}>
         
-        {/* Logo con Favicon (versión reducida para el footer) */}
         <Link href="/home" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <div style={{
             width: '20px',
@@ -33,11 +35,11 @@ export function Footer() {
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'center',
-            opacity: 0.8 // Un poco de transparencia extra para que sea más sutil
+            opacity: 0.8
           }}>
             <Image 
               src="/favicon.ico" 
-              alt="RiffRoutine Logo" 
+              alt={t('logoAlt')} 
               fill
               style={{ objectFit: 'contain' }}
             />
@@ -52,31 +54,29 @@ export function Footer() {
           </div>
         </Link>
 
-        {/* Links */}
         <div style={{ display: 'flex', gap: '2rem', fontSize: '0.82rem' }}>
           <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text, #f0e8dc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
           >
-            Privacidad
+            {t('privacy')}
           </Link>
           <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text, #f0e8dc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
           >
-            Términos
+            {t('terms')}
           </Link>
           <Link href="/contacto" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text, #f0e8dc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
           >
-            Contacto
+            {t('contact')}
           </Link>
         </div>
 
-        {/* Copyright */}
         <div style={{ fontSize: '0.82rem' }}>
-          © {new Date().getFullYear()} RiffRoutine. Hecho para guitarristas.
+          {t('copyright', { year: new Date().getFullYear() })}
         </div>
       </div>
     </footer>

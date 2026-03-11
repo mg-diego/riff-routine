@@ -1,10 +1,15 @@
+"use client";
+
 import React from 'react';
+import { useTranslations } from 'next-intl';
 
 interface DeleteButtonProps {
   onClick: () => void;
 }
 
 export function DeleteButton({ onClick }: DeleteButtonProps) {
+  const t = useTranslations('DeleteButton');
+
   return (
     <button
       onClick={onClick}
@@ -32,7 +37,7 @@ export function DeleteButton({ onClick }: DeleteButtonProps) {
         e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
         e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
       }}
-      title="Eliminar"
+      title={t('tooltip')}
     >
       <svg style={{ transform: 'scale(1.8)' }} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
         <polyline points="3 6 5 6 21 6" />

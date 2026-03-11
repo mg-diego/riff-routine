@@ -6,6 +6,7 @@ import { DIFFICULTY_COLORS } from '../../lib/constants';
 import { DeleteButton } from '../ui/DeleteButton';
 import { EditButton } from '../ui/EditButton';
 import { HistoryButton } from '../ui/HistoryButton';
+import { useTranslations } from 'next-intl';
 
 interface ExerciseCardProps {
   file: Exercise;
@@ -16,6 +17,8 @@ interface ExerciseCardProps {
 }
 
 export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: ExerciseCardProps) {
+  const t = useTranslations('ExerciseCard');
+  
   const cats = file.technique ? file.technique.split(', ') : [];
   const diff = file.difficulty || 1;
 
@@ -45,7 +48,6 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
       onMouseEnter={e => e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.4)' : 'rgba(220,185,138,0.3)'}
       onMouseLeave={e => e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.15)' : 'rgba(255,255,255,0.05)'}
     >
-      {/* Indicador superior sutil si falta archivo */}
       {missingFile && (
         <div style={{
           position: 'absolute',
@@ -57,11 +59,10 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
         }} />
       )}
 
-      {/* Cabecera: Título y Nivel */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
           {missingFile && (
-            <div title="Sin partitura asociada" style={{ color: '#e74c3c', display: 'flex', alignItems: 'center' }}>
+            <div title={t('noFile')} style={{ color: '#e74c3c', display: 'flex', alignItems: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <path d="M14 2v6h6" />
@@ -92,10 +93,9 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
           fontWeight: 800,
           whiteSpace: 'nowrap',
           flexShrink: 0,
-        }}>Nv. {diff}</span>
+        }}>{t('level', { level: diff })}</span>
       </div>
 
-      {/* Etiquetas / Categorías */}
       {cats.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
           {cats.slice(0, 3).map(cat => (
@@ -117,21 +117,20 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
         </div>
       )}
 
-      {/* Sección de BPM y Progreso */}
       {(activeBpm || file.bpm_goal) && (
         <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)', marginTop: '0.2rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: hasProgressBpms ? '0.6rem' : 0, fontWeight: 500 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span style={{ color: 'var(--gold)' }}>▶</span>
               <span>
-                <strong style={{ color: 'var(--text)', fontSize: '0.9rem' }}>{activeBpm || '--'}</strong> {isCurrent ? 'Actual' : isSuggested ? 'Sugerido' : 'Inicial'}
+                <strong style={{ color: 'var(--text)', fontSize: '0.9rem' }}>{activeBpm || '--'}</strong> {isCurrent ? t('bpmStatus.current') : isSuggested ? t('bpmStatus.suggested') : t('bpmStatus.initial')}
               </span>
             </div>
             {file.bpm_goal && (
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                 <span style={{ color: '#a78bfa' }}>🎯</span>
                 <span>
-                  <strong style={{ color: 'var(--text)', fontSize: '0.9rem' }}>{file.bpm_goal}</strong> Meta
+                  <strong style={{ color: 'var(--text)', fontSize: '0.9rem' }}>{file.bpm_goal}</strong> {t('goal')}
                 </span>
               </div>
             )}
@@ -150,7 +149,6 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
         </div>
       )}
 
-      {/* Notas */}
       {file.notes && (
         <p style={{
           margin: 0,
@@ -167,10 +165,8 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
         </p>
       )}
 
-      {/* Botonera inferior */}
       <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', paddingTop: '0.5rem', width: '100%' }}>
         
-        {/* Botón Principal (Tocar) */}
         <div style={{ flex: 1, position: 'relative' }}>
           <button
             onClick={() => {
@@ -209,21 +205,18 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
             }}
           >
             {missingFile ? (
-              // Icono de metrónomo/práctica libre si no hay archivo
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M8.5 3h7l3 18h-13z" /><path d="M12 21l4.5-16" /><circle cx="14.25" cy="13" r="2.5" fill="currentColor" stroke="none" />
               </svg>
             ) : (
-              // Icono de play si hay archivo
               <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M6 4l14 8-14 8V4z" />
               </svg>
             )}
-            {missingFile ? 'Práctica Libre' : 'Tocar'}
+            {missingFile ? t('freePractice') : t('play')}
           </button>
         </div>
 
-        {/* Acciones Secundarias */}
         <EditButton onClick={() => onEdit(file)} />
         <HistoryButton onClick={() => onHistory(file)} />
         <DeleteButton onClick={() => onDelete(file)} />
