@@ -392,7 +392,7 @@ export function PlayerHeader({
                   
                   {!showBpmInputs && (
                     <div className="ph-bpm-block">
-                      <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9 }}>{t('labels.auxiliary')}</span>
+                      <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9 }}>{t('labels.metronome')}</span>
                       <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                         <input
                           type="number"

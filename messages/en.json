@@ -729,7 +729,6 @@
       "targetBpm": "Target",
       "suggestedBpm": "Suggested:",
       "metronome": "Metronome",
-      "auxiliary": "Auxiliary",
       "timerCompleted": "✓ Time completed!",
       "timerRunning": "Practicing",
       "timerPaused": "Paused",

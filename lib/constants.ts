@@ -225,7 +225,15 @@ export const SCALES: Record<string, any> = {
         tetrads: ['Maj7', 'm7', '7', 'm7♭5'],
         desc: 'Las 4 notas estructurales de un acorde Mayor con 7ª Mayor. Perfecto para barridos en progresiones mayores.',
         target: '3, 7',
-        chords: 'Maj7'
+        chords: 'Maj7',
+        customPositions: {
+            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 4 }, { "s": 4, "o": 2 }, { "s": 3, "o": 1 }, { "s": 3, "o": 2 }, { "s": 2, "o": 1 }, { "s": 1, "o": 0 }, { "s": 1, "o": 4 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }] },
+            "2A": { "rootStr": 3, "notes": [{ "s": 5, "o": 2 }, { "s": 4, "o": 4 }, { "s": 3, "o": 4 }, { "s": 2, "o": 2 }, { "s": 1, "o": 2 }, { "s": 1, "o": 3 }, { "s": 0, "o": 2 }, { "s": 0, "o": 5 }, { "s": 4, "o": 0 }, { "s": 3, "o": 0 }] },
+            "2B": { "rootStr": 4, "notes": [{ "s": 5, "o": -3 }, { "s": 5, "o": 0 }, { "s": 4, "o": -1 }, { "s": 4, "o": 0 }, { "s": 3, "o": -1 }, { "s": 2, "o": -3 }, { "s": 1, "o": -3 }, { "s": 1, "o": -2 }, { "s": 0, "o": -3 }, { "s": 0, "o": 0 }] },
+            "3A": { "rootStr": 4, "notes": [{ "s": 4, "o": 0 }, { "s": 5, "o": 0 }, { "s": 4, "o": -1 }, { "s": 3, "o": -1 }, { "s": 3, "o": 2 }, { "s": 2, "o": 1 }, { "s": 1, "o": 2 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }, { "s": 2, "o": 2 }] },
+            "3B": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 5, "o": 4 }, { "s": 4, "o": 4 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 2, "o": 1 }, { "s": 1, "o": 2 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }] },
+            "4": { "rootStr": 5, "notes": [{ "s": 5, "o": -1 }, { "s": 5, "o": 0 }, { "s": 4, "o": -1 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 3, "o": 1 }, { "s": 2, "o": 1 }, { "s": 1, "o": 0 }, { "s": 0, "o": -1 }, { "s": 0, "o": 0 }] }
+        }
     },
     'min7-arpeggio': {
         name: 'Arpegio m7',
@@ -234,16 +242,33 @@ export const SCALES: Record<string, any> = {
         tetrads: ['m7', 'Maj7', 'm7', '7'],
         desc: 'Las 4 notas estructurales de un acorde menor con 7ª. Imprescindible para sweep picking sobre acordes menores.',
         target: '♭3, ♭7',
-        chords: 'm7'
+        chords: 'm7',
+        customPositions: {
+            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 3 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 3, "o": 0 }, { "s": 2, "o": 0 }, { "s": 1, "o": 0 }, { "s": 1, "o": 3 }, { "s": 0, "o": 0 }, { "s": 0, "o": 3 }] },
+            "2A": { "rootStr": 3, "notes": [{ "s": 5, "o": 1 }, { "s": 4, "o": 3 }, { "s": 3, "o": 3 }, { "s": 4, "o": 0 }, { "s": 3, "o": 0 }, { "s": 2, "o": 2 }, { "s": 1, "o": 1 }, { "s": 1, "o": 3 }, { "s": 0, "o": 1 }, { "s": 0, "o": 5 }] },
+            "2B": { "rootStr": 4, "notes": [{ "s": 5, "o": -4 }, { "s": 4, "o": -2 }, { "s": 3, "o": -2 }, { "s": 2, "o": -3 }, { "s": 1, "o": -2 }, { "s": 0, "o": -4 }, { "s": 0, "o": 0 }, { "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 2, "o": 0 }] },
+            "3A": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": -2 }, { "s": 3, "o": -2 }, { "s": 2, "o": 0 }, { "s": 2, "o": -3 }, { "s": 1, "o": -2 }, { "s": 1, "o": 1 }, { "s": 0, "o": 0 }, { "s": 0, "o": 3 }] },
+            "3B": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": -2 }, { "s": 3, "o": -2 }, { "s": 2, "o": 0 }, { "s": 1, "o": -2 }, { "s": 1, "o": 1 }, { "s": 0, "o": 0 }, { "s": 0, "o": 3 }, { "s": 3, "o": 2 }] },
+            "3C": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 2, "o": 0 }, { "s": 1, "o": 1 }, { "s": 0, "o": 0 }, { "s": 0, "o": 3 }, { "s": 3, "o": 2 }, { "s": 5, "o": 3 }, { "s": 4, "o": 3 }, { "s": 2, "o": 2 }] },
+            "4": { "rootStr": 5, "notes": [{ "s": 5, "o": -2 }, { "s": 5, "o": 0 }, { "s": 4, "o": -2 }, { "s": 3, "o": 0 }, { "s": 2, "o": 0 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 3, "o": -3 }, { "s": 2, "o": -3 }, { "s": 0, "o": -2 }] }
+        }
     },
     'dom7-arpeggio': {
-        name: 'Arpegio Dominante',
         intervals: [0, 4, 7, 10],
         triads: ['Maj', 'dim', 'm', 'Maj'],
         tetrads: ['7', 'dim7', 'm7', 'Maj7'],
         desc: 'Arpegio del acorde dominante. Su intervalo inestable de tritono crea la necesidad obligada de resolver.',
         target: '3, ♭7',
-        chords: '7'
+        chords: '7',
+        customPositions: {
+            "1A": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 4, "o": -1 }, { "s": 3, "o": 0 }, { "s": 2, "o": 1 }, { "s": 1, "o": 0 }, { "s": 1, "o": 3 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }] },
+            "1B": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 3, "o": 0 }, { "s": 2, "o": 1 }, { "s": 1, "o": 3 }, { "s": 0, "o": 4 }, { "s": 5, "o": 4 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }] },
+            "2A": { "rootStr": 3, "notes": [{ "s": 5, "o": 2 }, { "s": 4, "o": 3 }, { "s": 3, "o": 4 }, { "s": 4, "o": 0 }, { "s": 3, "o": 0 }, { "s": 2, "o": 2 }, { "s": 1, "o": 3 }, { "s": 1, "o": 1 }, { "s": 0, "o": 2 }] },
+            "2B": { "rootStr": 4, "notes": [{ "s": 5, "o": -3 }, { "s": 4, "o": -2 }, { "s": 3, "o": -1 }, { "s": 2, "o": -3 }, { "s": 1, "o": -2 }, { "s": 0, "o": -3 }, { "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 2, "o": 0 }, { "s": 0, "o": 0 }] },
+            "3A": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 0, "o": 3 }, { "s": 4, "o": -2 }, { "s": 3, "o": -1 }, { "s": 2, "o": 0 }, { "s": 1, "o": 2 }, { "s": 0, "o": 0 }] },
+            "3B": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 0, "o": 3 }, { "s": 2, "o": 0 }, { "s": 1, "o": 2 }, { "s": 0, "o": 0 }, { "s": 5, "o": 3 }, { "s": 4, "o": 4 }] },
+            "4": { "rootStr": 5, "notes": [{ "s": 5, "o": -2 }, { "s": 5, "o": 0 }, { "s": 4, "o": -1 }, { "s": 3, "o": 0 }, { "s": 3, "o": -3 }, { "s": 2, "o": -3 }, { "s": 1, "o": 0 }, { "s": 0, "o": -2 }, { "s": 0, "o": 0 }, { "s": 1, "o": -3 }] }
+        }
     },
     'major-triad': {
         name: 'Tríada Mayor',
@@ -252,7 +277,12 @@ export const SCALES: Record<string, any> = {
         tetrads: ['Maj7', 'm7', '7'],
         desc: 'El acorde mayor básico tocado de forma lineal. Fuerte, brillante y estático.',
         target: '1, 3, 5',
-        chords: 'Maj'
+        chords: 'Maj',
+        customPositions: {
+            "1": {"rootStr":5,"notes":[{"s":5,"o":0},{"s":5,"o":4},{"s":4,"o":2},{"s":3,"o":2},{"s":2,"o":1},{"s":1,"o":0},{"s":0,"o":0},{"s":0,"o":4}]},
+            "2": {"rootStr":4,"notes":[{"s":5,"o":-3},{"s":4,"o":0},{"s":0,"o":-3},{"s":1,"o":-2},{"s":2,"o":-3},{"s":0,"o":0},{"s":3,"o":-1},{"s":5,"o":0}]},
+            "3": {"rootStr":4,"notes":[{"s":5,"o":0},{"s":4,"o":0},{"s":4,"o":4},{"s":3,"o":2},{"s":2,"o":2},{"s":1,"o":2},{"s":0,"o":5},{"s":0,"o":0}]}
+        }
     },
     'minor-triad': {
         name: 'Tríada Menor',
@@ -261,7 +291,12 @@ export const SCALES: Record<string, any> = {
         tetrads: ['m7', 'Maj7', 'm7'],
         desc: 'El acorde menor básico tocado de forma lineal. Oscuro y triste.',
         target: '1, b3, 5',
-        chords: 'm'
+        chords: 'm',
+        customPositions: {
+            "1": {"rootStr":5,"notes":[{"s":5,"o":0},{"s":5,"o":3},{"s":4,"o":2},{"s":3,"o":2},{"s":1,"o":0},{"s":0,"o":0},{"s":2,"o":0},{"s":0,"o":3}]},
+            "2": {"rootStr":4,"notes":[{"s":4,"o":0},{"s":0,"o":-4},{"s":1,"o":-2},{"s":2,"o":-3},{"s":3,"o":-2},{"s":4,"o":-5},{"s":5,"o":-4},{"s":0,"o":0}]},
+            "3": {"rootStr":4,"notes":[{"s":5,"o":0},{"s":4,"o":0},{"s":4,"o":3},{"s":3,"o":2},{"s":2,"o":2},{"s":0,"o":5},{"s":0,"o":0},{"s":1,"o":1}]}
+        }
     },
     'hirajoshi': {
         name: 'Hirajōshi (6th)',
@@ -270,7 +305,10 @@ export const SCALES: Record<string, any> = {
         tetrads: ['m7', 'm7♭5', 'Maj7', 'm7', 'Maj7'],
         desc: 'Escala pentatónica tradicional de Japón derivada de la afinación del Koto. Sonido melancólico y épico.',
         target: '2, ♭6',
-        chords: 'm, m7'
+        chords: 'm, m7',
+        customPositions: {
+            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 1 }, { "s": 4, "o": 0 }, { "s": 4, "o": 2 }, { "s": 3, "o": -2 }, { "s": 3, "o": 2 }, { "s": 2, "o": -2 }, { "s": 2, "o": 2 }, { "s": 1, "o": 0 }, { "s": 1, "o": 1 }, { "s": 0, "o": 0 }, { "s": 0, "o": 1 }] }
+        }
     },
     'iwato': {
         name: 'Iwato (7th)',
@@ -319,34 +357,47 @@ export const PROGRESSIONS = [
 ];
 
 export const ROMAN_PROGRESSIONS = [
-  { roman: "I - V - vi - IV", isMinorStart: false },
-  { roman: "ii - V - I", isMinorStart: false }, // Se resuelve en Mayor
-  { roman: "vi - IV - I - V", isMinorStart: true },
-  { roman: "I - vi - IV - V", isMinorStart: false },
-  { roman: "i - iv - V", isMinorStart: true }, // Progresión menor clásica
-  { roman: "I - IV - vi - V", isMinorStart: false },
+    { roman: "I - V - vi - IV", isMinorStart: false },
+    { roman: "ii - V - I", isMinorStart: false }, // Se resuelve en Mayor
+    { roman: "vi - IV - I - V", isMinorStart: true },
+    { roman: "I - vi - IV - V", isMinorStart: false },
+    { roman: "i - iv - V", isMinorStart: true }, // Progresión menor clásica
+    { roman: "I - IV - vi - V", isMinorStart: false },
 ];
 
 export const MAJOR_INTERVALS = [0, 2, 4, 5, 7, 9, 11]; // I, ii, iii, IV, V, vi, vii°
 export const MINOR_INTERVALS = [0, 2, 3, 5, 7, 8, 10]; // i, ii°, III, iv, v, VI, VII
 
 export const DEGREE_MAP_MAJOR: Record<string, { idx: number, suffix: string }> = {
-  'I': { idx: 0, suffix: '' },
-  'ii': { idx: 1, suffix: 'm' },
-  'iii': { idx: 2, suffix: 'm' },
-  'IV': { idx: 3, suffix: '' },
-  'V': { idx: 4, suffix: '' },
-  'vi': { idx: 5, suffix: 'm' },
-  'vii°': { idx: 6, suffix: 'dim' },
+    'I': { idx: 0, suffix: '' },
+    'ii': { idx: 1, suffix: 'm' },
+    'iii': { idx: 2, suffix: 'm' },
+    'IV': { idx: 3, suffix: '' },
+    'V': { idx: 4, suffix: '' },
+    'vi': { idx: 5, suffix: 'm' },
+    'vii°': { idx: 6, suffix: 'dim' },
 };
 
 export const DEGREE_MAP_MINOR: Record<string, { idx: number, suffix: string }> = {
-  'i': { idx: 0, suffix: 'm' },
-  'ii°': { idx: 1, suffix: 'dim' },
-  'III': { idx: 2, suffix: '' },
-  'iv': { idx: 3, suffix: 'm' },
-  'v': { idx: 4, suffix: 'm' },
-  'V': { idx: 4, suffix: '' }, // A veces se usa el V mayor en tonalidad menor (armónica)
-  'VI': { idx: 5, suffix: '' },
-  'VII': { idx: 6, suffix: '' },
+    'i': { idx: 0, suffix: 'm' },
+    'ii°': { idx: 1, suffix: 'dim' },
+    'III': { idx: 2, suffix: '' },
+    'iv': { idx: 3, suffix: 'm' },
+    'v': { idx: 4, suffix: 'm' },
+    'V': { idx: 4, suffix: '' }, // A veces se usa el V mayor en tonalidad menor (armónica)
+    'VI': { idx: 5, suffix: '' },
+    'VII': { idx: 6, suffix: '' },
+};
+
+export interface CustomPositionNote {
+    string: number;
+    fretOffset: number;
+}
+
+export const CUSTOM_POSITIONS: Record<string, Record<number, CustomPositionNote[]>> = {
+    'pentatonic-minor': {
+        // 0: [ { string: 5, fretOffset: 0 }, { string: 5, fretOffset: 3 }, ... ]
+    },
+    'hirajoshi': {
+    }
 };
