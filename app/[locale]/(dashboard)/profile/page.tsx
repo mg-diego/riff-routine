@@ -8,6 +8,27 @@ import { supabase } from '@/lib/supabase';
 import { compressImage } from '@/lib/utils';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
+type Tier = 'free' | 'pro' | 'lifetime';
+
+const TIER_CONFIG: Record<Tier, { label: string; bg: string; color: string; border: string }> = {
+  free: { label: 'FREE', bg: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: 'rgba(255,255,255,0.1)' },
+  pro: { label: 'PRO', bg: 'rgba(220,185,138,0.12)', color: 'var(--gold)', border: 'rgba(220,185,138,0.35)' },
+  lifetime: { label: 'LIFETIME', bg: 'var(--gold)', color: '#111', border: 'transparent' },
+};
+
+function TierPill({ tier }: { tier: Tier }) {
+  const c = TIER_CONFIG[tier];
+  return (
+    <span style={{
+      background: c.bg, color: c.color, border: `1px solid ${c.border}`,
+      fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em',
+      padding: '3px 8px', borderRadius: '6px', fontFamily: 'DM Sans, sans-serif',
+      textTransform: 'uppercase', whiteSpace: 'nowrap',
+    }}>
+      {c.label}
+    </span>
+  );
+}
 
 function Section({ title, description, isDanger, children }: { title: string; description?: string; isDanger?: boolean; children: React.ReactNode }) {
   return (
@@ -41,18 +62,13 @@ function Row({ label, description, children }: { label: string; description?: st
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button
-      onClick={() => onChange(!checked)}
-      style={{
-        width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-        background: checked ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-        cursor: 'pointer', position: 'relative', flexShrink: 0,
-        transition: 'background 0.2s',
-      }}
-    >
+    <button onClick={() => onChange(!checked)} style={{
+      width: '44px', height: '24px', borderRadius: '12px', border: 'none',
+      background: checked ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
+      cursor: 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s',
+    }}>
       <div style={{
-        position: 'absolute', top: '3px',
-        left: checked ? '23px' : '3px',
+        position: 'absolute', top: '3px', left: checked ? '23px' : '3px',
         width: '18px', height: '18px', borderRadius: '50%',
         background: checked ? '#111' : 'rgba(255,255,255,0.5)',
         transition: 'left 0.2s, background 0.2s',
@@ -81,15 +97,12 @@ const btnGhost: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
 };
 
-
-
 export default function ProfilePage() {
   const t = useTranslations('Profile');
   const locale = useLocale();
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // Profile state
   const [userId, setUserId] = useState<string | null>(null);
   const [username, setUsername] = useState('');
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
@@ -97,20 +110,25 @@ export default function ProfilePage() {
   const [usernameSave, setUsernameSave] = useState<SaveState>('idle');
   const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
-  // Password
-  const [currentPassword, setCurrentPassword] = useState('');
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
   const [passwordSave, setPasswordSave] = useState<SaveState>('idle');
   const [passwordError, setPasswordError] = useState('');
 
-  // Preferences (stored in profiles)
   const [leftyMode, setLeftyMode] = useState(false);
   const [defaultView, setDefaultView] = useState<'notes' | 'intervals'>('notes');
   const [prefsSave, setPrefsSave] = useState<SaveState>('idle');
 
-  // Delete account
+  const [tier, setTier] = useState<Tier>('free');
+  const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
+  const [portalLoading, setPortalLoading] = useState(false);
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const showToast = (msg: string, type: 'success' | 'error') => {
+    setToast({ msg, type });
+    setTimeout(() => setToast(null), 3000);
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -120,7 +138,7 @@ export default function ProfilePage() {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('username, avatar_url, lefty_mode, default_view')
+        .select('username, avatar_url, lefty_mode, default_view, subscription_tier, premium_until')
         .eq('id', user.id)
         .single();
 
@@ -129,6 +147,8 @@ export default function ProfilePage() {
         setAvatarUrl(profile.avatar_url || null);
         setLeftyMode(profile.lefty_mode ?? false);
         setDefaultView(profile.default_view ?? 'notes');
+        setTier((profile.subscription_tier as Tier) ?? 'free');
+        setPremiumUntil(profile.premium_until ?? null);
       }
     };
     load();
@@ -139,57 +159,31 @@ export default function ProfilePage() {
     if (!file || !userId) return;
 
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
-    if (!validTypes.includes(file.type)) {
-      setToast({ msg: t('avatar.invalidFormat'), type: 'error' });
-      setTimeout(() => setToast(null), 3000);
-      return;
-    }
+    if (!validTypes.includes(file.type)) { showToast(t('avatar.invalidFormat'), 'error'); return; }
 
     try {
       const compressedFile = await compressImage(file, 400);
-
-      const MAX_FILE_SIZE = 500 * 1024;
-      if (compressedFile.size > MAX_FILE_SIZE) {
-        setToast({ msg: t('avatar.tooLarge'), type: 'error' });
-        setTimeout(() => setToast(null), 3000);
-        return;
-      }
+      if (compressedFile.size > 500 * 1024) { showToast(t('avatar.tooLarge'), 'error'); return; }
 
       const previewReader = new FileReader();
       previewReader.onload = ev => setAvatarPreview(ev.target?.result as string);
       previewReader.readAsDataURL(compressedFile);
 
       const path = `${userId}/avatar`;
-
       const { error: uploadError } = await supabase.storage
-        .from('avatars')
-        .upload(path, compressedFile, { upsert: true, contentType: 'image/jpeg' });
+        .from('avatars').upload(path, compressedFile, { upsert: true, contentType: 'image/jpeg' });
 
-      if (uploadError) {
-        setToast({ msg: t('avatar.uploadError'), type: 'error' });
-        setTimeout(() => setToast(null), 3000);
-        return;
-      }
+      if (uploadError) { showToast(t('avatar.uploadError'), 'error'); return; }
 
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
       const urlWithCacheBuster = `${publicUrl}?v=${Date.now()}`;
 
       const { error: updateError } = await supabase
-        .from('profiles')
-        .update({ avatar_url: urlWithCacheBuster })
-        .eq('id', userId);
+        .from('profiles').update({ avatar_url: urlWithCacheBuster }).eq('id', userId);
 
-      if (updateError) {
-        setToast({ msg: t('avatar.uploadError'), type: 'error' });
-      } else {
-        setAvatarUrl(urlWithCacheBuster);
-        setToast({ msg: t('avatar.uploadSuccess'), type: 'success' });
-      }
-    } catch (err) {
-      setToast({ msg: t('avatar.uploadError'), type: 'error' });
-    } finally {
-      setTimeout(() => setToast(null), 3000);
-    }
+      if (updateError) showToast(t('avatar.uploadError'), 'error');
+      else { setAvatarUrl(urlWithCacheBuster); showToast(t('avatar.uploadSuccess'), 'success'); }
+    } catch { showToast(t('avatar.uploadError'), 'error'); }
   };
 
   const handleSaveUsername = async () => {
@@ -208,7 +202,7 @@ export default function ProfilePage() {
     const { error } = await supabase.auth.updateUser({ password: newPassword });
     if (error) { setPasswordError(error.message); setPasswordSave('error'); return; }
     setPasswordSave('saved');
-    setCurrentPassword(''); setNewPassword(''); setConfirmPassword('');
+    setNewPassword(''); setConfirmPassword('');
     setTimeout(() => setPasswordSave('idle'), 2500);
   };
 
@@ -216,15 +210,32 @@ export default function ProfilePage() {
     if (!userId) return;
     setPrefsSave('saving');
     const { error } = await supabase.from('profiles')
-      .update({ lefty_mode: leftyMode, default_view: defaultView })
-      .eq('id', userId);
+      .update({ lefty_mode: leftyMode, default_view: defaultView }).eq('id', userId);
     setPrefsSave(error ? 'error' : 'saved');
     setTimeout(() => setPrefsSave('idle'), 2500);
   };
 
+  const handleManageSubscription = async () => {
+    setPortalLoading(true);
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      const res = await fetch('/api/stripe/portal', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${session?.access_token}`,
+        },
+      });
+      const { url } = await res.json();
+      if (url) window.location.href = url;
+      else showToast(t('subscription.portalError'), 'error');
+    } catch {
+      showToast(t('subscription.portalError'), 'error');
+    } finally {
+      setPortalLoading(false);
+    }
+  };
+
   const handleDeleteAccount = async () => {
-    // Calls a Supabase Edge Function or RPC to delete the user
-    // Replace with your actual delete implementation
     await supabase.rpc('delete_user');
     await supabase.auth.signOut();
     router.push(`/${locale}`);
@@ -232,16 +243,8 @@ export default function ProfilePage() {
 
   const handleLanguageSwitch = async () => {
     const newLocale = locale === 'es' ? 'en' : 'es';
-
-    if (userId) {
-      await supabase
-        .from('profiles')
-        .update({ language: newLocale })
-        .eq('id', userId);
-    }
-
-    const path = window.location.pathname.replace(`/${locale}`, `/${newLocale}`);
-    window.location.href = path;
+    if (userId) await supabase.from('profiles').update({ language: newLocale }).eq('id', userId);
+    window.location.href = window.location.pathname.replace(`/${locale}`, `/${newLocale}`);
   };
 
   const saveLabel = (state: SaveState) => {
@@ -253,6 +256,9 @@ export default function ProfilePage() {
 
   const displayAvatar = avatarPreview || avatarUrl;
   const initials = username ? username.slice(0, 2).toUpperCase() : '??';
+  const renewalDate = premiumUntil
+    ? new Date(premiumUntil).toLocaleDateString(locale, { day: 'numeric', month: 'long', year: 'numeric' })
+    : null;
 
   return (
     <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
@@ -267,30 +273,24 @@ export default function ProfilePage() {
         </h1>
       </div>
 
-      {/* Avatar + username hero */}
+      {/* Avatar + username */}
       <div style={{
         background: 'var(--surface)', borderRadius: '12px',
         border: '1px solid rgba(255,255,255,0.05)',
         padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap',
       }}>
-        {/* Avatar */}
         <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div
-            onClick={() => fileInputRef.current?.click()}
-            style={{
-              width: '72px', height: '72px', borderRadius: '50%',
-              background: displayAvatar ? 'transparent' : 'rgba(220,185,138,0.1)',
-              border: '2px solid rgba(220,185,138,0.3)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              cursor: 'pointer', overflow: 'hidden', position: 'relative',
-            }}
-          >
-            {displayAvatar ? (
-              <img src={displayAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-            ) : (
-              <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.4rem', color: 'var(--gold)', letterSpacing: '0.05em' }}>{initials}</span>
-            )}
-            {/* Hover overlay */}
+          <div onClick={() => fileInputRef.current?.click()} style={{
+            width: '72px', height: '72px', borderRadius: '50%',
+            background: displayAvatar ? 'transparent' : 'rgba(220,185,138,0.1)',
+            border: '2px solid rgba(220,185,138,0.3)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            cursor: 'pointer', overflow: 'hidden', position: 'relative',
+          }}>
+            {displayAvatar
+              ? <img src={displayAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              : <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.4rem', color: 'var(--gold)', letterSpacing: '0.05em' }}>{initials}</span>
+            }
             <div style={{
               position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -308,30 +308,70 @@ export default function ProfilePage() {
           <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
         </div>
 
-        {/* Username input */}
         <div style={{ flex: 1, minWidth: '200px' }}>
-          <label style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 600, display: 'block', marginBottom: '0.4rem', letterSpacing: '0.06em', textTransform: 'uppercase' }}>
-            {t('account.username')}
-          </label>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+            <label style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              {t('account.username')}
+            </label>
+            <TierPill tier={tier} />
+          </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <input
-              type="text" value={username}
-              onChange={e => setUsername(e.target.value)}
+            <input type="text" value={username} onChange={e => setUsername(e.target.value)}
               placeholder={t('account.usernamePlaceholder')}
               style={{ ...inputStyle, width: '100%' }}
               onFocus={e => e.target.style.borderColor = 'rgba(220,185,138,0.4)'}
               onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
             />
-            <button
-              onClick={handleSaveUsername}
-              disabled={usernameSave === 'saving'}
-              style={{ ...btnPrimary, opacity: usernameSave === 'saving' ? 0.6 : 1, width: '100%' }}
-            >
+            <button onClick={handleSaveUsername} disabled={usernameSave === 'saving'}
+              style={{ ...btnPrimary, opacity: usernameSave === 'saving' ? 0.6 : 1, width: '100%' }}>
               {saveLabel(usernameSave)}
             </button>
           </div>
         </div>
       </div>
+
+      {/* ── Subscription ── */}
+      <Section title={t('subscription.title')} description={t('subscription.description')}>
+        <Row label={t('subscription.currentPlan')}>
+          <TierPill tier={tier} />
+        </Row>
+
+        {tier === 'pro' && renewalDate && (
+          <Row label={t('subscription.renewsOn')} description={renewalDate}>
+            <div />
+          </Row>
+        )}
+
+        {tier === 'lifetime' && (
+          <Row label={t('subscription.lifetime')} description={t('subscription.lifetimeDesc')}>
+            <div />
+          </Row>
+        )}
+
+        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', paddingTop: '0.25rem' }}>
+          {tier === 'free' && (
+            <button onClick={() => router.push(`/${locale}/pro`)} style={btnPrimary}>
+              {t('subscription.upgrade')} →
+            </button>
+          )}
+          {tier === 'pro' && (
+            <>
+              <button onClick={handleManageSubscription} disabled={portalLoading}
+                style={{ ...btnGhost, opacity: portalLoading ? 0.6 : 1 }}>
+                {portalLoading ? t('subscription.loading') : t('subscription.manage')}
+              </button>
+              <button onClick={() => router.push(`/${locale}/pro`)} style={btnPrimary}>
+                {t('subscription.upgradeLifetime')} →
+              </button>
+            </>
+          )}
+          {tier === 'lifetime' && (
+            <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: 0 }}>
+              {t('subscription.lifetimeManage')}
+            </p>
+          )}
+        </div>
+      </Section>
 
       {/* Security */}
       <Section title={t('security.title')} description={t('security.description')}>
@@ -348,7 +388,8 @@ export default function ProfilePage() {
           />
           {passwordError && <p style={{ color: '#e74c3c', fontSize: '0.78rem', margin: 0 }}>{passwordError}</p>}
           <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
-            <button onClick={handleSavePassword} disabled={passwordSave === 'saving'} style={{ ...btnPrimary, opacity: passwordSave === 'saving' ? 0.6 : 1 }}>
+            <button onClick={handleSavePassword} disabled={passwordSave === 'saving'}
+              style={{ ...btnPrimary, opacity: passwordSave === 'saving' ? 0.6 : 1 }}>
               {saveLabel(passwordSave)}
             </button>
           </div>
@@ -362,13 +403,10 @@ export default function ProfilePage() {
             {locale === 'es' ? 'Switch to English' : 'Cambiar a Español'}
           </button>
         </Row>
-
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.25rem' }} />
-
         <Row label={t('preferences.leftyMode')} description={t('preferences.leftyModeDesc')}>
           <Toggle checked={leftyMode} onChange={setLeftyMode} />
         </Row>
-
         <Row label={t('preferences.defaultView')} description={t('preferences.defaultViewDesc')}>
           <div style={{ display: 'flex', gap: '0.4rem' }}>
             {(['notes', 'intervals'] as const).map(v => (
@@ -384,20 +422,20 @@ export default function ProfilePage() {
             ))}
           </div>
         </Row>
-
         <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
-          <button onClick={handleSavePrefs} disabled={prefsSave === 'saving'} style={{ ...btnPrimary, opacity: prefsSave === 'saving' ? 0.6 : 1 }}>
+          <button onClick={handleSavePrefs} disabled={prefsSave === 'saving'}
+            style={{ ...btnPrimary, opacity: prefsSave === 'saving' ? 0.6 : 1 }}>
             {saveLabel(prefsSave)}
           </button>
         </div>
       </Section>
 
+      {/* Danger */}
       <Section title={t('danger.title')} isDanger>
         <Row label={t('danger.deleteAccount')} description={t('danger.deleteDescription')}>
           {!showDeleteConfirm ? (
-            <button onClick={() => setShowDeleteConfirm(true)} style={{
-              ...btnGhost, color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)',
-            }}>
+            <button onClick={() => setShowDeleteConfirm(true)}
+              style={{ ...btnGhost, color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)' }}>
               {t('danger.deleteButton')}
             </button>
           ) : (
@@ -414,28 +452,18 @@ export default function ProfilePage() {
         </Row>
       </Section>
 
-      {
-        toast && (
-          <div style={{
-            position: 'fixed',
-            bottom: '24px',
-            right: '24px',
-            background: toast.type === 'success' ? '#2ecc71' : '#e74c3c',
-            color: '#fff',
-            padding: '12px 20px',
-            borderRadius: '8px',
-            fontWeight: 600,
-            fontSize: '0.85rem',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            zIndex: 9999,
-            fontFamily: 'DM Sans, sans-serif',
-            transition: 'all 0.3s ease'
-          }}>
-            {toast.msg}
-          </div>
-        )
-      }
-
+      {/* Toast */}
+      {toast && (
+        <div style={{
+          position: 'fixed', bottom: '24px', right: '24px',
+          background: toast.type === 'success' ? '#2ecc71' : '#e74c3c',
+          color: '#fff', padding: '12px 20px', borderRadius: '8px',
+          fontWeight: 600, fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif',
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)', zIndex: 9999,
+        }}>
+          {toast.msg}
+        </div>
+      )}
     </div>
   );
 }

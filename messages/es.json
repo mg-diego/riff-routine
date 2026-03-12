@@ -1142,6 +1142,20 @@
     }
   },
   "Profile": {
+    "subscription": {
+      "title": "Suscripción",
+      "description": "Gestiona tu plan y facturación",
+      "currentPlan": "Plan actual",
+      "renewsOn": "Se renueva el",
+      "lifetime": "Acceso de por vida",
+      "lifetimeDesc": "Tu acceso nunca caduca",
+      "lifetimeManage": "Tu acceso Lifetime es permanente. No hay nada que gestionar.",
+      "upgrade": "Mejorar a Pro",
+      "upgradeLifetime": "Mejorar a Lifetime",
+      "manage": "Gestionar suscripción",
+      "loading": "Cargando...",
+      "portalError": "No se pudo abrir el portal. Inténtalo de nuevo."
+    },
     "avatar": {
       "invalidFormat": "El archivo debe ser una imagen válida (JPG, PNG, WebP).",
       "tooLarge": "La imagen es demasiado pesada (máx. 500KB).",
@@ -1428,14 +1442,12 @@
     }
   },
   "SystemExercises": {
-    "sys_composition_title": "Composición",    
+    "sys_composition_title": "Composición",
     "sys_composition_technique": "Composición",
     "sys_composition_notes": "Espacio dedicado a la creación de ideas originales. Utiliza este tiempo para desarrollar motivos melódicos, progresiones de acordes o riffs desde cero.",
-
     "sys_improvisation_title": "Improvisación",
     "sys_improvisation_technique": "Improvisación",
     "sys_improvisation_notes": "Improvisación libre. Pon a prueba tus licks, fraseo y musicalidad sin depender de una partitura.",
-
     "sys_scales_title": "Escalas",
     "sys_scales_technique": "Escalas",
     "sys_scales_notes": "Practica las escalas de arriba a abajo usando el metrónomo. Concéntrate en la precisión de ambas manos."
@@ -1458,5 +1470,77 @@
     "upgrade": "Ver Plan PRO",
     "routineLimit": "El plan gratuito permite un máximo de 3 rutinas. Pásate a PRO para crear rutinas ilimitadas y mucho más.",
     "libraryLimit": "El plan gratuito permite crear un máximo de 10 ejercicios personalizados. Pásate a PRO para crear ejercicios ilimitados."
+  },
+  "Pro": {
+    "currentPlan": "Plan actual",
+    "notAvailable": "No disponible",
+    "loading": "Cargando...",
+    "eyebrow": "Precios simples",
+    "headline": "Desbloquea todo tu potencial",
+    "subheadline": "Elige el plan que mejor se adapte a tu práctica. Cambia o cancela cuando quieras.",
+    "billing": {
+      "monthly": "Mensual",
+      "annual": "Anual",
+      "forever": "/ siempre gratis",
+      "perMonth": "/ mes",
+      "oneTime": "/ pago único",
+      "billedAnnually": "Se factura €{total} / año"
+    },
+    "features": {
+      "routines": "Rutinas",
+      "routinesFree": "Hasta 3",
+      "unlimited": "Ilimitadas",
+      "exercises": "Ejercicios personalizados",
+      "exercisesFree": "Hasta 10",
+      "library": "Acceso a biblioteca de tabs",
+      "scales": "Visualizador de escalas",
+      "stats": "Estadísticas de práctica",
+      "statsBasic": "Últimos 30 días",
+      "statsFull": "Historial completo",
+      "player": "Reproductor AlphaTab",
+      "playerBasic": "Básico",
+      "playerFull": "Controles completos",
+      "earlyAccess": "Acceso anticipado a nuevas funciones",
+      "noFuturePriceRaise": "Precio bloqueado para siempre",
+      "support": "Soporte",
+      "supportCom": "Comunidad",
+      "supportPri": "Email prioritario",
+      "supportDedicated": "Dedicado"
+    },
+    "free": {
+      "description": "Empieza a practicar gratis. Sin tarjeta de crédito.",
+      "cta": "Plan actual"
+    },
+    "pro": {
+      "badge": "Más popular",
+      "description": "Todo lo que necesitas para crear hábitos reales y seguir tu progreso.",
+      "cta": "Pasarme a Pro →",
+      "guarantee": "Cancela cuando quieras · Sin costes ocultos"
+    },
+    "lifetime": {
+      "badge": "Mejor valor",
+      "description": "Paga una vez, úsalo para siempre. Incluye todas las funciones Pro futuras, precio bloqueado.",
+      "cta": "Obtener acceso Lifetime →"
+    },
+    "footer": "Pagos procesados de forma segura mediante Stripe. Nunca almacenamos los datos de tu tarjeta."
+  },
+  "ProSuccess": {
+    "badgePro": "Pro activado",
+    "badgeLifetime": "Lifetime activado",
+    "headline": "¡Todo listo!",
+    "subPro": "Bienvenido a RiffRoutine Pro. Tu suscripción está activa y todas las funciones están desbloqueadas — a tocar.",
+    "subLifetime": "Bienvenido a RiffRoutine Lifetime. Has asegurado acceso ilimitado para siempre. Tu precio está bloqueado, tus funciones están todas aquí.",
+    "perksTitle": "Lo que acabas de desbloquear",
+    "perks": {
+      "unlimited": "Rutinas y ejercicios personalizados ilimitados",
+      "fullStats": "Historial completo de práctica y estadísticas",
+      "playerFull": "Reproductor AlphaTab — controles completos",
+      "prioritySupport": "Soporte por email prioritario",
+      "earlyAccess": "Acceso anticipado a nuevas funciones",
+      "priceLocked": "Precio bloqueado para siempre — sin subidas futuras",
+      "dedicatedSupport": "Canal de soporte dedicado"
+    },
+    "cta": "Empezar a practicar →",
+    "emailNote": "Se ha enviado un recibo a tu correo electrónico."
   }
 }

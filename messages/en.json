@@ -1142,6 +1142,20 @@
     }
   },
   "Profile": {
+    "subscription": {
+      "title": "Suscripción",
+      "description": "Gestiona tu plan y facturación",
+      "currentPlan": "Plan actual",
+      "renewsOn": "Se renueva el",
+      "lifetime": "Acceso de por vida",
+      "lifetimeDesc": "Tu acceso nunca caduca",
+      "lifetimeManage": "Tu acceso Lifetime es permanente. No hay nada que gestionar.",
+      "upgrade": "Mejorar a Pro",
+      "upgradeLifetime": "Mejorar a Lifetime",
+      "manage": "Gestionar suscripción",
+      "loading": "Cargando...",
+      "portalError": "No se pudo abrir el portal. Inténtalo de nuevo."
+    },
     "avatar": {
       "invalidFormat": "The file must be a valid image (JPG, PNG, WebP).",
       "tooLarge": "The image is too heavy (max 500KB).",
@@ -1456,5 +1470,77 @@
     "upgrade": "View PRO Plan",
     "routineLimit": "The free plan allows a maximum of 3 routines. Upgrade to PRO to create unlimited routines and much more.",
     "libraryLimit": "The free plan allows creating a maximum of 10 custom exercises. Upgrade to PRO to create unlimited exercises."
+  },
+  "Pro": {
+    "currentPlan": "Current plan",
+    "notAvailable": "Not available",
+    "loading": "Loading...",
+    "eyebrow": "Simple pricing",
+    "headline": "Unlock your full potential",
+    "subheadline": "Pick the plan that fits your journey. Upgrade or cancel anytime.",
+    "billing": {
+      "monthly": "Monthly",
+      "annual": "Annual",
+      "forever": "/ free forever",
+      "perMonth": "/ month",
+      "oneTime": "/ one-time",
+      "billedAnnually": "Billed €{total} / year"
+    },
+    "features": {
+      "routines": "Routines",
+      "routinesFree": "Up to 3",
+      "unlimited": "Unlimited",
+      "exercises": "Custom exercises",
+      "exercisesFree": "Up to 10",
+      "library": "Tab library access",
+      "scales": "Scale visualizer",
+      "stats": "Practice stats",
+      "statsBasic": "Last 30 days",
+      "statsFull": "Full history",
+      "player": "AlphaTab player",
+      "playerBasic": "Basic",
+      "playerFull": "Full controls",
+      "earlyAccess": "Early access to new features",
+      "noFuturePriceRaise": "Price locked forever",
+      "support": "Support",
+      "supportCom": "Community",
+      "supportPri": "Priority email",
+      "supportDedicated": "Dedicated"
+    },
+    "free": {
+      "description": "Start practising for free. No credit card needed.",
+      "cta": "Current plan"
+    },
+    "pro": {
+      "badge": "Most popular",
+      "description": "Everything you need to build real habits and track your progress.",
+      "cta": "Upgrade to Pro →",
+      "guarantee": "Cancel anytime · No hidden fees"
+    },
+    "lifetime": {
+      "badge": "Best value",
+      "description": "Pay once, own it forever. All future Pro features included, price locked.",
+      "cta": "Get Lifetime Access →"
+    },
+    "footer": "Payments processed securely by Stripe. We never store your card details."
+  },
+  "ProSuccess": {
+    "badgePro": "Pro unlocked",
+    "badgeLifetime": "Lifetime unlocked",
+    "headline": "You're all set!",
+    "subPro": "Welcome to RiffRoutine Pro. Your subscription is active and all features are unlocked — go make some noise.",
+    "subLifetime": "Welcome to RiffRoutine Lifetime. You've secured unlimited access forever. Your price is locked, your features are all here.",
+    "perksTitle": "What's now unlocked",
+    "perks": {
+      "unlimited": "Unlimited routines & custom exercises",
+      "fullStats": "Full practice history & stats",
+      "playerFull": "AlphaTab player — full controls",
+      "prioritySupport": "Priority email support",
+      "earlyAccess": "Early access to new features",
+      "priceLocked": "Price locked forever — no future increases",
+      "dedicatedSupport": "Dedicated support channel"
+    },
+    "cta": "Start practising →",
+    "emailNote": "A receipt has been sent to your email."
   }
 }
