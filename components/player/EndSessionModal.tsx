@@ -62,7 +62,7 @@ export function EndSessionModal({
                     minutes: g.duration_seconds > 0 ? Math.floor(g.duration_seconds / 60).toString() : '',
                     seconds: g.duration_seconds > 0 ? (g.duration_seconds % 60).toString() : ''
                 })));
-            } catch (err) {} finally {
+            } catch (err) { } finally {
                 setLoadingLogs(false);
             }
         };
@@ -116,7 +116,7 @@ export function EndSessionModal({
             }
 
             onEndSession(totalRoutineSeconds);
-        } catch (e) {} finally {
+        } catch (e) { } finally {
             setIsSaving(false);
         }
     };

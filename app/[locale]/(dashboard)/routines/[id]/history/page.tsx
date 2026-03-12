@@ -8,6 +8,8 @@ import {
   ReferenceLine
 } from 'recharts';
 import { useTranslations, useLocale } from 'next-intl';
+import { Exercise } from '@/lib/types';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface RoutineHistoryProps {
   params: Promise<{ id: string }>;
@@ -75,6 +77,8 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
 
   useEffect(() => { fetchHistoryData(); }, [id]);
 
+  const { formatExercise } = useTranslatedExercise();
+
   const fetchHistoryData = async () => {
     try {
       setLoading(true);
@@ -86,12 +90,21 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
       if (routineError) throw routineError;
       setRoutineName(routineData.title);
 
-      const { data: exercisesData, error: exercisesError } = await supabase
+      const { data: rawExercisesData, error: exercisesError } = await supabase
         .from('routine_exercises')
-        .select('exercise_id, target_bpm, target_duration_seconds, order_index, exercises (title)')
+        .select('exercise_id, target_bpm, target_duration_seconds, order_index, exercises (id, user_id, title)')
         .eq('routine_id', id).order('order_index', { ascending: true });
+
       if (exercisesError) throw exercisesError;
-      setExercises(exercisesData || []);
+
+      const translatedExercises = (rawExercisesData || []).map(item => {
+        const rawEx = Array.isArray(item.exercises) ? item.exercises[0] : item.exercises;
+        return {
+          ...item,
+          exercises: formatExercise(rawEx as Exercise)
+        };
+      });
+      setExercises(translatedExercises);
 
       const { data: sessionsData, error: sessionsError } = await supabase
         .from('practice_sessions')
@@ -99,13 +112,14 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         .eq('routine_id', id)
         .not('total_duration_seconds', 'is', null)
         .order('started_at', { ascending: true });
+
       if (sessionsError) throw sessionsError;
       setSessions(sessionsData || []);
 
       const chartFormatted = (sessionsData || []).map((s, i) => {
         const d = new Date(s.started_at);
         return {
-          name: `Sesión ${i + 1}`,
+          name: `${t('history.session')} ${i + 1}`,
           shortDate: d.toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short' }),
           time: d.toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' }),
           minutos: Math.round((s.total_duration_seconds || 0) / 60),
@@ -114,17 +128,19 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
       });
       setChartData(chartFormatted);
 
-      const exerciseIds = exercisesData?.map(e => e.exercise_id) || [];
+      const exerciseIds = translatedExercises.map(e => e.exercise_id);
+
       if (exerciseIds.length > 0) {
         const { data: logsData, error: logsError } = await supabase
           .from('practice_logs')
           .select('id, session_id, exercise_id, bpm_used, duration_seconds, created_at')
           .in('exercise_id', exerciseIds).eq('user_id', user.id)
           .order('created_at', { ascending: true });
+
         if (logsError) throw logsError;
 
         const matrix: Record<string, Record<string, any>> = {};
-        exercisesData?.forEach(ex => { matrix[ex.exercise_id] = {}; });
+        translatedExercises.forEach(ex => { matrix[ex.exercise_id] = {}; });
 
         const logsByEx: Record<string, any[]> = {};
         const sLogs: Record<string, any[]> = {};
@@ -134,10 +150,14 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
           logsByEx[log.exercise_id].push(log);
 
           if (!sLogs[log.session_id]) sLogs[log.session_id] = [];
-          const exMatch = exercisesData?.find(e => e.exercise_id === log.exercise_id);
-          const ed = exMatch?.exercises as any;
-          const exTitle = Array.isArray(ed) ? ed[0]?.title : ed?.title;
-          sLogs[log.session_id].push({ ...log, title: exTitle || t('errors.unknownExercise') });
+
+          const exMatch = translatedExercises.find(e => e.exercise_id === log.exercise_id);
+          const exTitle = exMatch?.exercises?.title;
+
+          sLogs[log.session_id].push({
+            ...log,
+            title: exTitle || t('errors.unknownExercise')
+          });
         });
 
         setSessionLogs(sLogs);
@@ -268,8 +288,8 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
         {label}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: sortConfig.key === key && sortConfig.direction === 'asc' ? 1 : 0.2, marginBottom: '-4px' }}><polyline points="18 15 12 9 6 15"/></svg>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: sortConfig.key === key && sortConfig.direction === 'desc' ? 1 : 0.2 }}><polyline points="6 9 12 15 18 9"/></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: sortConfig.key === key && sortConfig.direction === 'asc' ? 1 : 0.2, marginBottom: '-4px' }}><polyline points="18 15 12 9 6 15" /></svg>
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: sortConfig.key === key && sortConfig.direction === 'desc' ? 1 : 0.2 }}><polyline points="6 9 12 15 18 9" /></svg>
         </div>
       </div>
     </th>
@@ -311,7 +331,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
   return (
     <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
       <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem', padding: 0, fontFamily: 'DM Sans, sans-serif', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}>
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg>
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
         {t('back')}
       </button>
 
@@ -326,9 +346,9 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         {(['stats', 'history'] as const).map(tab => (
           <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? 'var(--gold)' : 'transparent', color: activeTab === tab ? '#111' : 'var(--muted)', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', fontFamily: 'DM Sans, sans-serif', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
             {tab === 'stats' ? (
-              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>{t('tabs.stats')}</>
+              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>{t('tabs.stats')}</>
             ) : (
-              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>{t('tabs.detailedHistory')}</>
+              <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="8" y1="6" x2="21" y2="6" /><line x1="8" y1="12" x2="21" y2="12" /><line x1="8" y1="18" x2="21" y2="18" /><line x1="3" y1="6" x2="3.01" y2="6" /><line x1="3" y1="12" x2="3.01" y2="12" /><line x1="3" y1="18" x2="3.01" y2="18" /></svg>{t('tabs.detailedHistory')}</>
             )}
           </button>
         ))}
@@ -508,7 +528,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                 <React.Fragment key={session.id}>
                   <tr onClick={() => setExpandedSessionId(expandedSessionId === session.id ? null : session.id)} style={{ borderBottom: expandedSessionId === session.id ? 'none' : '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', background: expandedSessionId === session.id ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={e => e.currentTarget.style.background = expandedSessionId === session.id ? 'rgba(255,255,255,0.02)' : 'transparent'}>
                     <td style={{ padding: '1rem 0 1rem 1.5rem', color: 'var(--muted)' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expandedSessionId === session.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9"/></svg>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expandedSessionId === session.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9" /></svg>
                     </td>
                     <td style={{ padding: '1rem 1.5rem', color: 'var(--text)', fontWeight: 500 }}>{session.dateTimeStr}</td>
                     <td style={{ padding: '1rem 1.5rem', color: 'var(--gold)', fontWeight: 700 }}>{session.minutos} {t('table.min')}</td>
@@ -570,7 +590,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                                               disabled={savingLogId === log.id}
                                               style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '4px', cursor: savingLogId === log.id ? 'not-allowed' : 'pointer', opacity: savingLogId === log.id ? 0.4 : 1 }}
                                             >
-                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                                              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                                             </button>
                                             <button
                                               onClick={e => handleSaveLog(log.id, session.id, e)}
@@ -579,10 +599,10 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                                             >
                                               {savingLogId === log.id ? (
                                                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.7s linear infinite' }}>
-                                                  <path d="M21 12a9 9 0 1 1-6.219-8.56"/>
+                                                  <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                                                 </svg>
                                               ) : (
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                                               )}
                                             </button>
                                           </div>
@@ -593,7 +613,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--text)', fontSize: '0.9rem' }}>{log.title}</td>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--gold)', fontWeight: 700, fontSize: '0.9rem' }}>{log.bpm_used ?? '---'}</td>
                                         <td style={{ padding: '0.8rem 1rem', color: 'var(--muted)', fontSize: '0.9rem' }}>{Math.floor(log.duration_seconds / 60)} {t('table.min')}</td>
-                                        <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}><button onClick={e => startEditingLog(log, e)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', padding: '0.3rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg></button></td>
+                                        <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}><button onClick={e => startEditingLog(log, e)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', padding: '0.3rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></button></td>
                                       </>
                                     )}
                                   </tr>

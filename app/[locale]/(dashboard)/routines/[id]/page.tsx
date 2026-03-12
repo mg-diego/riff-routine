@@ -8,6 +8,7 @@ import { RoutineHeader } from '../../../../../components/routines/detail/Routine
 import { AddExerciseModal } from '../../../../../components/routines/detail/AddExerciseModal';
 import { RoutineExerciseItem } from '../../../../../components/routines/detail/RoutineExerciseItem';
 import { useTranslations } from 'next-intl';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface RoutineExerciseDetail {
   id: string;
@@ -24,7 +25,7 @@ export default function RoutineDetailsPage() {
   const params = useParams();
   const router = useRouter();
   const t = useTranslations('RoutineDetailsPage');
-  
+
   const [routine, setRoutine] = useState<Routine | null>(null);
   const [routineExercises, setRoutineExercises] = useState<RoutineExerciseDetail[]>([]);
   const [savedSnapshot, setSavedSnapshot] = useState<string>('');
@@ -46,6 +47,8 @@ export default function RoutineDetailsPage() {
       ({ id, order_index, target_bpm, target_duration_seconds })
     ));
 
+  const { formatExercise, formatExerciseList } = useTranslatedExercise();
+
   const fetchData = useCallback(async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -53,32 +56,57 @@ export default function RoutineDetailsPage() {
 
     const { data: routineData, error: routineError } = await supabase
       .from('routines').select('*').eq('id', params.id).eq('user_id', user.id).single();
-    
-    if (routineError || !routineData) { 
-      setError(t('errors.loadFailed')); 
-      setLoading(false); 
-      return; 
+
+    if (routineError || !routineData) {
+      setError(t('errors.loadFailed'));
+      setLoading(false);
+      return;
     }
     setRoutine(routineData);
 
     const { data: exercisesData } = await supabase
-      .from('exercises').select('*').or(`user_id.eq.${user.id},user_id.is.null`).order('created_at', { ascending: false });
-    if (exercisesData) setAllExercises(exercisesData);
+      .from('exercises')
+      .select('*')
+      .or(`user_id.eq.${user.id},user_id.is.null`)
+      .order('created_at', { ascending: false });
+
+    if (exercisesData) {
+      setAllExercises(formatExerciseList(exercisesData as Exercise[]));
+    }
 
     const { data: reData } = await supabase
-      .from('routine_exercises').select(`*, exercises (*)`).eq('routine_id', params.id).order('order_index', { ascending: true });
+      .from('routine_exercises')
+      .select(`*, exercises (*)`)
+      .eq('routine_id', params.id)
+      .order('order_index', { ascending: true });
 
     if (reData) {
       const exerciseIds = reData.map(re => re.exercise_id);
       const { data: logsData } = await supabase
-        .from('practice_logs').select('exercise_id').in('exercise_id', exerciseIds).eq('user_id', user.id);
+        .from('practice_logs')
+        .select('exercise_id')
+        .in('exercise_id', exerciseIds)
+        .eq('user_id', user.id);
+
       const sessionCounts: Record<string, number> = {};
-      logsData?.forEach(log => { sessionCounts[log.exercise_id] = (sessionCounts[log.exercise_id] || 0) + 1; });
-      const enriched = reData.map(re => ({ ...re, session_count: sessionCounts[re.exercise_id] || 0 })) as RoutineExerciseDetail[];
+      logsData?.forEach(log => {
+        sessionCounts[log.exercise_id] = (sessionCounts[log.exercise_id] || 0) + 1;
+      });
+
+      const enriched = reData.map(re => {
+        const rawEx = Array.isArray(re.exercises) ? re.exercises[0] : re.exercises;
+        return {
+          ...re,
+          exercises: formatExercise(rawEx as Exercise),
+          session_count: sessionCounts[re.exercise_id] || 0
+        };
+      }) as RoutineExerciseDetail[];
+
       setRoutineExercises(enriched);
       setSavedSnapshot(snapshotFrom(enriched));
     }
     setLoading(false);
+    // Quitamos formatExercise y formatExerciseList de aquí para evitar el loop
   }, [params.id, router, t]);
 
   useEffect(() => { fetchData(); }, [fetchData]);

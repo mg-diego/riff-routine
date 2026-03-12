@@ -140,16 +140,17 @@ export function useOnboarding() {
     const complete = async () => {
         setActive(false);
         clearPersistedIndex();
+
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
 
-        // Demo user (username == null) — never persist completion
         const { data: profile } = await supabase
             .from('profiles')
-            .select('username')
+            .select('is_demo')
             .eq('id', user.id)
             .single();
-        if (!profile || profile.username === null) return;
+
+        if (!profile || profile.is_demo) return;
 
         await supabase
             .from('profiles')
@@ -157,7 +158,6 @@ export function useOnboarding() {
             .eq('id', user.id);
     };
 
-    // Persist current step index in sessionStorage so it survives navigation
     const persistIndex = (index: number) => {
         sessionStorage.setItem('onboarding_step', String(index));
     };
@@ -166,7 +166,6 @@ export function useOnboarding() {
         sessionStorage.removeItem('onboarding_step');
     };
 
-    // Restore index from sessionStorage after navigation
     useEffect(() => {
         const saved = sessionStorage.getItem('onboarding_step');
         if (saved !== null) {
