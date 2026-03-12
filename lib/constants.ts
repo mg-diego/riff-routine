@@ -329,3 +329,23 @@ export const DEGREE_MAP_MINOR: Record<string, { idx: number, suffix: string }> =
     'VI': { idx: 5, suffix: '' },
     'VII': { idx: 6, suffix: '' },
 };
+
+const MAJOR_DEGREES = [
+  { roman: 'I', suffix: '' },
+  { roman: 'ii', suffix: 'm' },
+  { roman: 'iii', suffix: 'm' },
+  { roman: 'IV', suffix: '' },
+  { roman: 'V', suffix: '' },
+  { roman: 'vi', suffix: 'm' },
+  { roman: 'vii°', suffix: 'dim' }
+];
+
+const MINOR_DEGREES = [
+  { roman: 'i', suffix: 'm' },
+  { roman: 'ii°', suffix: 'dim' },
+  { roman: 'III', suffix: '' },
+  { roman: 'iv', suffix: 'm' },
+  { roman: 'v', suffix: 'm' },
+  { roman: 'VI', suffix: '' },
+  { roman: 'VII', suffix: '' }
+];

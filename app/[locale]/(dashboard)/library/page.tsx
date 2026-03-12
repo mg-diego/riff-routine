@@ -9,6 +9,7 @@ import { ExerciseCard } from '../../../../components/library/ExerciseCard';
 import { ExerciseRow } from '../../../../components/library/ExerciseRow';
 import { DeleteConfirmModal } from '../../../../components/ui/DeleteConfirmModal';
 import { useTranslations } from 'next-intl';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface ExerciseWithProgress extends Exercise {
   max_bpm_achieved?: number;
@@ -19,7 +20,7 @@ const ITEMS_PER_PAGE = 20;
 export default function LibraryPage() {
   const router = useRouter();
   const t = useTranslations('LibraryPage');
-  
+
   const [files, setFiles] = useState<ExerciseWithProgress[]>([]);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
@@ -32,7 +33,7 @@ export default function LibraryPage() {
   const [sortBy, setSortBy] = useState<string>('created_desc');
 
   const [currentPage, setCurrentPage] = useState(1);
-  
+
   const [exerciseToDelete, setExerciseToDelete] = useState<Exercise | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
 
@@ -102,11 +103,13 @@ export default function LibraryPage() {
     setExerciseToDelete(exercise);
   };
 
+  const { formatExerciseList } = useTranslatedExercise();
+
   const confirmDelete = async () => {
     if (!exerciseToDelete) return;
     setIsDeleting(true);
     setError(null);
-    
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error(t('errors.auth'));
@@ -137,13 +140,19 @@ export default function LibraryPage() {
         throw new Error(`Error en routine_exercises: ${routinesError.message}`);
       }
 
-      const { data, error: dbError } = await supabase.from('exercises')
+      const { data: rawData, error: dbError } = await supabase.from('exercises')
         .delete()
         .eq('id', exerciseToDelete.id)
         .eq('user_id', user.id)
         .select();
 
       if (dbError) throw new Error(dbError.message);
+
+      let data: Exercise[] = [];
+      if (rawData) {
+        data = formatExerciseList(rawData);
+      }
+
       if (!data || data.length === 0) throw new Error(t('errors.rls'));
 
       await fetchExercises();

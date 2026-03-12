@@ -4,6 +4,8 @@ import React, { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { getStartDate } from '../../lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
+import { Exercise } from '@/lib/types';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface Props { dateFilter: string; }
 
@@ -24,12 +26,12 @@ const ITEMS_PER_PAGE = 10;
 
 function TechniqueTag({ technique }: { technique: string }) {
   const colors: Record<string, { bg: string; text: string }> = {
-    'Legato':      { bg: 'rgba(167,139,250,0.15)', text: '#a78bfa' },
-    'Picking':     { bg: 'rgba(96,165,250,0.15)',  text: '#60a5fa' },
-    'Sweep':       { bg: 'rgba(52,211,153,0.15)',  text: '#34d399' },
-    'Tapping':     { bg: 'rgba(251,191,36,0.15)',  text: '#fbbf24' },
-    'Vibrato':     { bg: 'rgba(248,113,113,0.15)', text: '#f87171' },
-    'Bending':     { bg: 'rgba(220,185,138,0.15)', text: '#dcb98a' },
+    'Legato': { bg: 'rgba(167,139,250,0.15)', text: '#a78bfa' },
+    'Picking': { bg: 'rgba(96,165,250,0.15)', text: '#60a5fa' },
+    'Sweep': { bg: 'rgba(52,211,153,0.15)', text: '#34d399' },
+    'Tapping': { bg: 'rgba(251,191,36,0.15)', text: '#fbbf24' },
+    'Vibrato': { bg: 'rgba(248,113,113,0.15)', text: '#f87171' },
+    'Bending': { bg: 'rgba(220,185,138,0.15)', text: '#dcb98a' },
   };
   const color = colors[technique] || { bg: 'rgba(255,255,255,0.07)', text: 'var(--muted)' };
   return (
@@ -50,6 +52,8 @@ export function RecentActivity({ dateFilter }: Props) {
   useEffect(() => { setPage(1); }, [dateFilter]);
   useEffect(() => { fetchActivity(); }, [page, dateFilter]);
 
+  const { formatExercise } = useTranslatedExercise();
+
   const fetchActivity = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -60,7 +64,7 @@ export function RecentActivity({ dateFilter }: Props) {
 
     let query = supabase
       .from('practice_logs')
-      .select('id, created_at, bpm_used, duration_seconds, exercises(title, technique)', { count: 'exact' })
+      .select('id, created_at, bpm_used, duration_seconds, exercises(id, user_id, title, technique)', { count: 'exact' })
       .eq('user_id', user.id)
       .order('created_at', { ascending: false });
 
@@ -70,16 +74,21 @@ export function RecentActivity({ dateFilter }: Props) {
     const { data, count } = await query.range(from, to);
 
     if (data) {
-      setLogs(data.map((log: any) => ({
-        id: log.id,
-        created_at: log.created_at,
-        bpm_used: log.bpm_used,
-        duration_seconds: log.duration_seconds,
-        exercises: {
-          title: Array.isArray(log.exercises) ? log.exercises[0]?.title : log.exercises?.title,
-          technique: Array.isArray(log.exercises) ? log.exercises[0]?.technique : log.exercises?.technique,
-        }
-      })));
+      setLogs(data.map((log: any) => {
+        const rawExercise = Array.isArray(log.exercises) ? log.exercises[0] : log.exercises;
+        const translatedEx = formatExercise(rawExercise as Exercise);
+
+        return {
+          id: log.id,
+          created_at: log.created_at,
+          bpm_used: log.bpm_used,
+          duration_seconds: log.duration_seconds,
+          exercises: {
+            title: translatedEx?.title || '',
+            technique: translatedEx?.technique || '',
+          }
+        };
+      }));
     }
     if (count !== null) setTotalCount(count);
     setLoading(false);

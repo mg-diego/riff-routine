@@ -9,6 +9,8 @@ import { useTranslations } from 'next-intl';
 export default function ExplorePage() {
     const router = useRouter();
     const t = useTranslations('ExplorePage');
+    const st = useTranslations('SystemExercises'); // Nuevo hook para los textos de la BD
+    
     const [systemExercises, setSystemExercises] = useState<Exercise[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -33,14 +35,15 @@ export default function ExplorePage() {
         setLoading(false);
     };
 
-    const handlePlay = (title: string) => {
+    const handlePlay = (dbTitleKey: string) => {
+        // Ahora mapeamos usando la clave de la base de datos, no el texto en español
         const routes: Record<string, string> = {
-            'Escalas': 'scales',
-            'Improvisación': 'improvisation'
+            'sys_scales_title': 'scales',
+            'sys_improvisation_title': 'improvisation',
+            'sys_composition_title': 'composition'
         };
 
-        const targetTitle = routes[title] || title;
-
+        const targetTitle = routes[dbTitleKey] || dbTitleKey;
         router.push(`/practice?mode=${encodeURIComponent(targetTitle)}`);
     };
 
@@ -73,7 +76,13 @@ export default function ExplorePage() {
             ) : (
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                     {systemExercises.map((exercise) => {
-                        const cats = exercise.technique ? exercise.technique.split(', ') : [];
+                        // Traducimos los campos al vuelo
+                        const displayTitle = st(exercise.title);
+                        const displayTechnique = exercise.technique ? st(exercise.technique) : '';
+                        const displayNotes = exercise.notes ? st(exercise.notes) : '';
+                        
+                        // Dividimos las técnicas ya traducidas (asumiendo que en el JSON pones "Técnica 1, Técnica 2")
+                        const cats = displayTechnique ? displayTechnique.split(', ') : [];
 
                         return (
                             <div key={exercise.id} style={{
@@ -86,7 +95,7 @@ export default function ExplorePage() {
                             >
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                        <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{exercise.title}</h3>
+                                        <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{displayTitle}</h3>
                                     </div>
 
                                     {cats.length > 0 && (
@@ -97,9 +106,9 @@ export default function ExplorePage() {
                                         </div>
                                     )}
 
-                                    {exercise.notes && (
+                                    {displayNotes && (
                                         <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)', display: '-webkit-box', WebkitLineClamp: 3, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
-                                            {exercise.notes}
+                                            {displayNotes}
                                         </p>
                                     )}
 

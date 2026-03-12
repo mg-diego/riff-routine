@@ -11,6 +11,7 @@ import { usePlayerContext } from '../../hooks/usePlayerContext';
 import { useAlphaTab } from '../../hooks/useAlphaTab';
 import { usePracticeSession } from '../../hooks/usePracticeSession';
 import { useTranslations } from 'next-intl';
+import { CompositionPanel } from './CompositionPanel';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -113,6 +114,9 @@ export default function GuitarPlayer() {
                         )}
                         {(mode === 'improvisation' || activeExercise?.title === 'Improvisación') && (
                             <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><ImprovPanel /></div>
+                        )}
+                        {(mode === 'composition' || activeExercise?.title === 'Composición') && (
+                            <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><CompositionPanel /></div>
                         )}
 
                         <div style={{

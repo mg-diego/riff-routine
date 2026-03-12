@@ -5,6 +5,8 @@ import { supabase } from '../../lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { getStartDate } from '../../lib/utils';
 import { useTranslations } from 'next-intl';
+import { Exercise } from '@/lib/types';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface DistributionData { name: string; value: number; }
 const COLORS = ['#dcb98a', '#a78bfa', '#34d399', '#f87171', '#fbbf24', '#818cf8'];
@@ -18,6 +20,8 @@ export function CategoryDistribution({ dateFilter }: Props) {
 
   useEffect(() => { fetchDistribution(); }, [dateFilter]);
 
+  const { formatExercise } = useTranslatedExercise();
+
   const fetchDistribution = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
@@ -25,7 +29,7 @@ export function CategoryDistribution({ dateFilter }: Props) {
 
     let query = supabase
       .from('practice_logs')
-      .select('duration_seconds, exercises(technique)')
+      .select('duration_seconds, exercises(id, user_id, title, technique)')
       .eq('user_id', user.id);
 
     const startDate = getStartDate(dateFilter);
@@ -35,14 +39,22 @@ export function CategoryDistribution({ dateFilter }: Props) {
 
     if (logs) {
       const stats: Record<string, number> = {};
+
       logs.forEach((log: any) => {
-        const techniqueField = (Array.isArray(log.exercises)
-          ? log.exercises[0]?.technique
-          : log.exercises?.technique) || t('generalFallback');
+        const rawExercise = Array.isArray(log.exercises) ? log.exercises[0] : log.exercises;
+
+        const translatedEx = formatExercise(rawExercise as Exercise);
+        const techniqueField = translatedEx?.technique || t('generalFallback');
+
         const seconds = log.duration_seconds || 0;
         const techniqueList = techniqueField.split(',').map((t: string) => t.trim()).filter(Boolean);
-        const secsEach = seconds / techniqueList.length;
-        techniqueList.forEach((tech: string) => { stats[tech] = (stats[tech] || 0) + secsEach; });
+
+        if (techniqueList.length > 0) {
+          const secsEach = seconds / techniqueList.length;
+          techniqueList.forEach((tech: string) => {
+            stats[tech] = (stats[tech] || 0) + secsEach;
+          });
+        }
       });
 
       setData(

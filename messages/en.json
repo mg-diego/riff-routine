@@ -714,7 +714,8 @@
       "library": "Exercise",
       "routine": "Routine",
       "scales": "Scales",
-      "improvisation": "Improvisation"
+      "improvisation": "Improvisation",
+      "composition": "Composition"
     },
     "alerts": {
       "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
@@ -826,13 +827,13 @@
     "noResults": "No exercises found for this search.",
     "noFileWarning": "⚠️ No GP file",
     "catalogBadge": "Catalog",
-    "techniqueFallback": "General",
+    "techniqueFallback": "Other",
     "difficultyLabel": "Difficulty:",
     "addButton": "+ Add",
     "addNoFileButton": " (No GP)"
   },
   "RoutineExerciseItem": {
-    "techniqueFallback": "General",
+    "techniqueFallback": "Other",
     "difficultyLabel": "Difficulty:",
     "sessions": "{count, plural, =0 {0 sessions} one {1 session} other {# sessions}}",
     "durationLabel": "Duration (1–60 min)",
@@ -881,7 +882,7 @@
   },
   "CategoryDistribution": {
     "title": "Distribution by Technique",
-    "generalFallback": "General",
+    "generalFallback": "Other",
     "noData": "No data for this period",
     "timeUnits": {
       "month": "month",
@@ -1425,5 +1426,30 @@
         "description": "You now know the essentials. Start your first routine or explore the library."
       }
     }
+  },
+  "SystemExercises": {
+    "sys_composition_title": "Composition",
+    "sys_composition_technique": "Composition",
+    "sys_composition_notes": "Dedicated space for creating original ideas. Use this time to develop melodic motifs, chord progressions, or riffs from scratch.",
+
+    "sys_improvisation_title": "Improvisation",
+    "sys_improvisation_technique": "Improvisation",
+    "sys_improvisation_notes": "Free improvisation. Test your licks, phrasing, and musicality without relying on a score.",
+
+    "sys_scales_title": "Scales",
+    "sys_scales_technique": "Scales",
+    "sys_scales_notes": "Practice scales up and down using the metronome. Focus on the precision of both hands."
+  },
+  "CompositionPanel": {
+    "title": "Composition Center",
+    "keySelector": "Base Key",
+    "major": "Major",
+    "minor": "Minor",
+    "diatonicPalette": "Diatonic Chords",
+    "progressionBuilder": "Your Progression",
+    "clearProgression": "Clear",
+    "undo": "Undo",
+    "notesTitle": "Lyrics & Notes",
+    "notesPlaceholder": "Write your lyrics here, song structure (Intro, Verse, Chorus), or arrangement ideas..."
   }
 }

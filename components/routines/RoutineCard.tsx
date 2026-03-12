@@ -1,13 +1,14 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { Routine } from '../../lib/types';
+import { Exercise, Routine } from '../../lib/types';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { DeleteButton } from '../ui/DeleteButton';
 import { EditButton } from '../ui/EditButton';
 import { HistoryButton } from '../ui/HistoryButton';
 import { useTranslations } from 'next-intl';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface RoutineCardProps {
   routine: Routine;
@@ -18,7 +19,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
   const t = useTranslations('RoutineCard');
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
-  
+
   const [exerciseCount, setExerciseCount] = useState<number | null>(null);
   const [exerciseTitles, setExerciseTitles] = useState<string[]>([]);
   const [loadingExercises, setLoadingExercises] = useState(false);
@@ -42,20 +43,25 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
       .from('routine_exercises')
       .select('*', { count: 'exact', head: true })
       .eq('routine_id', routine.id);
-      
+
     setExerciseCount(count || 0);
   };
+
+  const { formatExercise } = useTranslatedExercise();
 
   const fetchExercisePreview = async () => {
     setLoadingExercises(true);
     const { data } = await supabase
       .from('routine_exercises')
-      .select('exercises(title)')
+      .select('exercises(id, user_id, title)')
       .eq('routine_id', routine.id)
       .order('order_index', { ascending: true });
 
     if (data) {
-      const titles = data.map((item: any) => item.exercises.title);
+      const titles = data.map((item: any) => {
+        const translatedEx = formatExercise(item.exercises as Exercise);
+        return translatedEx.title;
+      });
       setExerciseTitles(titles);
       setExerciseCount(titles.length);
     }
@@ -128,7 +134,7 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
           </button>
 
           <EditButton onClick={() => router.push(`/routines/${routine.id}`)} />
-          
+
           <HistoryButton onClick={() => router.push(`/routines/${routine.id}/history`)} />
 
           <DeleteButton onClick={() => onDelete(routine)} />

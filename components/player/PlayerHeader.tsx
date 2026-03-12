@@ -9,7 +9,7 @@ import { EndSessionModal } from './EndSessionModal';
 import { useTranslations } from 'next-intl';
 
 interface PlayerHeaderProps {
-  mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation';
+  mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition';
   routineLength: number;
   currentIndex: number;
   onPrev: () => void;
@@ -69,7 +69,7 @@ export function PlayerHeader({
   exercise, routineTargetBpm = null, routineTargetDuration = null,
   elapsedSeconds: propElapsedSeconds, isTimerRunning, onToggleTimer,
   onSaveExerciseLog, onBpmChange, originalBpm, routineName,
-  fileName, onFileLoaded, onResetTimer, sessionId, disableBpmInputs = false
+  fileName, onFileLoaded, sessionId, disableBpmInputs = false
 }: PlayerHeaderProps) {
   const t = useTranslations('PlayerHeader');
   
@@ -79,6 +79,7 @@ export function PlayerHeader({
     routine: { label: t('modes.routine'), icon: '🔁', color: '#a78bfa' },
     scales: { label: t('modes.scales'), icon: '🎹', color: 'var(--gold)' },
     improvisation: { label: t('modes.improvisation'), icon: '🎷', color: 'var(--gold)' },
+    composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },
   }), [t]);
 
   const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;

@@ -714,7 +714,8 @@
       "library": "Ejercicio",
       "routine": "Rutina",
       "scales": "Escalas",
-      "improvisation": "Improvisación"
+      "improvisation": "Improvisación",
+      "composition": "Composición"
     },
     "alerts": {
       "unsavedTime": "Tienes tiempo sin registrar. ¿Seguro que quieres salir?"
@@ -826,13 +827,13 @@
     "noResults": "No se encontraron ejercicios con esa búsqueda.",
     "noFileWarning": "⚠️ Sin archivo GP",
     "catalogBadge": "Catálogo",
-    "techniqueFallback": "General",
+    "techniqueFallback": "Other",
     "difficultyLabel": "Dificultad:",
     "addButton": "+ Añadir",
     "addNoFileButton": " (Sin GP)"
   },
   "RoutineExerciseItem": {
-    "techniqueFallback": "General",
+    "techniqueFallback": "Other",
     "difficultyLabel": "Dificultad:",
     "sessions": "{count, plural, =0 {0 sesiones} one {1 sesión} other {# sesiones}}",
     "durationLabel": "Duración (1–60 min)",
@@ -881,7 +882,7 @@
   },
   "CategoryDistribution": {
     "title": "Distribución por Técnica",
-    "generalFallback": "General",
+    "generalFallback": "Other",
     "noData": "Sin datos para este período",
     "timeUnits": {
       "month": "mes",
@@ -1425,5 +1426,30 @@
         "description": "Ya conoces lo esencial. Empieza tu primera rutina o explora la biblioteca."
       }
     }
+  },
+  "SystemExercises": {
+    "sys_composition_title": "Composición",    
+    "sys_composition_technique": "Composición",
+    "sys_composition_notes": "Espacio dedicado a la creación de ideas originales. Utiliza este tiempo para desarrollar motivos melódicos, progresiones de acordes o riffs desde cero.",
+
+    "sys_improvisation_title": "Improvisación",
+    "sys_improvisation_technique": "Improvisación",
+    "sys_improvisation_notes": "Improvisación libre. Pon a prueba tus licks, fraseo y musicalidad sin depender de una partitura.",
+
+    "sys_scales_title": "Escalas",
+    "sys_scales_technique": "Escalas",
+    "sys_scales_notes": "Practica las escalas de arriba a abajo usando el metrónomo. Concéntrate en la precisión de ambas manos."
+  },
+  "CompositionPanel": {
+    "title": "Centro de Composición",
+    "keySelector": "Tonalidad Base",
+    "major": "Mayor",
+    "minor": "Menor",
+    "diatonicPalette": "Acordes Diatónicos",
+    "progressionBuilder": "Tu Progresión",
+    "clearProgression": "Limpiar",
+    "undo": "Deshacer",
+    "notesTitle": "Letras y Apuntes",
+    "notesPlaceholder": "Escribe aquí la letra de tu canción, estructuras (Intro, Verso, Estribillo) o ideas de arreglos..."
   }
 }

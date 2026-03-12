@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../../lib/supabase';
 import { Exercise } from '../../../../../lib/types';
 import { useTranslations } from 'next-intl';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface SelectedExercise {
   id: string;
@@ -18,7 +19,7 @@ interface SelectedExercise {
 export default function CreateRoutinePage() {
   const router = useRouter();
   const t = useTranslations('CreateRoutinePage');
-  
+
   const [title, setTitle] = useState('');
   const [description, setDescription] = useState('');
   const [saving, setSaving] = useState(false);
@@ -33,20 +34,28 @@ export default function CreateRoutinePage() {
     fetchExercises();
   }, []);
 
+  const { formatExerciseList } = useTranslatedExercise();
+
   const fetchExercises = async () => {
     try {
       setLoadingExercises(true);
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) return;
 
-      const { data, error: fetchError } = await supabase
+      const { data: rawData, error: fetchError } = await supabase
         .from('exercises')
         .select('*')
         .or(`user_id.eq.${user.id},user_id.is.null`)
         .order('created_at', { ascending: false });
 
       if (fetchError) throw fetchError;
-      setAllExercises(data || []);
+
+      if (rawData) {
+        const translatedData = formatExerciseList(rawData as Exercise[]);
+        setAllExercises(translatedData);
+      } else {
+        setAllExercises([]);
+      }
     } catch (err) {
       console.error(err);
     } finally {
@@ -56,7 +65,7 @@ export default function CreateRoutinePage() {
 
   const handleAddExercise = (ex: Exercise) => {
     if (selectedExercises.find(item => item.id === ex.id)) return;
-    
+
     setSelectedExercises(prev => [...prev, {
       id: ex.id,
       title: ex.title,
@@ -72,18 +81,18 @@ export default function CreateRoutinePage() {
   };
 
   const handleUpdateExercise = (id: string, field: keyof SelectedExercise, value: string | number) => {
-    setSelectedExercises(prev => prev.map(item => 
+    setSelectedExercises(prev => prev.map(item =>
       item.id === id ? { ...item, [field]: value } : item
     ));
   };
 
   const handleSubmit = async () => {
     if (!title.trim()) return setError(t('errors.nameRequired'));
-    
+
     try {
       setSaving(true);
       setError(null);
-      
+
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error(t('errors.loginRequired'));
 
@@ -103,7 +112,7 @@ export default function CreateRoutinePage() {
         const routineExercisesToInsert = selectedExercises.map((ex, index) => {
           const mins = parseInt(String(ex.durationMinutes), 10);
           const bpm = parseInt(String(ex.targetBpm), 10);
-          
+
           return {
             routine_id: routineData.id,
             exercise_id: ex.id,
@@ -119,7 +128,7 @@ export default function CreateRoutinePage() {
 
         if (insertExercisesError) throw insertExercisesError;
       }
-      
+
       router.push(`/routines/${routineData.id}`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -127,8 +136,8 @@ export default function CreateRoutinePage() {
     }
   };
 
-  const filteredExercises = allExercises.filter(ex => 
-    ex.title.toLowerCase().includes(searchTerm.toLowerCase()) || 
+  const filteredExercises = allExercises.filter(ex =>
+    ex.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
     (ex.technique && ex.technique.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
@@ -158,7 +167,7 @@ export default function CreateRoutinePage() {
       </button>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
-        
+
         <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
             <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
@@ -170,14 +179,14 @@ export default function CreateRoutinePage() {
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   {t('labels.routineName')}
                 </label>
-                <input 
-                  type="text" 
-                  value={title} 
+                <input
+                  type="text"
+                  value={title}
                   onChange={e => setTitle(e.target.value)}
-                  placeholder={t('placeholders.routineName')} 
+                  placeholder={t('placeholders.routineName')}
                   style={inputStyle}
                   onFocus={e => e.currentTarget.style.borderColor = 'var(--gold)'}
-                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} 
+                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                 />
               </div>
 
@@ -185,14 +194,14 @@ export default function CreateRoutinePage() {
                 <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
                   {t('labels.description')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('labels.optional')}</span>
                 </label>
-                <textarea 
-                  value={description} 
+                <textarea
+                  value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder={t('placeholders.description')}
-                  rows={3} 
+                  rows={3}
                   style={{ ...inputStyle, resize: 'vertical' }}
                   onFocus={e => e.currentTarget.style.borderColor = 'var(--gold)'}
-                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'} 
+                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
                 />
               </div>
             </div>
@@ -228,22 +237,22 @@ export default function CreateRoutinePage() {
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                       </button>
                     </div>
-                    
+
                     <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                         <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('labels.minutes')}</label>
-                        <input 
-                          type="number" 
-                          value={ex.durationMinutes} 
+                        <input
+                          type="number"
+                          value={ex.durationMinutes}
                           onChange={e => handleUpdateExercise(ex.id, 'durationMinutes', e.target.value)}
                           style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none' }}
                         />
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                         <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('labels.targetBpm')}</label>
-                        <input 
-                          type="number" 
-                          value={ex.targetBpm} 
+                        <input
+                          type="number"
+                          value={ex.targetBpm}
                           onChange={e => handleUpdateExercise(ex.id, 'targetBpm', e.target.value)}
                           placeholder={t('placeholders.targetBpm')}
                           style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none' }}
@@ -300,13 +309,13 @@ export default function CreateRoutinePage() {
                 const hasNoFile = !ex.file_url;
 
                 return (
-                  <div 
+                  <div
                     key={ex.id}
                     onClick={() => { if (!isSelected) handleAddExercise(ex); }}
                     style={{
                       display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                       padding: '1rem', borderRadius: '8px', cursor: isSelected ? 'default' : 'pointer', transition: 'all 0.2s',
-                      background: 'rgba(255,255,255,0.02)', 
+                      background: 'rgba(255,255,255,0.02)',
                       border: isSelected ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)',
                       opacity: isSelected ? 0.5 : 1
                     }}
@@ -328,12 +337,12 @@ export default function CreateRoutinePage() {
                         )}
                       </div>
                     </div>
-                    
-                    <button 
+
+                    <button
                       disabled={isSelected}
-                      style={{ 
+                      style={{
                         width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                        background: isSelected ? 'transparent' : 'var(--gold)', 
+                        background: isSelected ? 'transparent' : 'var(--gold)',
                         color: isSelected ? 'var(--gold)' : '#111',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSelected ? 'default' : 'pointer'
                       }}

@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../../lib/supabase';
 import { TECHNIQUES } from '../../../../../lib/constants';
 import { useTranslations } from 'next-intl';
+import { Exercise } from '@/lib/types';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface ParsedExercise {
     id: string;
@@ -17,7 +19,7 @@ interface ParsedExercise {
 export default function ImportExercisesPage() {
     const router = useRouter();
     const t = useTranslations('ImportExercisesPage');
-    
+
     const [inputText, setInputText] = useState('');
     const [parsedData, setParsedData] = useState<ParsedExercise[]>([]);
     const [isImporting, setIsImporting] = useState(false);
@@ -106,6 +108,8 @@ export default function ImportExercisesPage() {
         setParsedData(prev => prev.filter(row => row.id !== id));
     };
 
+    const { formatExerciseList } = useTranslatedExercise();
+
     const handleImport = async () => {
         const hasErrors = parsedData.some(row => row.error || !row.title.trim());
         if (hasErrors) {
@@ -129,8 +133,17 @@ export default function ImportExercisesPage() {
                 bpm_goal: ex.bpm_goal ? parseInt(ex.bpm_goal, 10) : null
             }));
 
-            const { error: insertError } = await supabase.from('exercises').insert(payload);
+            const { data: rawData, error: insertError } = await supabase
+                .from('exercises')
+                .insert(payload)
+                .select();
+
             if (insertError) throw insertError;
+
+            let data: Exercise[] = [];
+            if (rawData) {
+                data = formatExerciseList(rawData as Exercise[]);
+            }
 
             router.push('/library');
         } catch (err) {

@@ -6,6 +6,7 @@ import { supabase } from '../../../../../lib/supabase';
 import { Exercise } from '../../../../../lib/types';
 import { ExerciseForm } from '../../../../../components/library/ExerciseForm';
 import { useTranslations } from 'next-intl';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 export default function ExerciseDetailsPage() {
     const params = useParams();
@@ -88,6 +89,8 @@ export default function ExerciseDetailsPage() {
         setError(null);
     };
 
+    const { formatExercise } = useTranslatedExercise();
+
     const handleSubmit = async () => {
         if (!exercise) return;
         if (!name.trim()) return setError(t('form.nameRequired'));
@@ -120,7 +123,7 @@ export default function ExerciseDetailsPage() {
                 }
             }
 
-            const { error: dbError } = await supabase.from('exercises')
+            const { data: rawData, error: dbError } = await supabase.from('exercises')
                 .update({
                     title: name.trim(),
                     file_url: currentFileUrl,
@@ -131,9 +134,18 @@ export default function ExerciseDetailsPage() {
                     notes: notes.trim() || null,
                 })
                 .eq('id', exercise.id)
-                .eq('user_id', user.id);
+                .eq('user_id', user.id)
+                .select()
+                .single();
 
             if (dbError) throw dbError;
+
+            let data: Exercise | null = null;
+            if (rawData) {
+                data = formatExercise(rawData as Exercise);
+            }
+
+            if (!data) throw new Error(t('errors.rls'));
 
             router.push('/library');
         } catch (err) {
