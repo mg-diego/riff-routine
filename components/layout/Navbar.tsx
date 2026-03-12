@@ -13,13 +13,26 @@ export default function Navbar() {
   const t = useTranslations('Navbar');
   
   const [email, setEmail] = useState<string>('');
+  const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const getUser = async () => {
       const { data: { user } } = await supabase.auth.getUser();
-      if (user?.email) setEmail(user.email);
+      if (user) {
+        if (user.email) setEmail(user.email);
+        
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('avatar_url')
+          .eq('id', user.id)
+          .single();
+          
+        if (profile?.avatar_url) {
+          setAvatarUrl(profile.avatar_url);
+        }
+      }
     };
     getUser();
   }, []);
@@ -118,13 +131,24 @@ export default function Navbar() {
           onClick={() => setShowDropdown(!showDropdown)}
           style={{ 
             width: '38px', height: '38px', borderRadius: '50%', 
-            background: 'rgba(220,185,138,0.15)', border: '1px solid rgba(220,185,138,0.3)',
+            background: avatarUrl ? 'transparent' : 'rgba(220,185,138,0.15)', 
+            border: '1px solid rgba(220,185,138,0.3)',
             color: 'var(--gold, #dcb98a)', display: 'flex', justifyContent: 'center', 
             alignItems: 'center', fontFamily: 'Bebas Neue, sans-serif', cursor: 'pointer', 
-            fontSize: '1.1rem', textTransform: 'uppercase', transition: 'all 0.2s ease'
+            fontSize: '1.1rem', textTransform: 'uppercase', transition: 'all 0.2s ease',
+            position: 'relative', overflow: 'hidden'
           }}
         >
-          {email ? email[0] : 'U'}
+          {avatarUrl ? (
+            <Image 
+              src={avatarUrl} 
+              alt="Avatar" 
+              fill 
+              style={{ objectFit: 'cover' }} 
+            />
+          ) : (
+            email ? email[0] : 'U'
+          )}
         </div>
 
         {showDropdown && (
@@ -142,7 +166,6 @@ export default function Navbar() {
               {email}
             </span>
 
-            {/* Enlace al Perfil */}
             {email !== 'demo@riffroutine.com' && (
               <Link 
                 href="/profile"

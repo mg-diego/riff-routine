@@ -1141,6 +1141,12 @@
     }
   },
   "Profile": {
+    "avatar": {
+      "invalidFormat": "El archivo debe ser una imagen válida (JPG, PNG, WebP).",
+      "tooLarge": "La imagen es demasiado pesada (máx. 500KB).",
+      "uploadSuccess": "Avatar actualizado con éxito.",
+      "uploadError": "Error al subir el avatar."
+    },
     "label": "Configuración",
     "title": "Mi Perfil",
     "save": "Guardar",

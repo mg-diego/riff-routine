@@ -1141,6 +1141,12 @@
     }
   },
   "Profile": {
+    "avatar": {
+      "invalidFormat": "The file must be a valid image (JPG, PNG, WebP).",
+      "tooLarge": "The image is too heavy (max 500KB).",
+      "uploadSuccess": "Avatar updated successfully.",
+      "uploadError": "Error uploading avatar."
+    },
     "label": "Settings",
     "title": "My Profile",
     "save": "Save",

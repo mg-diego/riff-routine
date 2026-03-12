@@ -3,6 +3,7 @@ import { Bebas_Neue, DM_Sans } from "next/font/google";
 import "../globals.css";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, setRequestLocale } from 'next-intl/server';
+import { LanguageSync } from '../../components/ui/LanguageSync';
 
 const bebasNeue = Bebas_Neue({
   variable: "--font-bebas",
@@ -40,6 +41,7 @@ export default async function RootLayout({
     <html lang={locale}>
       <body className={`${bebasNeue.variable} ${dmSans.variable}`}>
         <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
+          <LanguageSync />
           {children}
         </NextIntlClientProvider>
       </body>

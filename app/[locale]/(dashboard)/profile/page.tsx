@@ -5,19 +5,20 @@ import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
+import { compressImage } from '@/lib/utils';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
 
-function Section({ title, description, children }: { title: string; description?: string; children: React.ReactNode }) {
+function Section({ title, description, isDanger, children }: { title: string; description?: string; isDanger?: boolean; children: React.ReactNode }) {
   return (
     <section style={{
       background: 'var(--surface)', borderRadius: '12px',
-      border: '1px solid rgba(255,255,255,0.05)',
+      border: isDanger ? '1px solid rgba(231,76,60,0.5)' : '1px solid rgba(255,255,255,0.05)',
       overflow: 'hidden',
     }}>
-      <div style={{ padding: '1.25rem 1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-        <h2 style={{ color: 'var(--text)', fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>{title}</h2>
-        {description && <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: '0.2rem 0 0' }}>{description}</p>}
+      <div style={{ padding: '1.25rem 1.5rem', borderBottom: isDanger ? '1px solid rgba(231,76,60,0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
+        <h2 style={{ color: isDanger ? '#e74c3c' : 'var(--text)', fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>{title}</h2>
+        {description && <p style={{ color: isDanger ? 'rgba(231,76,60,0.8)' : 'var(--muted)', fontSize: '0.8rem', margin: '0.2rem 0 0' }}>{description}</p>}
       </div>
       <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {children}
@@ -80,6 +81,8 @@ const btnGhost: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
 };
 
+
+
 export default function ProfilePage() {
   const t = useTranslations('Profile');
   const locale = useLocale();
@@ -92,6 +95,7 @@ export default function ProfilePage() {
   const [avatarUrl, setAvatarUrl] = useState<string | null>(null);
   const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [usernameSave, setUsernameSave] = useState<SaveState>('idle');
+  const [toast, setToast] = useState<{ msg: string; type: 'success' | 'error' } | null>(null);
 
   // Password
   const [currentPassword, setCurrentPassword] = useState('');
@@ -134,20 +138,58 @@ export default function ProfilePage() {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
 
-    // Preview
-    const reader = new FileReader();
-    reader.onload = ev => setAvatarPreview(ev.target?.result as string);
-    reader.readAsDataURL(file);
+    const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
+    if (!validTypes.includes(file.type)) {
+      setToast({ msg: t('avatar.invalidFormat'), type: 'error' });
+      setTimeout(() => setToast(null), 3000);
+      return;
+    }
 
-    // Upload
-    const ext = file.name.split('.').pop();
-    const path = `${userId}/avatar.${ext}`;
-    const { error } = await supabase.storage.from('avatars').upload(path, file, { upsert: true });
-    if (error) return;
+    try {
+      const compressedFile = await compressImage(file, 400);
 
-    const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
-    await supabase.from('profiles').update({ avatar_url: publicUrl }).eq('id', userId);
-    setAvatarUrl(publicUrl);
+      const MAX_FILE_SIZE = 500 * 1024;
+      if (compressedFile.size > MAX_FILE_SIZE) {
+        setToast({ msg: t('avatar.tooLarge'), type: 'error' });
+        setTimeout(() => setToast(null), 3000);
+        return;
+      }
+
+      const previewReader = new FileReader();
+      previewReader.onload = ev => setAvatarPreview(ev.target?.result as string);
+      previewReader.readAsDataURL(compressedFile);
+
+      const path = `${userId}/avatar`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(path, compressedFile, { upsert: true, contentType: 'image/jpeg' });
+
+      if (uploadError) {
+        setToast({ msg: t('avatar.uploadError'), type: 'error' });
+        setTimeout(() => setToast(null), 3000);
+        return;
+      }
+
+      const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
+      const urlWithCacheBuster = `${publicUrl}?v=${Date.now()}`;
+
+      const { error: updateError } = await supabase
+        .from('profiles')
+        .update({ avatar_url: urlWithCacheBuster })
+        .eq('id', userId);
+
+      if (updateError) {
+        setToast({ msg: t('avatar.uploadError'), type: 'error' });
+      } else {
+        setAvatarUrl(urlWithCacheBuster);
+        setToast({ msg: t('avatar.uploadSuccess'), type: 'success' });
+      }
+    } catch (err) {
+      setToast({ msg: t('avatar.uploadError'), type: 'error' });
+    } finally {
+      setTimeout(() => setToast(null), 3000);
+    }
   };
 
   const handleSaveUsername = async () => {
@@ -188,8 +230,16 @@ export default function ProfilePage() {
     router.push(`/${locale}`);
   };
 
-  const handleLanguageSwitch = () => {
+  const handleLanguageSwitch = async () => {
     const newLocale = locale === 'es' ? 'en' : 'es';
+
+    if (userId) {
+      await supabase
+        .from('profiles')
+        .update({ language: newLocale })
+        .eq('id', userId);
+    }
+
     const path = window.location.pathname.replace(`/${locale}`, `/${newLocale}`);
     window.location.href = path;
   };
@@ -342,8 +392,7 @@ export default function ProfilePage() {
         </div>
       </Section>
 
-      {/* Danger zone */}
-      <Section title={t('danger.title')}>
+      <Section title={t('danger.title')} isDanger>
         <Row label={t('danger.deleteAccount')} description={t('danger.deleteDescription')}>
           {!showDeleteConfirm ? (
             <button onClick={() => setShowDeleteConfirm(true)} style={{
@@ -364,6 +413,28 @@ export default function ProfilePage() {
           )}
         </Row>
       </Section>
+
+      {
+        toast && (
+          <div style={{
+            position: 'fixed',
+            bottom: '24px',
+            right: '24px',
+            background: toast.type === 'success' ? '#2ecc71' : '#e74c3c',
+            color: '#fff',
+            padding: '12px 20px',
+            borderRadius: '8px',
+            fontWeight: 600,
+            fontSize: '0.85rem',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            zIndex: 9999,
+            fontFamily: 'DM Sans, sans-serif',
+            transition: 'all 0.3s ease'
+          }}>
+            {toast.msg}
+          </div>
+        )
+      }
 
     </div>
   );

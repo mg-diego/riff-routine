@@ -64,8 +64,8 @@ export default function HomePage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    const { data: profile } = await supabase.from('profiles').select('username, full_name').eq('id', user.id).single();
-    setUserName(profile?.full_name || profile?.username || user.email?.split('@')[0] || t('defaultUser'));
+    const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+    setUserName(profile?.username || user.email?.split('@')[0] || t('defaultUser'));
 
     const { data: sessions } = await supabase
       .from('practice_sessions')
