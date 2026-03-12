@@ -1431,11 +1431,9 @@
     "sys_composition_title": "Composition",
     "sys_composition_technique": "Composition",
     "sys_composition_notes": "Dedicated space for creating original ideas. Use this time to develop melodic motifs, chord progressions, or riffs from scratch.",
-
     "sys_improvisation_title": "Improvisation",
     "sys_improvisation_technique": "Improvisation",
     "sys_improvisation_notes": "Free improvisation. Test your licks, phrasing, and musicality without relying on a score.",
-
     "sys_scales_title": "Scales",
     "sys_scales_technique": "Scales",
     "sys_scales_notes": "Practice scales up and down using the metronome. Focus on the precision of both hands."
@@ -1451,5 +1449,12 @@
     "undo": "Undo",
     "notesTitle": "Lyrics & Notes",
     "notesPlaceholder": "Write your lyrics here, song structure (Intro, Verse, Chorus), or arrangement ideas..."
+  },
+  "BecomeProModal": {
+    "title": "Limit Reached",
+    "close": "Close",
+    "upgrade": "View PRO Plan",
+    "routineLimit": "The free plan allows a maximum of 3 routines. Upgrade to PRO to create unlimited routines and much more.",
+    "libraryLimit": "The free plan allows creating a maximum of 10 custom exercises. Upgrade to PRO to create unlimited exercises."
   }
 }

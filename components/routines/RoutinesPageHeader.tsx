@@ -6,10 +6,11 @@ import { useTranslations } from 'next-intl';
 interface RoutinesPageHeaderProps {
   count: number;
   loading: boolean;
+  canCreateRoutine: boolean;
   onCreateClick: () => void;
 }
 
-export function RoutinesPageHeader({ count, loading, onCreateClick }: RoutinesPageHeaderProps) {
+export function RoutinesPageHeader({ count, loading, canCreateRoutine, onCreateClick }: RoutinesPageHeaderProps) {
   const t = useTranslations('RoutinesPageHeader');
 
   return (
@@ -24,18 +25,33 @@ export function RoutinesPageHeader({ count, loading, onCreateClick }: RoutinesPa
       </div>
       <button data-onboarding="create-routine" onClick={onCreateClick} style={{
         display: 'flex', alignItems: 'center', gap: '0.6rem',
-        background: 'var(--gold)', color: '#111', padding: '0.8rem 1.5rem',
+        background: canCreateRoutine ? 'var(--gold)' : 'transparent',
+        color: canCreateRoutine ? '#111' : 'var(--gold)',
+        padding: '0.8rem 1.5rem',
         borderRadius: '8px', fontWeight: 700, cursor: 'pointer',
-        fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem', border: 'none',
-        boxShadow: '0 4px 14px rgba(220,185,138,0.25)', transition: 'all 0.2s', whiteSpace: 'nowrap',
+        fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem',
+        border: canCreateRoutine ? 'none' : '1px solid var(--gold)',
+        boxShadow: canCreateRoutine ? '0 4px 14px rgba(220,185,138,0.25)' : 'none',
+        transition: 'all 0.2s', whiteSpace: 'nowrap',
         width: 'fit-content', flexShrink: 0
       }}
-        onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark)'}
-        onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
+        onMouseEnter={e => {
+          e.currentTarget.style.background = canCreateRoutine ? 'var(--gold-dark)' : 'rgba(220,185,138,0.1)';
+        }}
+        onMouseLeave={e => {
+          e.currentTarget.style.background = canCreateRoutine ? 'var(--gold)' : 'transparent';
+        }}
       >
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
-        </svg>
+        {canCreateRoutine ? (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        ) : (
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+        )}
         {t('newRoutine')}
       </button>
     </div>

@@ -1451,5 +1451,12 @@
     "undo": "Deshacer",
     "notesTitle": "Letras y Apuntes",
     "notesPlaceholder": "Escribe aquí la letra de tu canción, estructuras (Intro, Verso, Estribillo) o ideas de arreglos..."
+  },
+  "BecomeProModal": {
+    "title": "Límite Alcanzado",
+    "close": "Cerrar",
+    "upgrade": "Ver Plan PRO",
+    "routineLimit": "El plan gratuito permite un máximo de 3 rutinas. Pásate a PRO para crear rutinas ilimitadas y mucho más.",
+    "libraryLimit": "El plan gratuito permite crear un máximo de 10 ejercicios personalizados. Pásate a PRO para crear ejercicios ilimitados."
   }
 }

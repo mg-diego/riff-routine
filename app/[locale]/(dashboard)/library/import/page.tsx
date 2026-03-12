@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../../lib/supabase';
-import { TECHNIQUES } from '../../../../../lib/constants';
+import { TECHNIQUES, SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../../lib/constants';
 import { useTranslations } from 'next-intl';
 import { Exercise } from '@/lib/types';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import { BecomeProModal } from '@/components/ui/BecomeProModal';
 
 interface ParsedExercise {
     id: string;
@@ -16,15 +17,50 @@ interface ParsedExercise {
     error?: string;
 }
 
+const MAX_FREE_EXERCISES = 10;
+
 export default function ImportExercisesPage() {
     const router = useRouter();
     const t = useTranslations('ImportExercisesPage');
+    const p = useTranslations('BecomeProModal');
 
     const [inputText, setInputText] = useState('');
     const [parsedData, setParsedData] = useState<ParsedExercise[]>([]);
     const [isImporting, setIsImporting] = useState(false);
     const [globalError, setGlobalError] = useState<string | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
+
+    const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
+    const [currentExerciseCount, setCurrentExerciseCount] = useState(0);
+    const [showProModal, setShowProModal] = useState(false);
+
+    useEffect(() => {
+        const fetchUserData = async () => {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data: profile } = await supabase
+                .from('profiles')
+                .select('subscription_tier')
+                .eq('id', user.id)
+                .single();
+
+            if (profile) {
+                setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
+            }
+
+            const { count } = await supabase
+                .from('exercises')
+                .select('*', { count: 'exact', head: true })
+                .eq('user_id', user.id);
+
+            if (count !== null) {
+                setCurrentExerciseCount(count);
+            }
+        };
+
+        fetchUserData();
+    }, []);
 
     const validateTechnique = (techString: string): string | undefined => {
         if (!techString || techString.trim() === '') {
@@ -71,6 +107,11 @@ export default function ImportExercisesPage() {
         if (extracted.length === 0) {
             setGlobalError(t('errors.noValidExercises'));
             setParsedData([]);
+            return;
+        }
+
+        if (userTier === SUBSCRIPTION_TIERS.FREE && (currentExerciseCount + extracted.length) > MAX_FREE_EXERCISES) {
+            setShowProModal(true);
             return;
         }
 
@@ -398,6 +439,10 @@ export default function ImportExercisesPage() {
                     </>
                 )}
             </div>
+
+            {showProModal && (
+                <BecomeProModal onClose={() => setShowProModal(false)} description={p('libraryLimit')} />
+            )}
         </div>
     );
 }

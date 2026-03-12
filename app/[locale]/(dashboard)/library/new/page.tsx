@@ -1,14 +1,19 @@
 "use client";
 
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../../lib/supabase';
 import { ExerciseForm } from '../../../../../components/library/ExerciseForm';
+import { BecomeProModal } from '../../../../../components/ui/BecomeProModal';
+import { SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../../lib/constants';
 import { useTranslations } from 'next-intl';
+
+const MAX_FREE_EXERCISES = 10;
 
 export default function NewExercisePage() {
   const router = useRouter();
   const t = useTranslations('NewExercisePage');
+  const p = useTranslations('BecomeProModal');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const [saving, setSaving] = useState(false);
@@ -23,6 +28,39 @@ export default function NewExercisePage() {
   const [bpmGoal, setBpmGoal] = useState<string | number>('');
   const [difficulty, setDifficulty] = useState(3);
   const [notes, setNotes] = useState('');
+
+  // Estados para validación de tier
+  const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
+  const [currentExerciseCount, setCurrentExerciseCount] = useState(0);
+  const [showProModal, setShowProModal] = useState(false);
+
+  useEffect(() => {
+    const fetchUserData = async () => {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return;
+
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('subscription_tier')
+        .eq('id', user.id)
+        .single();
+
+      if (profile) {
+        setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
+      }
+
+      const { count } = await supabase
+        .from('exercises')
+        .select('*', { count: 'exact', head: true })
+        .eq('user_id', user.id);
+
+      if (count !== null) {
+        setCurrentExerciseCount(count);
+      }
+    };
+
+    fetchUserData();
+  }, []);
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement> | React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -50,6 +88,12 @@ export default function NewExercisePage() {
   const handleSubmit = async () => {
     if (!name.trim()) return setError(t('form.nameRequired'));
     if (categories.length === 0) return setError(t('form.categoryRequired'));
+
+    // Validación de límite del Tier Free
+    if (userTier === SUBSCRIPTION_TIERS.FREE && currentExerciseCount >= MAX_FREE_EXERCISES) {
+      setShowProModal(true);
+      return;
+    }
 
     try {
       setSaving(true);
@@ -186,6 +230,13 @@ export default function NewExercisePage() {
           </button>
         </div>
       </div>
+
+      {showProModal && (
+        <BecomeProModal 
+          onClose={() => setShowProModal(false)} 
+          description={p('libraryLimit')} 
+        />
+      )}
     </div>
   );
 }

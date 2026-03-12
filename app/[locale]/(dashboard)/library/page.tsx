@@ -4,12 +4,13 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { Exercise } from '../../../../lib/types';
-import { TECHNIQUES, DIFFICULTY_LABELS } from '../../../../lib/constants';
+import { TECHNIQUES, DIFFICULTY_LABELS, SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../lib/constants';
 import { ExerciseCard } from '../../../../components/library/ExerciseCard';
 import { ExerciseRow } from '../../../../components/library/ExerciseRow';
 import { DeleteConfirmModal } from '../../../../components/ui/DeleteConfirmModal';
 import { useTranslations } from 'next-intl';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import { BecomeProModal } from '@/components/ui/BecomeProModal';
 
 interface ExerciseWithProgress extends Exercise {
   max_bpm_achieved?: number;
@@ -20,8 +21,10 @@ const ITEMS_PER_PAGE = 20;
 export default function LibraryPage() {
   const router = useRouter();
   const t = useTranslations('LibraryPage');
+  const p = useTranslations('BecomeProModal');
 
   const [files, setFiles] = useState<ExerciseWithProgress[]>([]);
+  const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const [viewMode, setViewMode] = useState<'rows' | 'cards'>('rows');
@@ -36,6 +39,7 @@ export default function LibraryPage() {
 
   const [exerciseToDelete, setExerciseToDelete] = useState<Exercise | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
 
   useEffect(() => {
     fetchExercises();
@@ -52,6 +56,16 @@ export default function LibraryPage() {
     if (!user) {
       setLoading(false);
       return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', user.id)
+      .single();
+
+    if (profile) {
+      setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
     }
 
     const { data: exercisesData, error: exercisesError } = await supabase
@@ -217,6 +231,25 @@ export default function LibraryPage() {
     router.push(`/library/${exercise.id}/history`);
   };
 
+  const MAX_FREE_EXERCISES = 10;
+  const canCreateExercise = userTier !== SUBSCRIPTION_TIERS.FREE || files.length < MAX_FREE_EXERCISES;
+
+  const handleCreateClick = () => {
+    if (canCreateExercise) {
+      router.push('/library/new');
+    } else {
+      setShowProModal(true);
+    }
+  };
+
+  const handleImportClick = () => {
+    if (canCreateExercise) {
+      router.push('/library/import');
+    } else {
+      setShowProModal(true);
+    }
+  };
+
   return (
     <div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', gap: '1rem', flexWrap: 'wrap' }}>
@@ -228,37 +261,66 @@ export default function LibraryPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
-          <button onClick={() => router.push('/library/new')} style={{
+          <button onClick={handleCreateClick} style={{
             display: 'flex', alignItems: 'center', gap: '0.6rem',
-            background: 'var(--gold)', color: '#111', padding: '0.8rem 1.5rem',
+            background: canCreateExercise ? 'var(--gold)' : 'transparent',
+            color: canCreateExercise ? '#111' : 'var(--gold)',
+            padding: '0.8rem 1.5rem',
             borderRadius: '8px', fontWeight: 700, cursor: 'pointer',
-            fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem', border: 'none',
-            boxShadow: '0 4px 14px rgba(220,185,138,0.25)', transition: 'all 0.2s', whiteSpace: 'nowrap'
+            fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem',
+            border: canCreateExercise ? 'none' : '1px solid var(--gold)',
+            boxShadow: canCreateExercise ? '0 4px 14px rgba(220,185,138,0.25)' : 'none',
+            transition: 'all 0.2s', whiteSpace: 'nowrap'
           }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = canCreateExercise ? 'var(--gold-dark)' : 'rgba(220,185,138,0.1)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = canCreateExercise ? 'var(--gold)' : 'transparent';
+            }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
+            {canCreateExercise ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            )}
             {t('newExercise')}
           </button>
 
           <button
-            onClick={() => router.push('/library/import')}
+            onClick={handleImportClick}
             style={{
               display: 'flex', alignItems: 'center', gap: '0.6rem',
-              background: 'rgba(255, 255, 255, 0.05)', color: 'var(--text)', padding: '0.8rem 1.5rem',
+              background: canCreateExercise ? 'rgba(255, 255, 255, 0.05)' : 'transparent',
+              color: canCreateExercise ? 'var(--text)' : 'var(--muted)',
+              padding: '0.8rem 1.5rem',
               borderRadius: '8px', fontWeight: 600, cursor: 'pointer',
-              fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem', border: '1px solid rgba(255,255,255,0.1)',
+              fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem',
+              border: canCreateExercise ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(255,255,255,0.05)',
               transition: 'all 0.2s', whiteSpace: 'nowrap'
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.1)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255, 255, 255, 0.05)'}
+            onMouseEnter={e => {
+              e.currentTarget.style.background = canCreateExercise ? 'rgba(255, 255, 255, 0.1)' : 'rgba(255, 255, 255, 0.02)';
+            }}
+            onMouseLeave={e => {
+              e.currentTarget.style.background = canCreateExercise ? 'rgba(255, 255, 255, 0.05)' : 'transparent';
+            }}
           >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
-            </svg>
+            {canCreateExercise ? (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" /><polyline points="14 2 14 8 20 8" /><line x1="12" y1="18" x2="12" y2="12" /><line x1="9" y1="15" x2="15" y2="15" />
+              </svg>
+            ) : (
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+                <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+              </svg>
+            )}
             {t('importList')}
           </button>
         </div>
@@ -532,6 +594,10 @@ export default function LibraryPage() {
           onConfirm={confirmDelete}
           onCancel={() => setExerciseToDelete(null)}
         />
+      )}
+
+      {showProModal && (
+        <BecomeProModal onClose={() => setShowProModal(false)} description={p('libraryLimit')} />
       )}
     </div>
   );

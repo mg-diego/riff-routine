@@ -4,33 +4,48 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { Routine } from '../../../../lib/types';
+import { SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../lib/constants';
 import { RoutinesPageHeader } from '../../../../components/routines/RoutinesPageHeader';
 import { RoutineCard } from '../../../../components/routines/RoutineCard';
 import { DeleteConfirmModal } from '../../../../components/ui/DeleteConfirmModal';
 import { useTranslations } from 'next-intl';
+import { BecomeProModal } from '@/components/ui/BecomeProModal';
 
 export default function RoutinesPage() {
   const router = useRouter();
   const t = useTranslations('RoutinesPage');
-  
+  const p = useTranslations('BecomeProModal');
+
   const [routines, setRoutines] = useState<Routine[]>([]);
+  const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [routineToDelete, setRoutineToDelete] = useState<Routine | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [showProModal, setShowProModal] = useState(false);
 
   useEffect(() => {
-    fetchRoutines();
+    fetchData();
   }, []);
 
-  const fetchRoutines = async () => {
+  const fetchData = async () => {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
 
     if (!user) {
       setLoading(false);
       return;
+    }
+
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('subscription_tier')
+      .eq('id', user.id)
+      .single();
+
+    if (profile) {
+      setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
     }
 
     const { data, error } = await supabase
@@ -70,7 +85,7 @@ export default function RoutinesPage() {
 
       if (result.error) throw result.error;
 
-      await fetchRoutines();
+      await fetchData();
       setRoutineToDelete(null);
     } catch (e) {
       setError(e instanceof Error ? e.message : String(e));
@@ -78,13 +93,25 @@ export default function RoutinesPage() {
       setIsDeleting(false);
     }
   };
-  
+
+  const MAX_FREE_ROUTINES = 3;
+  const canCreateRoutine = userTier !== SUBSCRIPTION_TIERS.FREE || routines.length < MAX_FREE_ROUTINES;
+
+  const handleCreateClick = () => {
+    if (canCreateRoutine) {
+      router.push('/routines/new');
+    } else {
+      setShowProModal(true);
+    }
+  };
+
   return (
     <div>
       <RoutinesPageHeader
         count={routines.length}
         loading={loading}
-        onCreateClick={() => router.push('/routines/new')}
+        canCreateRoutine={canCreateRoutine}
+        onCreateClick={handleCreateClick}
       />
 
       {error && (
@@ -125,6 +152,10 @@ export default function RoutinesPage() {
           onConfirm={confirmDelete}
           onCancel={() => setRoutineToDelete(null)}
         />
+      )}
+
+      {showProModal && (
+        <BecomeProModal onClose={() => setShowProModal(false)} description={p('routineLimit')} />
       )}
     </div>
   );

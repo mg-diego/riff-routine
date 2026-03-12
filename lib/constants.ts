@@ -349,3 +349,16 @@ const MINOR_DEGREES = [
   { roman: 'VI', suffix: '' },
   { roman: 'VII', suffix: '' }
 ];
+
+export const ROLES = {
+  STUDENT: 'student',
+  TEACHER: 'teacher',
+  ADMIN: 'admin'
+} as const;
+export type Role = typeof ROLES[keyof typeof ROLES];
+
+export const SUBSCRIPTION_TIERS = {
+    FREE: 'free',
+    PRO: 'pro'
+} as const;
+export type SubscriptionTier = typeof SUBSCRIPTION_TIERS[keyof typeof SUBSCRIPTION_TIERS];
