@@ -22,7 +22,7 @@ export function RoutinesPageHeader({ count, loading, onCreateClick }: RoutinesPa
           {loading ? t('loading') : t('routineCount', { count })}
         </p>
       </div>
-      <button onClick={onCreateClick} style={{
+      <button data-onboarding="create-routine" onClick={onCreateClick} style={{
         display: 'flex', alignItems: 'center', gap: '0.6rem',
         background: 'var(--gold)', color: '#111', padding: '0.8rem 1.5rem',
         borderRadius: '8px', fontWeight: 700, cursor: 'pointer',

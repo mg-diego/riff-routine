@@ -111,7 +111,7 @@ export function ScalesPanel() {
     let baseLowest = STANDARD_BASES[5];
     let stringBasesInternal = STANDARD_BASES.map(b => b - baseLowest);
     let eRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[5]);
-    
+
     let positions: { activeNotes: any[], startFret: number, title: string, id: string }[] = [];
 
     if (N <= 4) {
@@ -137,32 +137,32 @@ export function ScalesPanel() {
         let notesOnString = 0;
 
         while (currentIndex < scalePitches.length && currentString >= 0) {
-            let pitch = scalePitches[currentIndex];
-            let fretSame = pitch - stringBasesInternal[currentString];
-            let fretNext = currentString > 0 ? pitch - stringBasesInternal[currentString - 1] : -1;
-            let placeOnSame = false;
+          let pitch = scalePitches[currentIndex];
+          let fretSame = pitch - stringBasesInternal[currentString];
+          let fretNext = currentString > 0 ? pitch - stringBasesInternal[currentString - 1] : -1;
+          let placeOnSame = false;
 
-            if (notesOnString === 0) {
-                 placeOnSame = true;
-            } else if (notesOnString < 2 && fretSame <= currentFret + 5) {
-                 let costSame = (fretSame - currentFret) * 1;
-                 let costNext = Infinity;
-                 if (fretNext >= 0) {
-                     if (fretNext < currentFret) costNext = (currentFret - fretNext) * 3 + 2;
-                     else costNext = (fretNext - currentFret) * 1 + 2;
-                 }
-                 if (costSame <= costNext) placeOnSame = true;
+          if (notesOnString === 0) {
+            placeOnSame = true;
+          } else if (notesOnString < 2 && fretSame <= currentFret + 5) {
+            let costSame = (fretSame - currentFret) * 1;
+            let costNext = Infinity;
+            if (fretNext >= 0) {
+              if (fretNext < currentFret) costNext = (currentFret - fretNext) * 3 + 2;
+              else costNext = (fretNext - currentFret) * 1 + 2;
             }
+            if (costSame <= costNext) placeOnSame = true;
+          }
 
-            if (placeOnSame && fretSame >= 0 && fretSame <= 24) {
-                activeNotes.push({ string: currentString, fret: fretSame, note: CHROMATIC_NOTES[(eRootIndex + pitch) % 12] });
-                currentFret = fretSame;
-                notesOnString++;
-                currentIndex++;
-            } else {
-                currentString--;
-                notesOnString = 0;
-            }
+          if (placeOnSame && fretSame >= 0 && fretSame <= 24) {
+            activeNotes.push({ string: currentString, fret: fretSame, note: CHROMATIC_NOTES[(eRootIndex + pitch) % 12] });
+            currentFret = fretSame;
+            notesOnString++;
+            currentIndex++;
+          } else {
+            currentString--;
+            notesOnString = 0;
+          }
         }
 
         let string6Note = activeNotes.find(n => n.string === 5);
@@ -172,7 +172,7 @@ export function ScalesPanel() {
     } else {
       const nps = N <= 5 ? 2 : 3;
       for (let p = 0; p < N; p++) {
-        let activeNotes: {string: number, fret: number, note: string}[] = [];
+        let activeNotes: { string: number, fret: number, note: string }[] = [];
         let startNote = scaleNotes[p];
         let baseFret = (CHROMATIC_NOTES.indexOf(startNote) - eRootIndex + 12) % 12;
         let currentPitch = baseFret;
@@ -184,7 +184,7 @@ export function ScalesPanel() {
             if (scaleNotes.includes(noteName)) {
               let fret = currentPitch - stringBasesInternal[s];
               if (fret < 0) { fret += 12; currentPitch += 12; }
-              activeNotes.push({string: s, fret: fret, note: noteName});
+              activeNotes.push({ string: s, fret: fret, note: noteName });
               found++;
             }
             currentPitch++;
@@ -195,7 +195,7 @@ export function ScalesPanel() {
         let startFret = string6Note ? string6Note.fret : 0;
 
         if (startFret === 0) {
-          activeNotes = activeNotes.map(n => ({...n, fret: n.fret + 12}));
+          activeNotes = activeNotes.map(n => ({ ...n, fret: n.fret + 12 }));
           startFret += 12;
         }
 
@@ -205,13 +205,13 @@ export function ScalesPanel() {
 
     positions = positions.map((pos) => {
       const customPosData = scaleData.customPositions?.[pos.id];
-      
+
       if (customPosData && customPosData.rootStr !== undefined) {
         const rootStr = customPosData.rootStr;
         const stringRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[rootStr]);
-        
+
         let anchorFret = (CHROMATIC_NOTES.indexOf(rootNote) - stringRootIndex + 12) % 12;
-        
+
         const minOffset = Math.min(...customPosData.notes.map((n: any) => n.o));
         if (anchorFret + minOffset < 0) {
           anchorFret += 12;
@@ -222,7 +222,7 @@ export function ScalesPanel() {
           const noteName = CHROMATIC_NOTES[(CHROMATIC_NOTES.indexOf(STANDARD_TUNING[n.s]) + fret) % 12];
           return { string: n.s, fret, note: noteName };
         }).filter((n: any) => n.fret >= 0 && n.fret <= 24);
-        
+
         const fallbackStartFret = customActiveNotes.length > 0 ? Math.min(...customActiveNotes.map((n: { string: number; fret: number; note: string }) => n.fret)) : 0;
         return { ...pos, activeNotes: customActiveNotes, startFret: fallbackStartFret };
       }
@@ -239,7 +239,7 @@ export function ScalesPanel() {
           const regex = new RegExp(`^${pos.id}[a-zA-Z]+$`); // Busca "3A", "3B", "3alt", etc.
           return regex.test(key);
         });
-        
+
         // Si hay variantes, ocultamos la posición algorítmica original
         if (hasVariants) return false;
       }
@@ -253,9 +253,9 @@ export function ScalesPanel() {
           if (customPosData && customPosData.rootStr !== undefined) {
             const rootStr = customPosData.rootStr;
             const stringRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[rootStr]);
-            
+
             let anchorFret = (CHROMATIC_NOTES.indexOf(rootNote) - stringRootIndex + 12) % 12;
-            
+
             const minOffset = Math.min(...customPosData.notes.map((n: any) => n.o));
             if (anchorFret + minOffset < 0) anchorFret += 12;
 
@@ -264,13 +264,13 @@ export function ScalesPanel() {
               const noteName = CHROMATIC_NOTES[(CHROMATIC_NOTES.indexOf(STANDARD_TUNING[n.s]) + fret) % 12];
               return { string: n.s, fret, note: noteName };
             }).filter((n: any) => n.fret >= 0 && n.fret <= 24);
-            
+
             const fallbackStartFret = customActiveNotes.length > 0 ? Math.min(...customActiveNotes.map((n: { string: number; fret: number; note: string }) => n.fret)) : 0;
-            
-            positions.push({ 
-              activeNotes: customActiveNotes, 
-              startFret: fallbackStartFret, 
-              title: t('positionTitle', { pos: key }), 
+
+            positions.push({
+              activeNotes: customActiveNotes,
+              startFret: fallbackStartFret,
+              title: t('positionTitle', { pos: key }),
               id: key
             });
           }
@@ -279,16 +279,16 @@ export function ScalesPanel() {
     }
 
     let extendedPositions: { activeNotes: any[]; startFret: number; title: string; id: string }[] = [];
-    
+
     positions.forEach(pos => {
       extendedPositions.push(pos);
-      
+
       let newStartFret12 = pos.startFret + 12;
       if (newStartFret12 <= 24) {
         let newActiveNotes = pos.activeNotes
           .map((n: { string: number; fret: number; note: string }) => ({ ...n, fret: n.fret + 12 }))
           .filter((n: { string: number; fret: number; note: string }) => n.fret <= 24);
-        
+
         if (newActiveNotes.length > 0) {
           extendedPositions.push({
             activeNotes: newActiveNotes,
@@ -304,7 +304,7 @@ export function ScalesPanel() {
         let newActiveNotes = pos.activeNotes
           .map((n: { string: number; fret: number; note: string }) => ({ ...n, fret: n.fret + 24 }))
           .filter((n: { string: number; fret: number; note: string }) => n.fret <= 24);
-        
+
         if (newActiveNotes.length > 0) {
           extendedPositions.push({
             activeNotes: newActiveNotes,
@@ -321,7 +321,7 @@ export function ScalesPanel() {
 
   const handleExportCustomPosition = () => {
     if (draftPosNotes.length === 0 || isEditingPos === null) return;
-    
+
     const rootNotesInShape = draftPosNotes.filter(n => {
       const stringBaseIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[n.string]);
       const noteName = CHROMATIC_NOTES[(stringBaseIndex + n.fret) % 12];
@@ -335,7 +335,7 @@ export function ScalesPanel() {
 
     rootNotesInShape.sort((a, b) => b.string - a.string);
     const anchorNote = rootNotesInShape[0];
-    
+
     const exportData = {
       rootStr: anchorNote.string,
       notes: draftPosNotes.map(n => ({
@@ -343,10 +343,10 @@ export function ScalesPanel() {
         o: n.fret - anchorNote.fret
       }))
     };
-    
+
     const jsonStr = JSON.stringify(exportData);
     const snippet = `"${isEditingPos}": ${jsonStr}`;
-    
+
     navigator.clipboard.writeText(snippet);
     alert(`Copiado al portapapeles:\n\n${snippet}\n\nPégalo en lib/constants.ts bajo customPositions de '${scaleKey}'`);
     setIsEditingPos(null);
@@ -577,7 +577,7 @@ export function ScalesPanel() {
       </div>
 
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', background: 'var(--surface)', padding: '1rem', borderRadius: '8px' }}>
-        <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: '#1a1a1a', padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.9rem' }}>
+        <div data-onboarding="scales-selector" style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: '#1a1a1a', padding: '0.5rem 1rem', borderRadius: '6px', fontSize: '0.9rem' }}>
           <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><input type="radio" checked={viewMode === 'full'} onChange={() => { setViewMode('full'); setIsEditingPos(null); }} /> {t('viewMode.full')}</label>
           <label style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.4rem' }}><input type="radio" checked={viewMode === 'positions'} onChange={() => setViewMode('positions')} /> {t('viewMode.positions')}</label>
         </div>
@@ -661,7 +661,7 @@ export function ScalesPanel() {
           </div>
 
           <div style={{ flex: '1 1 200px', background: '#1f1f1f', borderLeft: '4px solid var(--gold)', padding: '1rem 1.2rem', borderRadius: '6px', fontSize: '0.9rem', lineHeight: 1.6, display: 'flex', flexDirection: 'column', justifyContent: 'center', minWidth: 0 }}>
-            {scaleData.desc ? (
+            {scaleData.target || scaleData.chords ? (
               <>
                 <p style={{ margin: '0 0 0.6rem 0', wordBreak: 'break-word' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>{t('theory.usage')}</span> {mc(`scales.${scaleKey}.desc`)}</p>
                 <p style={{ margin: '0 0 0.6rem 0', wordBreak: 'break-word' }}><span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>{t('theory.targetNotes')}</span> {scaleData.target || '-'}</p>
@@ -682,9 +682,9 @@ export function ScalesPanel() {
             {positionsData?.map((pos, idx) => (
               <Fretboard key={`${pos.id}-${idx}`} activeNotesList={pos.activeNotes} title={pos.title} positionIndex={pos.id} />
             ))}
-            
+
             {process.env.NODE_ENV === 'development' && isEditingPos === null && (
-              <button 
+              <button
                 onClick={() => {
                   const newId = window.prompt("Introduce el identificador de la posición (ej: 3A, 6, CAGED-C):");
                   if (newId && newId.trim() !== "") {
@@ -692,14 +692,14 @@ export function ScalesPanel() {
                     setDraftPosNotes([]);
                   }
                 }}
-                style={{ 
-                  background: 'rgba(220, 185, 138, 0.1)', 
-                  color: 'var(--gold)', 
-                  border: '1px dashed var(--gold)', 
-                  padding: '1rem 2rem', 
-                  borderRadius: '8px', 
-                  cursor: 'pointer', 
-                  fontSize: '1rem', 
+                style={{
+                  background: 'rgba(220, 185, 138, 0.1)',
+                  color: 'var(--gold)',
+                  border: '1px dashed var(--gold)',
+                  padding: '1rem 2rem',
+                  borderRadius: '8px',
+                  cursor: 'pointer',
+                  fontSize: '1rem',
                   fontWeight: 'bold',
                   marginTop: '1rem',
                   width: '100%',
@@ -713,10 +713,10 @@ export function ScalesPanel() {
             )}
 
             {isEditingPos !== null && (!positionsData || !positionsData.some(p => p.id === isEditingPos)) && (
-              <Fretboard 
-                activeNotesList={[]} 
-                title={t('positionTitle', { pos: isEditingPos })} 
-                positionIndex={isEditingPos} 
+              <Fretboard
+                activeNotesList={[]}
+                title={t('positionTitle', { pos: isEditingPos })}
+                positionIndex={isEditingPos}
               />
             )}
           </>

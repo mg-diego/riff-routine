@@ -35,195 +35,153 @@ export const CHORD_INTERVALS: Record<string, number[]> = {
 
 export const SCALES: Record<string, any> = {
     'ionian': {
-        name: 'Jónica (Mayor)',
         intervals: [0, 2, 4, 5, 7, 9, 11],
         triads: ['Maj', 'm', 'm', 'Maj', 'Maj', 'm', 'dim'],
         tetrads: ['Maj7', 'm7', 'm7', 'Maj7', '7', 'm7', 'm7♭5'],
-        desc: 'Escala mayor natural. Sonido alegre, brillante y resolutivo. Es la base de la música occidental.',
         target: '3, 7',
         chords: 'Maj, Maj7'
     },
     'dorian': {
-        name: 'Dórica',
         intervals: [0, 2, 3, 5, 7, 9, 10],
         triads: ['m', 'm', 'Maj', 'Maj', 'm', 'dim', 'Maj'],
         tetrads: ['m7', 'm7', 'Maj7', '7', 'm7', 'm7♭5', 'Maj7'],
-        desc: 'Escala menor con una 6 mayor. Sonido melancólico pero con un toque flotante y brillante. Clásica en Jazz, Funk y Blues rock.',
         target: '♭3, 6',
         chords: 'm, m7'
     },
     'phrygian': {
-        name: 'Frigia',
         intervals: [0, 1, 3, 5, 7, 8, 10],
         triads: ['m', 'Maj', 'Maj', 'm', 'dim', 'Maj', 'm'],
         tetrads: ['m7', 'Maj7', '7', 'm7', 'm7♭5', 'Maj7', 'm7'],
-        desc: 'Sonido oscuro, exótico y con mucha tensión debido a su ♭2. Es la escala característica del flamenco y muy usada en Metal.',
         target: '♭2, ♭3',
         chords: 'm, m7'
     },
     'lydian': {
-        name: 'Lidia',
         intervals: [0, 2, 4, 6, 7, 9, 11],
         intervalAliases: { 6: '#4' },
         triads: ['Maj', 'Maj', 'm', 'dim', 'Maj', 'm', 'm'],
         tetrads: ['Maj7', '7', 'm7', 'm7♭5', 'Maj7', 'm7', 'm7'],
-        desc: 'Escala mayor con la 4 aumentada. Sonido misterioso, espacial, onírico y muy abierto. Común en música de cine.',
         target: '#4, 7',
         chords: 'Maj, Maj7, Maj7#11'
     },
     'mixolydian': {
-        name: 'Mixolidia',
         intervals: [0, 2, 4, 5, 7, 9, 10],
         triads: ['Maj', 'm', 'dim', 'Maj', 'm', 'm', 'Maj'],
         tetrads: ['7', 'm7', 'm7♭5', 'Maj7', 'm7', 'm7', 'Maj7'],
-        desc: 'Escala mayor con la 7 menor. Alegre pero con una tensión característica. Es la escala por excelencia del Blues, Rock y Funk.',
         target: '3, ♭7',
         chords: '7, 9, 13 (Dominantes)'
     },
     'aeolian': {
-        name: 'Eólica (Menor)',
         intervals: [0, 2, 3, 5, 7, 8, 10],
         triads: ['m', 'dim', 'Maj', 'm', 'm', 'Maj', 'Maj'],
         tetrads: ['m7', 'm7♭5', 'Maj7', 'm7', 'm7', 'Maj7', '7'],
-        desc: 'La escala menor natural. Sonido triste, melancólico o épico. La más utilizada para progresiones menores.',
         target: '♭3, ♭6',
         chords: 'm, m7'
     },
     'locrian': {
-        name: 'Locria',
         intervals: [0, 1, 3, 5, 6, 8, 10],
         triads: ['dim', 'Maj', 'm', 'm', 'Maj', 'Maj', 'm'],
         tetrads: ['m7♭5', 'Maj7', 'm7', 'm7', 'Maj7', '7', 'm7'],
-        desc: 'El modo más inestable y disonante debido a que no tiene 5 justa. Se usa mayormente en Jazz y pasajes muy tensos de Metal.',
         target: '♭2, ♭5',
         chords: 'dim, m7♭5'
     },
     'blues': {
-        name: 'Blues',
         intervals: [0, 3, 5, 6, 7, 10],
         triads: ['m', 'Maj', 'm', 'dim', 'm', 'Maj'],
         tetrads: ['m7', 'Maj7', 'm7', 'dim7', 'm7', '7'],
-        desc: 'La escala pentatónica menor a la que se le añade la "Blue Note" (la ♭5). Aporta el característico sonido sucio del blues.',
         target: '♭3, ♭5, ♭7',
         chords: 'Dominantes (7), m7'
     },
     'pentatonic-minor': {
-        name: 'Pentatónica Menor',
         intervals: [0, 3, 5, 7, 10],
         triads: ['m', 'Maj', 'm', 'm', 'Maj'],
         tetrads: ['m7', 'Maj7', 'm7', 'm7', '7'],
-        desc: 'La escala más popular de la guitarra moderna. Cinco notas sin semitonos que la hacen facilísima para improvisar.',
         target: '1, ♭3, 5',
         chords: 'm, m7, acordes 7'
     },
     'pentatonic-major': {
-        name: 'Pentatónica Mayor',
         intervals: [0, 2, 4, 7, 9],
         triads: ['Maj', 'm', 'm', '5', 'm'],
         tetrads: ['Maj7', 'm7', 'm7', '7', 'm7'],
-        desc: 'Versión brillante de cinco notas. Sonido campestre, alegre y dulce. Es el pilar del Country y Pop.',
         target: '1, 3, 5',
         chords: 'Maj, Maj7'
     },
     'harmonic-minor': {
-        name: 'Menor Armónica',
         intervals: [0, 2, 3, 5, 7, 8, 11],
         triads: ['m', 'dim', 'aug', 'm', 'Maj', 'Maj', 'dim'],
         tetrads: ['mMaj7', 'm7♭5', 'Maj7#5', 'm7', '7', 'Maj7', 'dim7'],
-        desc: 'Escala menor natural a la que se le sube la 7 para generar una fuerte tensión. Sonido clásico, barroco y árabe.',
         target: '♭6, 7',
         chords: 'm, mMaj7, 7 (V grado)'
     },
     'harmonic-major': {
-        name: 'Mayor Armónica',
         intervals: [0, 2, 4, 5, 7, 8, 11],
         triads: ['Maj', 'dim', 'm', 'm', 'Maj', 'aug', 'dim'],
         tetrads: ['Maj7', 'm7♭5', 'm7', 'mMaj7', '7', 'Maj7#5', 'dim7'],
-        desc: 'Una escala rara y exótica que combina la alegría de la tercera mayor con la oscuridad de la sexta menor.',
         target: '3, ♭6',
         chords: 'Maj, Maj7'
     },
     'melodic-minor': {
-        name: 'Menor Melódica',
         intervals: [0, 2, 3, 5, 7, 9, 11],
         triads: ['m', 'm', 'aug', 'Maj', 'Maj', 'dim', 'dim'],
         tetrads: ['mMaj7', 'm7', 'Maj7#5', '7', '7', 'm7♭5', 'm7♭5'],
-        desc: 'Escala menor natural con la 6 y 7 mayores. Muy fluida y resolutiva, usada en Jazz contemporáneo.',
         target: '6, 7',
         chords: 'mMaj7, m6'
     },
     'double-harmonic': {
-        name: 'Doble Armónica',
         intervals: [0, 1, 4, 5, 7, 8, 11],
         triads: ['Maj', 'Maj', 'm', 'm', 'dim', 'aug', 'm'],
         tetrads: ['Maj7', 'Maj7', 'm7', 'mMaj7', '7♭5', 'Maj7#5', 'm7'],
-        desc: 'Escala de sonido Bizantino o Árabe. Cuenta con dos segundas aumentadas en su estructura, haciéndola muy exótica.',
         target: '♭2, 7',
         chords: 'Maj, Maj7'
     },
     'hungarian': {
-        name: 'Húngara',
         intervals: [0, 2, 3, 6, 7, 8, 11],
         intervalAliases: { 6: '#4' },
         triads: ['m', 'dim', 'm', 'm', 'm', 'aug', 'Maj'],
         tetrads: ['7', 'dim7', 'mMaj7♭5', 'm7♭5', 'mMaj7#5', 'm7', 'Maj7#5'],
-        desc: 'Escala menor gitana. Es esencialmente la menor armónica pero con la cuarta aumentada (#4). Sonido metal neoclásico.',
         target: '#4, 7',
         chords: 'm, mMaj7'
     },
     'persian': {
-        name: 'Persa',
         intervals: [0, 1, 4, 5, 6, 8, 11],
         triads: ['dim', 'm', 'm', 'm', 'Maj', 'aug', 'dim'],
         tetrads: ['Maj7♭5', 'Maj7', 'm', 'mMaj7', 'Maj7#3', 'Maj7#5', 'dim7'],
-        desc: 'Sonido muy tenso y rico en semitonos. Evoca fuertemente las melodías del Medio Oriente.',
         target: '♭2, 3, ♭6',
         chords: 'Dim, Maj7♭5'
     },
     'neopolitan': {
-        name: 'Napolitana',
         intervals: [0, 1, 3, 5, 7, 9, 11],
         triads: ['m', 'Maj', 'aug', 'Maj', 'Maj', 'dim', 'dim'],
         tetrads: ['mMaj7', 'Maj7#5', 'Maj7#5', 'Maj7', '7♭5', 'm7♭5', 'dim7'],
-        desc: 'Combina el inicio disonante de la escala Frigia (♭2) con la brillantez resolutiva de la escala Mayor (7).',
         target: '♭2, 7',
         chords: 'm, mMaj7'
     },
     'neopolitan-minor': {
-        name: 'Menor Napolitana',
         intervals: [0, 1, 3, 5, 7, 8, 11],
         triads: ['m', 'Maj', 'aug', 'm', 'Maj', 'Maj', 'dim'],
         tetrads: ['mMaj7', 'Maj7', '7#5', 'm7♭5', '7♭5', 'Maj7', 'dim7'],
-        desc: 'Similar a la menor armónica pero con el añadido oscuro de una segunda bemol (♭2). Sonido gótico y dramático.',
         target: '♭2, ♭6',
         chords: 'm, mMaj7'
     },
     'diminished': {
-        name: 'Disminuida',
         intervals: [0, 2, 3, 5, 6, 8, 9, 11],
         intervalAliases: { 9: '♭♭7' },
         triads: ['dim', 'dim', 'dim', 'dim', 'dim', 'dim', 'dim', 'dim'],
         tetrads: ['dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7'],
-        desc: 'Escala octatónica simétrica que alterna Tono-Semitono. Genera una tensión constante e infinita.',
         target: '♭5, ♭♭7',
         chords: 'dim7'
     },
     'augmented': {
-        name: 'Aumentada',
         intervals: [0, 3, 4, 7, 8, 11],
         intervalAliases: { 3: '#2', 8: '#5' },
         triads: ['aug', 'aug', 'aug', 'aug', 'aug', 'aug'],
         tetrads: ['Maj7#5', 'Maj7#5', 'Maj7#5', 'Maj7#5', 'Maj7#5', 'Maj7#5'],
-        desc: 'Escala hexátona formada por superposición de tonos enteros. Evoca un sentimiento irreal de flotabilidad.',
         target: '#5',
         chords: 'aug, 7#5'
     },
     'm7-arpeggio': {
-        name: 'Arpegio M7',
         intervals: [0, 4, 7, 11],
         triads: ['Maj', 'm', 'm', 'dim'],
         tetrads: ['Maj7', 'm7', '7', 'm7♭5'],
-        desc: 'Las 4 notas estructurales de un acorde Mayor con 7ª Mayor. Perfecto para barridos en progresiones mayores.',
         target: '3, 7',
         chords: 'Maj7',
         customPositions: {
@@ -236,11 +194,9 @@ export const SCALES: Record<string, any> = {
         }
     },
     'min7-arpeggio': {
-        name: 'Arpegio m7',
         intervals: [0, 3, 7, 10],
         triads: ['m', 'Maj', 'm', 'Maj'],
         tetrads: ['m7', 'Maj7', 'm7', '7'],
-        desc: 'Las 4 notas estructurales de un acorde menor con 7ª. Imprescindible para sweep picking sobre acordes menores.',
         target: '♭3, ♭7',
         chords: 'm7',
         customPositions: {
@@ -257,7 +213,6 @@ export const SCALES: Record<string, any> = {
         intervals: [0, 4, 7, 10],
         triads: ['Maj', 'dim', 'm', 'Maj'],
         tetrads: ['7', 'dim7', 'm7', 'Maj7'],
-        desc: 'Arpegio del acorde dominante. Su intervalo inestable de tritono crea la necesidad obligada de resolver.',
         target: '3, ♭7',
         chords: '7',
         customPositions: {
@@ -271,39 +226,33 @@ export const SCALES: Record<string, any> = {
         }
     },
     'major-triad': {
-        name: 'Tríada Mayor',
         intervals: [0, 4, 7],
         triads: ['Maj', 'm', 'm'],
         tetrads: ['Maj7', 'm7', '7'],
-        desc: 'El acorde mayor básico tocado de forma lineal. Fuerte, brillante y estático.',
         target: '1, 3, 5',
         chords: 'Maj',
         customPositions: {
-            "1": {"rootStr":5,"notes":[{"s":5,"o":0},{"s":5,"o":4},{"s":4,"o":2},{"s":3,"o":2},{"s":2,"o":1},{"s":1,"o":0},{"s":0,"o":0},{"s":0,"o":4}]},
-            "2": {"rootStr":4,"notes":[{"s":5,"o":-3},{"s":4,"o":0},{"s":0,"o":-3},{"s":1,"o":-2},{"s":2,"o":-3},{"s":0,"o":0},{"s":3,"o":-1},{"s":5,"o":0}]},
-            "3": {"rootStr":4,"notes":[{"s":5,"o":0},{"s":4,"o":0},{"s":4,"o":4},{"s":3,"o":2},{"s":2,"o":2},{"s":1,"o":2},{"s":0,"o":5},{"s":0,"o":0}]}
+            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 4 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 2, "o": 1 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }] },
+            "2": { "rootStr": 4, "notes": [{ "s": 5, "o": -3 }, { "s": 4, "o": 0 }, { "s": 0, "o": -3 }, { "s": 1, "o": -2 }, { "s": 2, "o": -3 }, { "s": 0, "o": 0 }, { "s": 3, "o": -1 }, { "s": 5, "o": 0 }] },
+            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": 4 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 1, "o": 2 }, { "s": 0, "o": 5 }, { "s": 0, "o": 0 }] }
         }
     },
     'minor-triad': {
-        name: 'Tríada Menor',
         intervals: [0, 3, 7],
         triads: ['m', 'Maj', 'm'],
         tetrads: ['m7', 'Maj7', 'm7'],
-        desc: 'El acorde menor básico tocado de forma lineal. Oscuro y triste.',
         target: '1, b3, 5',
         chords: 'm',
         customPositions: {
-            "1": {"rootStr":5,"notes":[{"s":5,"o":0},{"s":5,"o":3},{"s":4,"o":2},{"s":3,"o":2},{"s":1,"o":0},{"s":0,"o":0},{"s":2,"o":0},{"s":0,"o":3}]},
-            "2": {"rootStr":4,"notes":[{"s":4,"o":0},{"s":0,"o":-4},{"s":1,"o":-2},{"s":2,"o":-3},{"s":3,"o":-2},{"s":4,"o":-5},{"s":5,"o":-4},{"s":0,"o":0}]},
-            "3": {"rootStr":4,"notes":[{"s":5,"o":0},{"s":4,"o":0},{"s":4,"o":3},{"s":3,"o":2},{"s":2,"o":2},{"s":0,"o":5},{"s":0,"o":0},{"s":1,"o":1}]}
+            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 3 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 2, "o": 0 }, { "s": 0, "o": 3 }] },
+            "2": { "rootStr": 4, "notes": [{ "s": 4, "o": 0 }, { "s": 0, "o": -4 }, { "s": 1, "o": -2 }, { "s": 2, "o": -3 }, { "s": 3, "o": -2 }, { "s": 4, "o": -5 }, { "s": 5, "o": -4 }, { "s": 0, "o": 0 }] },
+            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": 3 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 0, "o": 5 }, { "s": 0, "o": 0 }, { "s": 1, "o": 1 }] }
         }
     },
     'hirajoshi': {
-        name: 'Hirajōshi (6th)',
         intervals: [0, 2, 3, 7, 8],
         triads: ['m', 'dim', 'Maj', 'm', 'Maj'],
         tetrads: ['m7', 'm7♭5', 'Maj7', 'm7', 'Maj7'],
-        desc: 'Escala pentatónica tradicional de Japón derivada de la afinación del Koto. Sonido melancólico y épico.',
         target: '2, ♭6',
         chords: 'm, m7',
         customPositions: {
@@ -311,39 +260,31 @@ export const SCALES: Record<string, any> = {
         }
     },
     'iwato': {
-        name: 'Iwato (7th)',
         intervals: [0, 1, 5, 6, 10],
         triads: ['dim', 'Maj', 'm', 'm', 'Maj'],
         tetrads: ['m7♭5', 'Maj7', 'm7', 'm7', 'Maj7'],
-        desc: 'Escala pentatónica oriental extremadamente disonante y oscura, similar a un modo Locrio sin tercera.',
         target: '♭2, ♭5',
         chords: 'dim'
     },
     'kumoi': {
-        name: 'Kumoi (1st)',
         intervals: [0, 2, 3, 7, 9],
         triads: ['m', 'm', 'Maj', 'm', 'dim'],
         tetrads: ['m7', 'm7', 'Maj7', 'm7', 'm7♭5'],
-        desc: 'Variante pentatónica japonesa (Sakura). Ofrece un tono ceremonial, antiguo e introspectivo.',
         target: '2, 6',
         chords: 'm, m6'
     },
     'hon-kumoi': {
-        name: 'Hon Kumoi-joshi',
         intervals: [0, 1, 5, 7, 8],
         triads: ['m', 'Maj', 'Maj', 'm', 'dim'],
         tetrads: ['m7', 'Maj7', '7', 'm7', 'm7♭5'],
-        desc: 'Escala tradicional basada en saltos interválicos muy dramáticos. Sonido profundo y reflexivo.',
         target: '♭2, 5',
         chords: 'm'
     },
     'chinese': {
-        name: 'China (4th)',
         intervals: [0, 4, 6, 7, 11],
         intervalAliases: { 6: '#4' },
         triads: ['Maj', 'dim', 'm', 'm', 'Maj'],
         tetrads: ['Maj7', 'm7♭5', 'm7', 'm7', 'Maj7'],
-        desc: 'Basada en afinaciones orientales tradicionales. Su estructura evita terceras y sextas menores.',
         target: '3, 5',
         chords: 'Maj, Maj7'
     }
@@ -387,17 +328,4 @@ export const DEGREE_MAP_MINOR: Record<string, { idx: number, suffix: string }> =
     'V': { idx: 4, suffix: '' }, // A veces se usa el V mayor en tonalidad menor (armónica)
     'VI': { idx: 5, suffix: '' },
     'VII': { idx: 6, suffix: '' },
-};
-
-export interface CustomPositionNote {
-    string: number;
-    fretOffset: number;
-}
-
-export const CUSTOM_POSITIONS: Record<string, Record<number, CustomPositionNote[]>> = {
-    'pentatonic-minor': {
-        // 0: [ { string: 5, fretOffset: 0 }, { string: 5, fretOffset: 3 }, ... ]
-    },
-    'hirajoshi': {
-    }
 };

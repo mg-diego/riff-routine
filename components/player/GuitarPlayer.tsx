@@ -20,6 +20,10 @@ export default function GuitarPlayer() {
     const [currentPlaybackBpm, setCurrentPlaybackBpm] = useState<number | null>(null);
     const [originalPlaybackBpm, setOriginalPlaybackBpm] = useState<number | null>(null);
 
+    useEffect(() => {
+        return () => console.log('[GuitarPlayer] UNMOUNTED');
+    }, []);
+
     const {
         mode, routineList, currentIndex, activeExercise,
         fileName, setFileName, initialUrlToLoad,
@@ -37,18 +41,19 @@ export default function GuitarPlayer() {
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
     useEffect(() => {
-        if (scriptReady && isLoaded && initialUrlToLoad) {
+        console.log('[GuitarPlayer] load effect:', { scriptReady, initialUrlToLoad });
+        if (scriptReady && initialUrlToLoad) {
             loadUrl(initialUrlToLoad);
         }
-    }, [initialUrlToLoad, scriptReady, isLoaded]);
+    }, [initialUrlToLoad, scriptReady]);
 
     const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
     const isScoreMode = ['free', 'library', 'routine'].includes(mode)
         && activeExercise?.title !== 'Escalas'
         && activeExercise?.title !== 'Improvisación';
-    
+
     const isSidebarDisabled = !isScoreMode || !!hasNoScore;
-    
+
     const isBpmDisabled = mode === 'free' && !isLoaded;
 
     return (
@@ -117,19 +122,19 @@ export default function GuitarPlayer() {
                             flexDirection: 'column',
                         }}>
                             <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
-                            
+
                             {hasNoScore && (
                                 <div style={{
                                     position: 'absolute', inset: 0,
-                                    display: 'flex', flexDirection: 'column', 
+                                    display: 'flex', flexDirection: 'column',
                                     alignItems: 'center', justifyContent: 'center',
                                     color: 'var(--muted)', gap: '1.5rem', padding: '2rem', textAlign: 'center',
                                     background: 'var(--surface)', zIndex: 10
                                 }}>
-                                    <div style={{ 
-                                        width: '80px', height: '80px', borderRadius: '50%', 
+                                    <div style={{
+                                        width: '80px', height: '80px', borderRadius: '50%',
                                         background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.2)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)' 
+                                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)'
                                     }}>
                                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
@@ -155,7 +160,6 @@ export default function GuitarPlayer() {
                     apiRef={apiRef}
                     isLoaded={isLoaded}
                     isPlaying={isPlaying}
-                    setIsPlaying={setIsPlaying}
                     tracks={tracks}
                     setTracks={setTracks}
                     currentPlaybackBpm={currentPlaybackBpm}

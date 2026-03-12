@@ -590,6 +590,7 @@
       "practice": "Practicar",
       "stats": "Estadísticas"
     },
+    "profile": "Mi Perfil",
     "languageLabel": "Idioma",
     "logout": "Cerrar sesión",
     "logoAlt": "Logo de RiffRoutine"
@@ -892,7 +893,20 @@
   },
   "ConsistencyHeatmap": {
     "title": "Mapa de Consistencia (Último año)",
-    "months": ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"],
+    "months": [
+      "Ene",
+      "Feb",
+      "Mar",
+      "Abr",
+      "May",
+      "Jun",
+      "Jul",
+      "Ago",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dic"
+    ],
     "weekdays": {
       "mon": "Lun",
       "wed": "Mié",
@@ -1123,6 +1137,286 @@
       "chinese": {
         "name": "China (4th)",
         "desc": "Basada en afinaciones orientales tradicionales. Su estructura evita terceras y sextas menores."
+      }
+    }
+  },
+  "Profile": {
+    "label": "Configuración",
+    "title": "Mi Perfil",
+    "save": "Guardar",
+    "saving": "Guardando...",
+    "saved": "Guardado ✓",
+    "error": "Error",
+    "account": {
+      "username": "Nombre de usuario",
+      "usernamePlaceholder": "tu_usuario"
+    },
+    "security": {
+      "title": "Contraseña",
+      "description": "Actualiza la contraseña de tu cuenta",
+      "newPassword": "Nueva contraseña",
+      "confirmPassword": "Confirmar nueva contraseña",
+      "passwordMismatch": "Las contraseñas no coinciden",
+      "passwordTooShort": "La contraseña debe tener al menos 8 caracteres"
+    },
+    "preferences": {
+      "title": "Preferencias",
+      "description": "Personaliza tu experiencia en RiffRoutine",
+      "language": "Idioma",
+      "languageDesc": "Cambia entre español e inglés",
+      "leftyMode": "Modo zurdo",
+      "leftyModeDesc": "Invierte el mástil para guitarristas zurdos",
+      "defaultView": "Etiquetas por defecto del mástil",
+      "defaultViewDesc": "Qué mostrar en los puntos del mástil por defecto",
+      "notes": "Notas",
+      "intervals": "Intervalos"
+    },
+    "danger": {
+      "title": "Zona de peligro",
+      "deleteAccount": "Eliminar cuenta",
+      "deleteDescription": "Elimina permanentemente tu cuenta y todos los datos asociados",
+      "deleteButton": "Eliminar cuenta",
+      "deleteConfirm": "¿Estás seguro? Esta acción no se puede deshacer.",
+      "confirmYes": "Sí, eliminar",
+      "confirmNo": "Cancelar"
+    }
+  },
+  "privacy": {
+    "meta": {
+      "title": "Política de Privacidad",
+      "description": "Cómo RiffRoutine recopila, usa y protege tus datos"
+    },
+    "hero": {
+      "label": "Legal",
+      "title": "Política de Privacidad",
+      "lastUpdated": "Última actualización: marzo de 2026"
+    },
+    "intro": "En RiffRoutine nos tomamos tu privacidad en serio. Esta política explica qué datos recopilamos, cómo los usamos y qué derechos tienes sobre ellos.",
+    "sections": {
+      "dataCollected": {
+        "title": "Datos que recopilamos",
+        "items": {
+          "account": {
+            "title": "Información de cuenta",
+            "description": "Cuando te registras, recopilamos tu dirección de correo electrónico para crear y gestionar tu cuenta."
+          },
+          "files": {
+            "title": "Ficheros Guitar Pro",
+            "description": "Los ficheros que subes (.gp, .gpx, .gp5, etc.) se almacenan de forma segura para permitir su reproducción dentro de la app. No analizamos ni compartimos el contenido de tus ficheros."
+          },
+          "progress": {
+            "title": "Progreso e historial de práctica",
+            "description": "Almacenamos estadísticas sobre tus sesiones de práctica (ejercicios completados, progresión de BPM, duración de sesiones) para mostrarte tu evolución a lo largo del tiempo."
+          },
+          "technical": {
+            "title": "Datos técnicos",
+            "description": "Datos básicos de uso como tipo de navegador, dispositivo y ubicación aproximada (nivel de país), recopilados de forma anónima para el rendimiento y la monitorización de errores."
+          }
+        }
+      },
+      "howWeUse": {
+        "title": "Cómo usamos tus datos",
+        "items": [
+          "Proporcionar y mantener el servicio RiffRoutine",
+          "Mostrar tus estadísticas de práctica e historial de progreso",
+          "Enviar correos transaccionales (confirmación de cuenta, restablecimiento de contraseña)",
+          "Mejorar el rendimiento de la app y corregir errores",
+          "Cumplir con las obligaciones legales aplicables"
+        ]
+      },
+      "dataStorage": {
+        "title": "Almacenamiento y seguridad",
+        "description": "Tus datos se almacenan en servidores seguros proporcionados por Supabase, ubicados en la Unión Europea. Aplicamos medidas de seguridad estándar del sector, incluyendo cifrado en tránsito (TLS) y en reposo. Los ficheros subidos se almacenan en buckets aislados con control de acceso."
+      },
+      "dataSharing": {
+        "title": "Compartición de datos",
+        "description": "No vendemos, alquilamos ni cedemos tus datos personales. Solo compartimos datos con los siguientes proveedores de servicios terceros estrictamente necesarios para operar RiffRoutine:",
+        "providers": [
+          {
+            "name": "Supabase",
+            "purpose": "Base de datos, autenticación y almacenamiento de ficheros"
+          }
+        ]
+      },
+      "retention": {
+        "title": "Retención de datos",
+        "description": "Conservamos tus datos mientras tu cuenta esté activa. Si eliminas tu cuenta, todos los datos asociados —incluidos los ficheros subidos y el historial de práctica— serán eliminados permanentemente en un plazo de 30 días."
+      },
+      "rights": {
+        "title": "Tus derechos",
+        "description": "De acuerdo con el RGPD y las leyes de privacidad aplicables, tienes derecho a:",
+        "items": [
+          "Acceder a los datos personales que tenemos sobre ti",
+          "Corregir datos inexactos o incompletos",
+          "Solicitar la eliminación de tus datos",
+          "Exportar tus datos en un formato portable",
+          "Retirar tu consentimiento en cualquier momento"
+        ],
+        "contact": "Para ejercer cualquiera de estos derechos, contáctanos en {email}."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "description": "RiffRoutine utiliza únicamente cookies esenciales necesarias para la autenticación y la gestión de sesiones. No usamos cookies de seguimiento ni publicitarias."
+      },
+      "changes": {
+        "title": "Cambios en esta política",
+        "description": "Podemos actualizar esta política ocasionalmente. Te notificaremos los cambios significativos por correo electrónico o mediante un aviso en la app. El uso continuado de RiffRoutine tras los cambios implica la aceptación de la política actualizada."
+      },
+      "contact": {
+        "title": "Contacto",
+        "description": "Para cualquier consulta relacionada con la privacidad, contáctanos en {email}."
+      }
+    }
+  },
+  "terms": {
+    "meta": {
+      "title": "Términos de Servicio",
+      "description": "Términos y condiciones de uso de RiffRoutine"
+    },
+    "hero": {
+      "label": "Legal",
+      "title": "Términos de Servicio",
+      "lastUpdated": "Última actualización: marzo de 2026"
+    },
+    "intro": "Al crear una cuenta o usar RiffRoutine, aceptas estos Términos de Servicio. Por favor, léelos detenidamente.",
+    "sections": {
+      "service": {
+        "title": "El servicio",
+        "description": "RiffRoutine es una aplicación web diseñada para ayudar a guitarristas a mejorar sus habilidades mediante rutinas de práctica estructuradas, reproducción de tablaturas, visualización de escalas y seguimiento del progreso."
+      },
+      "account": {
+        "title": "Tu cuenta",
+        "items": [
+          "Debes tener al menos 13 años para usar RiffRoutine.",
+          "Eres responsable de mantener la confidencialidad de tus credenciales de acceso.",
+          "Eres responsable de toda la actividad que ocurra bajo tu cuenta.",
+          "Debes proporcionar una dirección de correo electrónico válida y mantenerla actualizada."
+        ]
+      },
+      "content": {
+        "title": "Contenido del usuario",
+        "description": "Conservas la propiedad total de los ficheros Guitar Pro y cualquier otro contenido que subas. Al subir contenido, otorgas a RiffRoutine una licencia limitada para almacenar y procesar ese contenido únicamente con el fin de prestarte el servicio. Confirmas que tienes derecho a subir los ficheros que envías y que hacerlo no infringe ningún derecho de terceros."
+      },
+      "acceptable": {
+        "title": "Uso aceptable",
+        "description": "Aceptas no:",
+        "items": [
+          "Usar RiffRoutine para ningún fin ilegal",
+          "Subir ficheros que contengan malware o código malicioso",
+          "Intentar obtener acceso no autorizado a ninguna parte del servicio",
+          "Realizar ingeniería inversa o scraping de la aplicación",
+          "Subir contenido que infrinja derechos de autor u otros derechos de propiedad intelectual"
+        ]
+      },
+      "availability": {
+        "title": "Disponibilidad del servicio",
+        "description": "Nos esforzamos por mantener RiffRoutine disponible en todo momento, pero no garantizamos un acceso ininterrumpido. Podemos realizar tareas de mantenimiento, actualizaciones o cambios en el servicio en cualquier momento. No somos responsables de ningún tiempo de inactividad o pérdida de datos causados por circunstancias fuera de nuestro control razonable."
+      },
+      "termination": {
+        "title": "Cancelación",
+        "description": "Puedes eliminar tu cuenta en cualquier momento desde la configuración de tu cuenta. Nos reservamos el derecho de suspender o cancelar cuentas que incumplan estos Términos, con o sin aviso previo según la gravedad de la infracción."
+      },
+      "disclaimer": {
+        "title": "Exclusión de garantías",
+        "description": "RiffRoutine se proporciona \"tal cual\" sin garantías de ningún tipo, expresas o implícitas. No garantizamos que el servicio esté libre de errores, sea ininterrumpido o satisfaga tus requisitos específicos."
+      },
+      "liability": {
+        "title": "Limitación de responsabilidad",
+        "description": "En la máxima medida permitida por la ley, RiffRoutine no será responsable de ningún daño indirecto, incidental, especial o consecuente derivado del uso del servicio."
+      },
+      "changes": {
+        "title": "Cambios en estos términos",
+        "description": "Podemos actualizar estos Términos ocasionalmente. Te notificaremos los cambios materiales por correo electrónico o mediante aviso en la app. El uso continuado tras los cambios implica la aceptación."
+      },
+      "contact": {
+        "title": "Contacto",
+        "description": "Para cualquier pregunta sobre estos Términos, contáctanos en {email}."
+      }
+    }
+  },
+  "contact": {
+    "meta": {
+      "title": "Contacto",
+      "description": "Ponte en contacto con el equipo de RiffRoutine"
+    },
+    "hero": {
+      "label": "Soporte",
+      "title": "Contáctanos",
+      "subtitle": "¿Tienes alguna pregunta, encontraste un bug o quieres sugerir una funcionalidad? Nos encantaría saber de ti."
+    },
+    "form": {
+      "name": {
+        "label": "Nombre",
+        "placeholder": "Tu nombre"
+      },
+      "email": {
+        "label": "Correo electrónico",
+        "placeholder": "tu@correo.com"
+      },
+      "subject": {
+        "label": "Asunto",
+        "placeholder": "¿Sobre qué trata tu mensaje?",
+        "options": {
+          "default": "Selecciona un tema",
+          "bug": "Reporte de bug",
+          "feature": "Sugerencia de funcionalidad",
+          "account": "Problema con la cuenta",
+          "privacy": "Privacidad o solicitud de datos",
+          "other": "Otro"
+        }
+      },
+      "message": {
+        "label": "Mensaje",
+        "placeholder": "Describe tu pregunta o problema en detalle..."
+      },
+      "submit": "Enviar mensaje",
+      "submitting": "Enviando...",
+      "success": {
+        "title": "¡Mensaje enviado!",
+        "description": "Gracias por contactarnos. Te responderemos en un plazo de 48 horas."
+      },
+      "error": "Algo salió mal. Por favor inténtalo de nuevo o escríbenos directamente a {email}."
+    },
+    "alternative": {
+      "title": "¿Prefieres el correo electrónico?",
+      "description": "También puedes contactarnos directamente en",
+      "email": "{email}"
+    },
+    "response": {
+      "title": "Tiempo de respuesta",
+      "description": "Normalmente respondemos en un plazo de 48 horas en días laborables."
+    }
+  },
+  "onboarding": {
+    "skip": "Omitir",
+    "next": "Siguiente →",
+    "prev": "← Atrás",
+    "finish": "¡Empezar!",
+    "navigating": "Llevándote allí...",
+    "slides": {
+      "welcome": {
+        "title": "Bienvenido a RiffRoutine",
+        "description": "Tu compañero personal de práctica de guitarra. Hagamos un recorrido rápido para que puedas empezar enseguida."
+      },
+      "routines": {
+        "title": "Rutinas de Práctica",
+        "description": "Crea rutinas estructuradas con tus ejercicios. Establece BPMs, duraciones objetivo y registra cada sesión."
+      },
+      "library": {
+        "title": "Biblioteca de Ejercicios",
+        "description": "Explora y organiza todos tus ejercicios. Sube ficheros Guitar Pro y accede a ellos en cualquier momento."
+      },
+      "scales": {
+        "title": "Visualizador de Escalas",
+        "description": "Explora escalas en todo el mástil. Cambia de tonalidad, visualiza posiciones y toca junto a ellas."
+      },
+      "stats": {
+        "title": "Sigue tu Progreso",
+        "description": "Cada sesión queda registrada. Observa cómo crecen tu BPM y tu tiempo de práctica semana a semana."
+      },
+      "finish": {
+        "title": "¡Todo listo!",
+        "description": "Ya conoces lo esencial. Empieza tu primera rutina o explora la biblioteca."
       }
     }
   }

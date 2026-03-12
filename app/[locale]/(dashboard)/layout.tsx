@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import Navbar from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
+import { OnboardingWrapper } from '@/components/onboarding/OnboardingWrapper';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -30,6 +31,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
+      <OnboardingWrapper />
       <Navbar />
       <main style={{ flex: 1, padding: '2.5rem 2rem', width: '100%', maxWidth: '1600px', margin: '0 auto' }}>
         {children}

@@ -446,7 +446,7 @@ export default function LibraryPage() {
         </div>
       ) : (
         <>
-          <div style={{
+          <div data-onboarding="library-list" style={{
             display: viewMode === 'cards' ? 'grid' : 'flex',
             gridTemplateColumns: viewMode === 'cards' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
             flexDirection: viewMode === 'rows' ? 'column' : 'row',
@@ -477,7 +477,7 @@ export default function LibraryPage() {
           </div>
 
           {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
+            <div data-onboarding="library-list" style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '2rem' }}>
               <button
                 onClick={() => goToPage(currentPage - 1)}
                 disabled={currentPage === 1}

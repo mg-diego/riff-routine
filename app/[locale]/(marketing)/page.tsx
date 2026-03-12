@@ -786,9 +786,9 @@ export default function LandingPage() {
             Riff<span>Routine</span>
           </Link>
           <div className="footer-links">
-            <Link href="#">{t('footer.privacy')}</Link>
-            <Link href="#">{t('footer.terms')}</Link>
-            <Link href="#">{t('footer.contact')}</Link>
+            <Link href="/privacy">{t('footer.privacy')}</Link>
+            <Link href="/terms">{t('footer.terms')}</Link>
+            <Link href="/contact">{t('footer.contact')}</Link>
           </div>
           <p>{t('footer.copyright')}</p>
         </footer>

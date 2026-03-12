@@ -8,7 +8,8 @@ interface SidebarControlsProps {
   apiRef: React.MutableRefObject<any>;
   isLoaded: boolean;
   isPlaying: boolean;
-  setIsPlaying: (playing: boolean) => void;
+  // setIsPlaying eliminado: la única fuente de verdad es playerStateChanged en useAlphaTab.
+  // Llamarlo manualmente desincronizaba el estado React con el estado interno de AlphaTab.
   tracks: any[];
   setTracks: React.Dispatch<React.SetStateAction<any[]>>;
   currentPlaybackBpm?: number | null;
@@ -28,7 +29,6 @@ export function SidebarControls({
   apiRef,
   isLoaded,
   isPlaying,
-  setIsPlaying,
   tracks,
   setTracks,
   currentPlaybackBpm,
@@ -36,7 +36,7 @@ export function SidebarControls({
   forceDisabled
 }: SidebarControlsProps) {
   const t = useTranslations('SidebarControls');
-  
+
   const [speed, setSpeed] = useState('1');
   const [isMetronomeOn, setIsMetronomeOn] = useState(false);
   const [isCountIn, setIsCountIn] = useState(false);
@@ -63,8 +63,8 @@ export function SidebarControls({
   const handleStop = useCallback(() => {
     if (!apiRef.current) return;
     apiRef.current.stop();
-    setIsPlaying(false);
-  }, [apiRef, setIsPlaying]);
+    // NO llamar setIsPlaying aquí — playerStateChanged actualizará el estado automáticamente
+  }, [apiRef]);
 
   const handleMetronome = useCallback(() => {
     if (!apiRef.current) return;

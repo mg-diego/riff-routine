@@ -55,19 +55,19 @@ export function Footer() {
         </Link>
 
         <div style={{ display: 'flex', gap: '2rem', fontSize: '0.82rem' }}>
-          <Link href="/privacidad" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
+          <Link href="/privacy" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text, #f0e8dc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
           >
             {t('privacy')}
           </Link>
-          <Link href="/terminos" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
+          <Link href="/terms" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text, #f0e8dc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
           >
             {t('terms')}
           </Link>
-          <Link href="/contacto" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
+          <Link href="/contact" style={{ color: 'var(--muted)', textDecoration: 'none', transition: 'color 0.2s' }}
             onMouseEnter={e => e.currentTarget.style.color = 'var(--text, #f0e8dc)'}
             onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
           >

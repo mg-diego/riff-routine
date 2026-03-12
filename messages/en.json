@@ -590,6 +590,7 @@
       "practice": "Practice",
       "stats": "Stats"
     },
+    "profile": "My Profile",
     "languageLabel": "Language",
     "logout": "Log out",
     "logoAlt": "RiffRoutine Logo"
@@ -892,7 +893,20 @@
   },
   "ConsistencyHeatmap": {
     "title": "Consistency Map (Last Year)",
-    "months": ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"],
+    "months": [
+      "Jan",
+      "Feb",
+      "Mar",
+      "Apr",
+      "May",
+      "Jun",
+      "Jul",
+      "Aug",
+      "Sep",
+      "Oct",
+      "Nov",
+      "Dec"
+    ],
     "weekdays": {
       "mon": "Mon",
       "wed": "Wed",
@@ -1123,6 +1137,286 @@
       "chinese": {
         "name": "Chinese (4th)",
         "desc": "Based on traditional oriental tunings. Its structure avoids minor thirds and sixths."
+      }
+    }
+  },
+  "Profile": {
+    "label": "Settings",
+    "title": "My Profile",
+    "save": "Save",
+    "saving": "Saving...",
+    "saved": "Saved ✓",
+    "error": "Error",
+    "account": {
+      "username": "Username",
+      "usernamePlaceholder": "your_username"
+    },
+    "security": {
+      "title": "Password",
+      "description": "Update your account password",
+      "newPassword": "New password",
+      "confirmPassword": "Confirm new password",
+      "passwordMismatch": "Passwords do not match",
+      "passwordTooShort": "Password must be at least 8 characters"
+    },
+    "preferences": {
+      "title": "Preferences",
+      "description": "Customise your RiffRoutine experience",
+      "language": "Language",
+      "languageDesc": "Switch between Spanish and English",
+      "leftyMode": "Left-handed mode",
+      "leftyModeDesc": "Mirror the fretboard for left-handed players",
+      "defaultView": "Default fretboard labels",
+      "defaultViewDesc": "What to show on fretboard dots by default",
+      "notes": "Notes",
+      "intervals": "Intervals"
+    },
+    "danger": {
+      "title": "Danger zone",
+      "deleteAccount": "Delete account",
+      "deleteDescription": "Permanently delete your account and all associated data",
+      "deleteButton": "Delete account",
+      "deleteConfirm": "Are you sure? This cannot be undone.",
+      "confirmYes": "Yes, delete",
+      "confirmNo": "Cancel"
+    }
+  },
+  "privacy": {
+    "meta": {
+      "title": "Privacy Policy",
+      "description": "How RiffRoutine collects, uses and protects your data"
+    },
+    "hero": {
+      "label": "Legal",
+      "title": "Privacy Policy",
+      "lastUpdated": "Last updated: March 2026"
+    },
+    "intro": "At RiffRoutine, we take your privacy seriously. This policy explains what data we collect, how we use it, and what rights you have over it.",
+    "sections": {
+      "dataCollected": {
+        "title": "Data We Collect",
+        "items": {
+          "account": {
+            "title": "Account information",
+            "description": "When you register, we collect your email address to create and manage your account."
+          },
+          "files": {
+            "title": "Guitar Pro files",
+            "description": "Files you upload (.gp, .gpx, .gp5, etc.) are stored securely to enable playback within the app. We do not analyse or share the content of your files."
+          },
+          "progress": {
+            "title": "Practice progress and history",
+            "description": "We store statistics about your practice sessions (exercises completed, BPM progression, session duration) to show you your improvement over time."
+          },
+          "technical": {
+            "title": "Technical data",
+            "description": "Basic usage data such as browser type, device, and approximate location (country level) collected anonymously for performance and error monitoring."
+          }
+        }
+      },
+      "howWeUse": {
+        "title": "How We Use Your Data",
+        "items": [
+          "Provide and maintain the RiffRoutine service",
+          "Display your personal practice statistics and progress history",
+          "Send transactional emails (account confirmation, password reset)",
+          "Improve app performance and fix bugs",
+          "Comply with legal obligations"
+        ]
+      },
+      "dataStorage": {
+        "title": "Data Storage and Security",
+        "description": "Your data is stored on secure servers provided by Supabase, located in the European Union. We apply industry-standard security measures including encryption in transit (TLS) and at rest. Uploaded files are stored in isolated, access-controlled buckets."
+      },
+      "dataSharing": {
+        "title": "Data Sharing",
+        "description": "We do not sell, rent or trade your personal data. We only share data with the following third-party service providers strictly necessary to operate RiffRoutine:",
+        "providers": [
+          {
+            "name": "Supabase",
+            "purpose": "Database, authentication and file storage"
+          }
+        ]
+      },
+      "retention": {
+        "title": "Data Retention",
+        "description": "We retain your data for as long as your account is active. If you delete your account, all associated data — including uploaded files and practice history — will be permanently deleted within 30 days."
+      },
+      "rights": {
+        "title": "Your Rights",
+        "description": "Under GDPR and applicable privacy laws, you have the right to:",
+        "items": [
+          "Access the personal data we hold about you",
+          "Correct inaccurate or incomplete data",
+          "Request deletion of your data",
+          "Export your data in a portable format",
+          "Withdraw consent at any time"
+        ],
+        "contact": "To exercise any of these rights, contact us at {email}."
+      },
+      "cookies": {
+        "title": "Cookies",
+        "description": "RiffRoutine uses only essential cookies required for authentication and session management. We do not use tracking or advertising cookies."
+      },
+      "changes": {
+        "title": "Changes to This Policy",
+        "description": "We may update this policy from time to time. We will notify you of significant changes via email or an in-app notice. Continued use of RiffRoutine after changes constitutes acceptance of the updated policy."
+      },
+      "contact": {
+        "title": "Contact",
+        "description": "For any privacy-related questions, please contact us at {email}."
+      }
+    }
+  },
+  "terms": {
+    "meta": {
+      "title": "Terms of Service",
+      "description": "Terms and conditions for using RiffRoutine"
+    },
+    "hero": {
+      "label": "Legal",
+      "title": "Terms of Service",
+      "lastUpdated": "Last updated: March 2026"
+    },
+    "intro": "By creating an account or using RiffRoutine, you agree to these Terms of Service. Please read them carefully.",
+    "sections": {
+      "service": {
+        "title": "The Service",
+        "description": "RiffRoutine is a web application designed to help guitarists improve their skills through structured practice routines, tablature playback, scale visualisation, and progress tracking."
+      },
+      "account": {
+        "title": "Your Account",
+        "items": [
+          "You must be at least 13 years old to use RiffRoutine.",
+          "You are responsible for maintaining the confidentiality of your account credentials.",
+          "You are responsible for all activity that occurs under your account.",
+          "You must provide a valid email address and keep it up to date."
+        ]
+      },
+      "content": {
+        "title": "User Content",
+        "description": "You retain full ownership of the Guitar Pro files and any other content you upload. By uploading content, you grant RiffRoutine a limited licence to store and process that content solely for the purpose of providing the service to you. You confirm that you have the right to upload any files you submit and that doing so does not infringe any third-party rights."
+      },
+      "acceptable": {
+        "title": "Acceptable Use",
+        "description": "You agree not to:",
+        "items": [
+          "Use RiffRoutine for any unlawful purpose",
+          "Upload files containing malware or malicious code",
+          "Attempt to gain unauthorised access to any part of the service",
+          "Reverse-engineer or scrape the application",
+          "Upload content that infringes copyright or other intellectual property rights"
+        ]
+      },
+      "availability": {
+        "title": "Service Availability",
+        "description": "We strive to keep RiffRoutine available at all times but do not guarantee uninterrupted access. We may perform maintenance, updates or changes to the service at any time. We are not liable for any downtime or data loss caused by circumstances beyond our reasonable control."
+      },
+      "termination": {
+        "title": "Termination",
+        "description": "You may delete your account at any time from your account settings. We reserve the right to suspend or terminate accounts that violate these Terms, with or without prior notice depending on the severity of the violation."
+      },
+      "disclaimer": {
+        "title": "Disclaimer of Warranties",
+        "description": "RiffRoutine is provided \"as is\" without warranties of any kind, express or implied. We do not warrant that the service will be error-free, uninterrupted, or meet your specific requirements."
+      },
+      "liability": {
+        "title": "Limitation of Liability",
+        "description": "To the fullest extent permitted by law, RiffRoutine shall not be liable for any indirect, incidental, special or consequential damages arising from your use of the service."
+      },
+      "changes": {
+        "title": "Changes to These Terms",
+        "description": "We may update these Terms from time to time. We will notify you of material changes via email or in-app notice. Continued use after changes constitutes acceptance."
+      },
+      "contact": {
+        "title": "Contact",
+        "description": "For questions about these Terms, contact us at {email}."
+      }
+    }
+  },
+  "contact": {
+    "meta": {
+      "title": "Contact",
+      "description": "Get in touch with the RiffRoutine team"
+    },
+    "hero": {
+      "label": "Support",
+      "title": "Contact Us",
+      "subtitle": "Have a question, found a bug, or want to suggest a feature? We'd love to hear from you."
+    },
+    "form": {
+      "name": {
+        "label": "Name",
+        "placeholder": "Your name"
+      },
+      "email": {
+        "label": "Email",
+        "placeholder": "your@email.com"
+      },
+      "subject": {
+        "label": "Subject",
+        "placeholder": "What is your message about?",
+        "options": {
+          "default": "Select a topic",
+          "bug": "Bug report",
+          "feature": "Feature request",
+          "account": "Account issue",
+          "privacy": "Privacy or data request",
+          "other": "Other"
+        }
+      },
+      "message": {
+        "label": "Message",
+        "placeholder": "Describe your question or issue in detail..."
+      },
+      "submit": "Send message",
+      "submitting": "Sending...",
+      "success": {
+        "title": "Message sent!",
+        "description": "Thanks for reaching out. We'll get back to you within 48 hours."
+      },
+      "error": "Something went wrong. Please try again or email us directly at {email}."
+    },
+    "alternative": {
+      "title": "Prefer email?",
+      "description": "You can also reach us directly at",
+      "email": "{email}"
+    },
+    "response": {
+      "title": "Response time",
+      "description": "We typically respond within 48 hours on business days."
+    }
+  },
+  "onboarding": {
+    "skip": "Skip",
+    "next": "Next →",
+    "prev": "← Back",
+    "finish": "Let's go!",
+    "navigating": "Taking you there...",
+    "slides": {
+      "welcome": {
+        "title": "Welcome to RiffRoutine",
+        "description": "Your personal guitar practice companion. Let's take a quick tour so you can hit the ground running."
+      },
+      "routines": {
+        "title": "Practice Routines",
+        "description": "Build structured routines with your exercises. Set target BPMs, durations and track every session."
+      },
+      "library": {
+        "title": "Exercise Library",
+        "description": "Browse and organise all your exercises. Upload Guitar Pro files and access them anytime."
+      },
+      "scales": {
+        "title": "Scale Visualiser",
+        "description": "Explore scales across the full fretboard. Switch keys, visualise positions and play along."
+      },
+      "stats": {
+        "title": "Track Your Progress",
+        "description": "Every session is logged. Watch your BPM and practice time grow over weeks and months."
+      },
+      "finish": {
+        "title": "You're all set!",
+        "description": "You now know the essentials. Start your first routine or explore the library."
       }
     }
   }

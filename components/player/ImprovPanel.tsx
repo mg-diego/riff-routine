@@ -12,6 +12,8 @@ const getYoutubeId = (url: string) => {
 
 export function ImprovPanel() {
   const t = useTranslations('ImprovPanel');
+  const mc = useTranslations('MusicConstants');
+  
   const [notes, setNotes] = useState('');
   const [rootNote, setRootNote] = useState('C');
   const [progressionObj, setProgressionObj] = useState(ROMAN_PROGRESSIONS[0]);
@@ -46,20 +48,20 @@ export function ImprovPanel() {
     let recommendations: string[] = [];
 
     if (isMinor) {
-      if (SCALES['aeolian']) recommendations.push(t('scaleOf', { scale: SCALES['aeolian'].name, root: rootNote }));
-      if (SCALES['pentatonic-minor']) recommendations.push(t('scaleOf', { scale: SCALES['pentatonic-minor'].name, root: rootNote }));
+      if (SCALES['aeolian']) recommendations.push(t('scaleOf', { scale: mc('scales.aeolian.name'), root: rootNote }));
+      if (SCALES['pentatonic-minor']) recommendations.push(t('scaleOf', { scale: mc('scales.pentatonic-minor.name'), root: rootNote }));
       if (progressionObj.roman.includes('V') && SCALES['harmonic-minor']) {
-        recommendations.push(t('scaleOf', { scale: SCALES['harmonic-minor'].name, root: rootNote }));
+        recommendations.push(t('scaleOf', { scale: mc('scales.harmonic-minor.name'), root: rootNote }));
       }
     } else {
-      if (SCALES['ionian']) recommendations.push(t('scaleOf', { scale: SCALES['ionian'].name, root: rootNote }));
-      if (SCALES['pentatonic-major']) recommendations.push(t('scaleOf', { scale: SCALES['pentatonic-major'].name, root: rootNote }));
+      if (SCALES['ionian']) recommendations.push(t('scaleOf', { scale: mc('scales.ionian.name'), root: rootNote }));
+      if (SCALES['pentatonic-major']) recommendations.push(t('scaleOf', { scale: mc('scales.pentatonic-major.name'), root: rootNote }));
       const relMinorRoot = CHROMATIC_NOTES[(CHROMATIC_NOTES.indexOf(rootNote) + 9) % 12];
-      if (SCALES['aeolian']) recommendations.push(t('scaleOf', { scale: SCALES['aeolian'].name, root: relMinorRoot }));
+      if (SCALES['aeolian']) recommendations.push(t('scaleOf', { scale: mc('scales.aeolian.name'), root: relMinorRoot }));
     }
 
     return recommendations.join(t('joinOr'));
-  }, [progressionObj, rootNote, t]);
+  }, [progressionObj, rootNote, t, mc]);
 
   return (
     <div style={{ 

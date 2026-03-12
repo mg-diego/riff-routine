@@ -6,7 +6,6 @@ import { usePathname, useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { useEffect, useState, useRef } from 'react';
 import { useTranslations } from 'next-intl';
-import { LanguageSwitcher } from '../ui/LanguageSwitcher'; 
 
 export default function Navbar() {
   const pathname = usePathname();
@@ -65,10 +64,10 @@ export default function Navbar() {
       <Link href="/home" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
         <div style={{ width: '28px', height: '28px', position: 'relative' }}>
            <Image 
-              src="/favicon.ico"
-              alt="Logo"
-              fill
-              style={{ objectFit: 'contain' }}
+             src="/favicon.ico"
+             alt="Logo"
+             fill
+             style={{ objectFit: 'contain' }}
            />
         </div>
         <div style={{ 
@@ -143,16 +142,22 @@ export default function Navbar() {
               {email}
             </span>
 
-            {/* Fila de Idioma */}
-            <div style={{ 
-              display: 'flex', alignItems: 'center', justifyContent: 'space-between', 
-              padding: '0.4rem 0.5rem', marginBottom: '0.25rem' 
-            }}>
-              <span style={{ fontSize: '0.85rem', color: 'var(--text)', fontWeight: '500' }}>
-                {t('languageLabel')}
-              </span>
-              <LanguageSwitcher />
-            </div>
+            {/* Enlace al Perfil */}
+            {email !== 'demo@riffroutine.com' && (
+              <Link 
+                href="/profile"
+                onClick={() => setShowDropdown(false)}
+                style={{
+                  textDecoration: 'none', color: 'var(--text)', padding: '0.6rem 0.5rem', 
+                  borderRadius: '6px', fontSize: '0.85rem', fontWeight: '500', transition: 'background 0.2s ease',
+                  display: 'block'
+                }}
+                onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              >
+                {t('profile')}
+              </Link>
+            )}
 
             <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0.25rem 0' }} />
 

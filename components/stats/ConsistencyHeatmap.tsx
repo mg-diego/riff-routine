@@ -106,7 +106,7 @@ export function ConsistencyHeatmap() {
   if (loading) return null;
 
   return (
-    <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', overflowX: 'auto' }}>
+    <div data-onboarding="stats-chart" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', overflowX: 'auto' }}>
       <h3 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', margin: '0 0 1.5rem 0' }}>
         {t('title')}
       </h3>
