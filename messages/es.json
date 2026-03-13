@@ -166,8 +166,8 @@
     "dateOptions": {
       "7days": "Últimos 7 días",
       "30days": "Últimos 30 días",
-      "90days": "Últimos 3 meses",
-      "allTime": "Todo el tiempo"
+      "90days": "Últimos 3 meses (PRO)",
+      "allTime": "Histórico (PRO)"
     }
   },
   "RoutinesPage": {
@@ -296,6 +296,9 @@
       "save": "Error al guardar",
       "unknownExercise": "Ejercicio Desconocido",
       "insufficientDataSpark": "Insuficientes datos"
+    },
+    "history": {
+      "session": "Sesión"
     }
   },
   "PracticePage": {
@@ -663,7 +666,10 @@
     },
     "goal": "Meta",
     "play": "Tocar",
-    "freePractice": "P. Libre"
+    "freePractice": "P. Libre",
+    "lockedTooltip": "Este ejercicio requiere suscripción PRO",
+    "lockedDescription": "Solo tus 10 ejercicios más recientes están disponibles en el plan gratuito.",
+    "lockedBadge": "BLOQUEADO"
   },
   "AlphaTabContainer": {
     "noScoreMessage": "Ejercicio sin partitura. ¡Usa el cronómetro y a tocar!"
@@ -867,7 +873,10 @@
     "exerciseCount": "{count, plural, =0 {0 ejercicios} one {1 ejercicio} other {# ejercicios}}",
     "playButton": "Tocar",
     "loading": "Cargando ejercicios...",
-    "empty": "No hay ejercicios en esta rutina."
+    "empty": "No hay ejercicios en esta rutina.",
+    "lockedTooltip": "Esta rutina requiere suscripción PRO",
+    "lockedDescription": "Solo tus 3 rutinas más recientes están disponibles en el plan gratuito.",
+    "upgradeNow": "¡Hazte PRO para volver a desbloquear todo tu contenido!"
   },
   "RoutinesPageHeader": {
     "title": "Mis Rutinas",
@@ -1469,7 +1478,8 @@
     "close": "Cerrar",
     "upgrade": "Ver Plan PRO",
     "routineLimit": "El plan gratuito permite un máximo de 3 rutinas. Pásate a PRO para crear rutinas ilimitadas y mucho más.",
-    "libraryLimit": "El plan gratuito permite crear un máximo de 10 ejercicios personalizados. Pásate a PRO para crear ejercicios ilimitados."
+    "libraryLimit": "El plan gratuito permite crear un máximo de 10 ejercicios personalizados. Pásate a PRO para crear ejercicios ilimitados.",
+    "statsLimit": "Suscríbete a PRO para desbloquear el análisis detallado de 90 días y todo tu historial de práctica."
   },
   "Pro": {
     "currentPlan": "Plan actual",

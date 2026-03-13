@@ -524,8 +524,10 @@ export default function LibraryPage() {
             gap: '1.2rem',
             marginBottom: '2rem'
           }}>
-            {currentFiles.map((file) => (
-              viewMode === 'cards' ? (
+            {currentFiles.map((file) => {
+              const isReadonly = userTier === SUBSCRIPTION_TIERS.FREE && files.findIndex(f => f.id === file.id) >= MAX_FREE_EXERCISES;
+              
+              return viewMode === 'cards' ? (
                 <ExerciseCard
                   key={file.id}
                   file={file}
@@ -533,6 +535,7 @@ export default function LibraryPage() {
                   onEdit={handleEditNavigation}
                   onHistory={handleHistoryNavigation}
                   onDelete={() => handleDeleteRequest(file)}
+                  readonly={isReadonly}
                 />
               ) : (
                 <ExerciseRow
@@ -542,9 +545,10 @@ export default function LibraryPage() {
                   onEdit={handleEditNavigation}
                   onHistory={handleHistoryNavigation}
                   onDelete={() => handleDeleteRequest(file)}
+                  readonly={isReadonly}
                 />
-              )
-            ))}
+              );
+            })}
           </div>
 
           {totalPages > 1 && (

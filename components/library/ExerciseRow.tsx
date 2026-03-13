@@ -14,9 +14,10 @@ interface ExerciseRowProps {
   onEdit: (exercise: Exercise) => void;
   onHistory: (exercise: Exercise) => void;
   onDelete: (exercise: Exercise) => void;
+  readonly?: boolean;
 }
 
-export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: ExerciseRowProps) {
+export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, readonly = false }: ExerciseRowProps) {
   const t = useTranslations('ExerciseRow');
 
   const cats = file.technique ? file.technique.split(', ') : [];
@@ -43,10 +44,11 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: E
       transition: 'all 0.2s',
       flexWrap: 'wrap',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      opacity: readonly ? 0.7 : 1
     }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.4)' : 'rgba(220,185,138,0.3)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.15)' : 'rgba(255,255,255,0.05)'}
+      onMouseEnter={e => !readonly && (e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.4)' : 'rgba(220,185,138,0.3)')}
+      onMouseLeave={e => !readonly && (e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.15)' : 'rgba(255,255,255,0.05)')}
     >
       {missingFile && (
         <div style={{
@@ -78,11 +80,33 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: E
             overflow: 'hidden', 
             textOverflow: 'ellipsis', 
             whiteSpace: 'nowrap',
-            fontFamily: 'DM Sans, sans-serif'
+            fontFamily: 'DM Sans, sans-serif',
+            display: 'flex',
+            alignItems: 'center'
           }} title={file.title}>
             {file.title}
+            {readonly && (
+              <span style={{
+                marginLeft: '0.75rem',
+                fontSize: '0.7rem',
+                background: 'rgba(255,193,7,0.1)',
+                padding: '0.2rem 0.5rem',
+                borderRadius: '4px',
+                color: 'var(--gold)',
+                fontWeight: 'bold',
+              }}>
+                {t('lockedBadge')}
+              </span>
+            )}
           </h3>
         </div>
+        
+        {readonly && (
+          <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
+            {t('lockedDescription')}
+          </p>
+        )}
+
         <span style={{
           background: DIFFICULTY_COLORS[diff] + '15',
           color: DIFFICULTY_COLORS[diff],
@@ -153,7 +177,12 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: E
       <div style={{ flex: '0 0 auto', display: 'flex', gap: '0.6rem', marginLeft: 'auto', alignItems: 'center' }}>
         
         <button
-          onClick={() => {
+          title={readonly ? t('lockedTooltip') : undefined}
+          onClick={(e) => {
+            if (readonly) {
+              e.preventDefault();
+              return;
+            }
             if (file.file_url) {
               window.location.href = `/practice?file=${encodeURIComponent(file.file_url)}`;
             } else {
@@ -161,12 +190,12 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: E
             }
           }}
           style={{
-            background: missingFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)',
-            color: missingFile ? 'var(--text)' : '#111',
-            border: missingFile ? '1px solid rgba(255,255,255,0.1)' : 'none',
+            background: readonly ? 'rgba(255,255,255,0.05)' : (missingFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)'),
+            color: readonly ? 'var(--muted)' : (missingFile ? 'var(--text)' : '#111'),
+            border: readonly || missingFile ? '1px solid rgba(255,255,255,0.1)' : 'none',
             padding: '0.6rem 1.2rem',
             borderRadius: '8px',
-            cursor: 'pointer',
+            cursor: readonly ? 'not-allowed' : 'pointer',
             fontSize: '0.85rem',
             fontWeight: 800,
             fontFamily: 'DM Sans, sans-serif',
@@ -176,13 +205,16 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: E
             gap: '0.5rem',
             textTransform: 'uppercase',
             letterSpacing: '0.05em',
-            height: '42px'
+            height: '42px',
+            opacity: readonly ? 0.5 : 1
           }}
           onMouseEnter={e => {
+            if (readonly) return;
             e.currentTarget.style.background = missingFile ? 'rgba(255,255,255,0.1)' : '#c9a676';
             e.currentTarget.style.transform = 'translateY(-2px)';
           }}
           onMouseLeave={e => {
+            if (readonly) return;
             e.currentTarget.style.background = missingFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)';
             e.currentTarget.style.transform = 'translateY(0)';
           }}
@@ -199,7 +231,25 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete }: E
           {missingFile ? t('freePractice') : t('play')}
         </button>
 
-        <EditButton onClick={() => onEdit(file)} />
+        <div 
+          title={readonly ? t('lockedTooltip') : undefined}
+          style={{ 
+            opacity: readonly ? 0.5 : 1, 
+            cursor: readonly ? 'not-allowed' : 'pointer' 
+          }}
+          onClick={(e) => {
+            if (readonly) {
+              e.stopPropagation();
+            } else {
+              onEdit(file);
+            }
+          }}
+        >
+          <div style={{ pointerEvents: readonly ? 'none' : 'auto' }}>
+            <EditButton onClick={() => {}} />
+          </div>
+        </div>
+        
         <HistoryButton onClick={() => onHistory(file)} />
         <DeleteButton onClick={() => onDelete(file)} />
       </div>

@@ -13,9 +13,10 @@ import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 interface RoutineCardProps {
   routine: Routine;
   onDelete: (routine: Routine) => void;
+  readonly?: boolean;
 }
 
-export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
+export function RoutineCard({ routine, onDelete, readonly = false }: RoutineCardProps) {
   const t = useTranslations('RoutineCard');
   const router = useRouter();
   const [isOpen, setIsOpen] = useState(false);
@@ -76,7 +77,8 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
       borderRadius: '10px',
       border: '1px solid rgba(255,255,255,0.05)',
       overflow: 'hidden',
-      transition: 'all 0.2s ease'
+      transition: 'all 0.2s ease',
+      opacity: readonly ? 0.7 : 1
     }}>
       <div
         onClick={() => setIsOpen(!isOpen)}
@@ -97,7 +99,28 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
             fontSize: '0.8rem'
           }}>▶</span>
           <div>
-            <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{routine.title}</h3>
+<h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>
+  {routine.title}
+  {readonly && (
+    <span style={{
+      marginLeft: '0.75rem',
+      fontSize: '0.7rem',
+      background: 'rgba(255,193,7,0.1)', // Un tono más de advertencia
+      padding: '0.2rem 0.5rem',
+      borderRadius: '4px',
+      color: 'var(--gold)',
+      fontWeight: 'bold',
+      verticalAlign: 'middle'
+    }}>
+      {t('lockedTooltip').toUpperCase()}
+    </span>
+  )}
+</h3>
+{readonly && (
+  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
+    {t('lockedDescription')}
+  </p>
+)}
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
               {t('exerciseCount', { count: displayCount })}
             </p>
@@ -106,14 +129,21 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
 
         <div style={{ display: 'flex', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
           <button
-            onClick={() => router.push(`/practice?routine=${routine.id}`)}
+            title={readonly ? t('lockedTooltip') : undefined}
+            onClick={(e) => {
+              if (readonly) {
+                e.stopPropagation();
+                return;
+              }
+              router.push(`/practice?routine=${routine.id}`);
+            }}
             style={{
-              background: 'var(--gold)',
-              color: '#111',
-              border: 'none',
+              background: readonly ? 'rgba(255,255,255,0.05)' : 'var(--gold)',
+              color: readonly ? 'var(--muted)' : '#111',
+              border: readonly ? '1px solid rgba(255,255,255,0.1)' : 'none',
               padding: '0.6rem 1.2rem',
               borderRadius: '8px',
-              cursor: 'pointer',
+              cursor: readonly ? 'not-allowed' : 'pointer',
               fontSize: '0.9rem',
               fontWeight: 700,
               fontFamily: 'DM Sans, sans-serif',
@@ -122,10 +152,11 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
               alignItems: 'center',
               gap: '0.5rem',
               textTransform: 'uppercase',
-              height: '42px'
+              height: '42px',
+              opacity: readonly ? 0.5 : 1
             }}
-            onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark)'}
-            onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
+            onMouseEnter={e => !readonly && (e.currentTarget.style.background = 'var(--gold-dark)')}
+            onMouseLeave={e => !readonly && (e.currentTarget.style.background = 'var(--gold)')}
           >
             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
               <path d="M5 3l16 9-16 9V3z" />
@@ -133,7 +164,24 @@ export function RoutineCard({ routine, onDelete }: RoutineCardProps) {
             {t('playButton')}
           </button>
 
-          <EditButton onClick={() => router.push(`/routines/${routine.id}`)} />
+          <div 
+            title={readonly ? t('lockedTooltip') : undefined}
+            style={{ 
+              opacity: readonly ? 0.5 : 1, 
+              cursor: readonly ? 'not-allowed' : 'pointer' 
+            }}
+            onClick={(e) => {
+              if (readonly) {
+                e.stopPropagation();
+              } else {
+                router.push(`/routines/${routine.id}`);
+              }
+            }}
+          >
+            <div style={{ pointerEvents: readonly ? 'none' : 'auto' }}>
+              <EditButton onClick={() => {}} />
+            </div>
+          </div>
 
           <HistoryButton onClick={() => router.push(`/routines/${routine.id}/history`)} />
 

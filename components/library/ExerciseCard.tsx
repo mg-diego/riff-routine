@@ -14,10 +14,11 @@ interface ExerciseCardProps {
   onEdit: (exercise: Exercise) => void;
   onHistory: (exercise: Exercise) => void;
   onDelete: (exercise: Exercise) => void;
+  readonly?: boolean;
 }
 
-export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: ExerciseCardProps) {
-  const t = useTranslations('ExerciseCard');
+export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, readonly = false }: ExerciseCardProps) {
+  const t = useTranslations('ExerciseRow'); // Reusing ExerciseRow translations for consistency
   
   const cats = file.technique ? file.technique.split(', ') : [];
   const diff = file.difficulty || 1;
@@ -43,10 +44,11 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
       gap: '1rem',
       transition: 'all 0.2s',
       position: 'relative',
-      overflow: 'hidden'
+      overflow: 'hidden',
+      opacity: readonly ? 0.7 : 1
     }}
-      onMouseEnter={e => e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.4)' : 'rgba(220,185,138,0.3)'}
-      onMouseLeave={e => e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.15)' : 'rgba(255,255,255,0.05)'}
+      onMouseEnter={e => !readonly && (e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.4)' : 'rgba(220,185,138,0.3)')}
+      onMouseLeave={e => !readonly && (e.currentTarget.style.borderColor = missingFile ? 'rgba(231,76,60,0.15)' : 'rgba(255,255,255,0.05)')}
     >
       {missingFile && (
         <div style={{
@@ -95,6 +97,30 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
           flexShrink: 0,
         }}>{t('level', { level: diff })}</span>
       </div>
+
+      {readonly && (
+        <div style={{
+          background: 'rgba(255,193,7,0.1)',
+          border: '1px solid rgba(255,193,7,0.2)',
+          padding: '0.5rem',
+          borderRadius: '6px',
+          marginTop: '-0.5rem',
+          marginBottom: '0.2rem'
+        }}>
+          <span style={{
+            display: 'block',
+            fontSize: '0.7rem',
+            color: 'var(--gold)',
+            fontWeight: 'bold',
+            marginBottom: '0.2rem'
+          }}>
+            {t('lockedBadge')}
+          </span>
+          <p style={{ margin: 0, fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
+            {t('lockedDescription')}
+          </p>
+        </div>
+      )}
 
       {cats.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
@@ -169,7 +195,12 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
         
         <div style={{ flex: 1, position: 'relative' }}>
           <button
-            onClick={() => {
+            title={readonly ? t('lockedTooltip') : undefined}
+            onClick={(e) => {
+              if (readonly) {
+                e.preventDefault();
+                return;
+              }
               if (file.file_url) {
                 window.location.href = `/practice?file=${encodeURIComponent(file.file_url)}`;
               } else {
@@ -178,12 +209,12 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
             }}
             style={{
               width: '100%',
-              background: missingFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)',
-              color: missingFile ? 'var(--text)' : '#111',
-              border: missingFile ? '1px solid rgba(255,255,255,0.1)' : 'none',
+              background: readonly ? 'rgba(255,255,255,0.05)' : (missingFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)'),
+              color: readonly ? 'var(--muted)' : (missingFile ? 'var(--text)' : '#111'),
+              border: readonly || missingFile ? '1px solid rgba(255,255,255,0.1)' : 'none',
               padding: '0.7rem',
               borderRadius: '8px',
-              cursor: 'pointer',
+              cursor: readonly ? 'not-allowed' : 'pointer',
               fontSize: '0.85rem',
               fontWeight: 800,
               fontFamily: 'DM Sans, sans-serif',
@@ -193,13 +224,16 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
               justifyContent: 'center',
               gap: '0.5rem',
               textTransform: 'uppercase',
-              letterSpacing: '0.05em'
+              letterSpacing: '0.05em',
+              opacity: readonly ? 0.5 : 1
             }}
             onMouseEnter={e => {
+              if (readonly) return;
               e.currentTarget.style.background = missingFile ? 'rgba(255,255,255,0.1)' : '#c9a676';
               e.currentTarget.style.transform = 'translateY(-2px)';
             }}
             onMouseLeave={e => {
+              if (readonly) return;
               e.currentTarget.style.background = missingFile ? 'rgba(255,255,255,0.05)' : 'var(--gold)';
               e.currentTarget.style.transform = 'translateY(0)';
             }}
@@ -217,7 +251,25 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete }: 
           </button>
         </div>
 
-        <EditButton onClick={() => onEdit(file)} />
+        <div 
+          title={readonly ? t('lockedTooltip') : undefined}
+          style={{ 
+            opacity: readonly ? 0.5 : 1, 
+            cursor: readonly ? 'not-allowed' : 'pointer' 
+          }}
+          onClick={(e) => {
+            if (readonly) {
+              e.stopPropagation();
+            } else {
+              onEdit(file);
+            }
+          }}
+        >
+          <div style={{ pointerEvents: readonly ? 'none' : 'auto' }}>
+            <EditButton onClick={() => {}} />
+          </div>
+        </div>
+        
         <HistoryButton onClick={() => onHistory(file)} />
         <DeleteButton onClick={() => onDelete(file)} />
       </div>

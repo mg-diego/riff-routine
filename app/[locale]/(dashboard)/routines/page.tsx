@@ -133,13 +133,18 @@ export default function RoutinesPage() {
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-          {routines.map((routine) => (
-            <RoutineCard
-              key={routine.id}
-              routine={routine}
-              onDelete={() => setRoutineToDelete(routine)}
-            />
-          ))}
+          {routines.map((routine, index) => {
+            const isReadonly = userTier === SUBSCRIPTION_TIERS.FREE && index >= MAX_FREE_ROUTINES;
+            
+            return (
+              <RoutineCard
+                key={routine.id}
+                routine={routine}
+                onDelete={() => setRoutineToDelete(routine)}
+                readonly={isReadonly}
+              />
+            );
+          })}
         </div>
       )}
 

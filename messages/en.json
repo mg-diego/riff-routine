@@ -166,8 +166,8 @@
     "dateOptions": {
       "7days": "Last 7 days",
       "30days": "Last 30 days",
-      "90days": "Last 3 months",
-      "allTime": "All time"
+      "90days": "Last 3 months (PRO)",
+      "allTime": "All Time (PRO)"
     }
   },
   "RoutinesPage": {
@@ -296,6 +296,9 @@
       "save": "Error saving",
       "unknownExercise": "Unknown Exercise",
       "insufficientDataSpark": "Insufficient data"
+    },
+    "history": {
+      "session": "Session"
     }
   },
   "PracticePage": {
@@ -663,7 +666,10 @@
     },
     "goal": "Goal",
     "play": "Play",
-    "freePractice": "Free P."
+    "freePractice": "Free P.",
+    "lockedTooltip": "This exercise requires a PRO subscription",
+    "lockedDescription": "Only your 10 most recent exercises are available on the free plan.",
+    "lockedBadge": "LOCKED"
   },
   "AlphaTabContainer": {
     "noScoreMessage": "Exercise without sheet music. Use the timer and start playing!"
@@ -867,7 +873,10 @@
     "exerciseCount": "{count, plural, =0 {0 exercises} one {1 exercise} other {# exercises}}",
     "playButton": "Play",
     "loading": "Loading exercises...",
-    "empty": "No exercises in this routine."
+    "empty": "No exercises in this routine.",
+    "lockedTooltip": "This routine requires a PRO subscription",
+    "lockedDescription": "Only your 3 most recent routines are available on the free plan.",
+    "upgradeNow": "Go Pro to unlock back all your content!"
   },
   "RoutinesPageHeader": {
     "title": "My Routines",
@@ -1469,7 +1478,8 @@
     "close": "Close",
     "upgrade": "View PRO Plan",
     "routineLimit": "The free plan allows a maximum of 3 routines. Upgrade to PRO to create unlimited routines and much more.",
-    "libraryLimit": "The free plan allows creating a maximum of 10 custom exercises. Upgrade to PRO to create unlimited exercises."
+    "libraryLimit": "The free plan allows creating a maximum of 10 custom exercises. Upgrade to PRO to create unlimited exercises.",
+    "statsLimit": "Subscribe to Pro to unlock detailed 90-day analysis and your entire practice history."
   },
   "Pro": {
     "currentPlan": "Current plan",
