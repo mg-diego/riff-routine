@@ -12,33 +12,35 @@ import { useAlphaTab } from '../../hooks/useAlphaTab';
 import { usePracticeSession } from '../../hooks/usePracticeSession';
 import { useTranslations } from 'next-intl';
 import { CompositionPanel } from './CompositionPanel';
+import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
-    const wrapperRef = useRef<HTMLDivElement>(null);
+    const wrapperRef    = useRef<HTMLDivElement>(null);
     const mainScrollRef = useRef<HTMLDivElement>(null);
-    const [scriptReady, setScriptReady] = useState(false);
-    const [currentPlaybackBpm, setCurrentPlaybackBpm] = useState<number | null>(null);
-    const [originalPlaybackBpm, setOriginalPlaybackBpm] = useState<number | null>(null);
+    const [scriptReady,          setScriptReady]          = useState(false);
+    const [currentPlaybackBpm,   setCurrentPlaybackBpm]   = useState<number | null>(null);
+    const [originalPlaybackBpm,  setOriginalPlaybackBpm]  = useState<number | null>(null);
 
     useEffect(() => {
         return () => console.log('[GuitarPlayer] UNMOUNTED');
     }, []);
 
     const {
+        isReady,
         mode, routineList, currentIndex, activeExercise,
         fileName, setFileName, initialUrlToLoad,
-        handleNextExercise, handlePrevExercise
+        handleNextExercise, handlePrevExercise,
     } = usePlayerContext();
 
     const {
         apiRef, tracks, setTracks, isPlaying, setIsPlaying,
-        isLoaded, loadUrl, loadFile
+        isLoaded, loadUrl, loadFile,
     } = useAlphaTab(wrapperRef, mainScrollRef, scriptReady, setOriginalPlaybackBpm);
 
     const {
         elapsedSeconds, isTimerRunning, routineName, sessionId,
-        toggleTimer, saveExerciseLog, handleEndSession
+        toggleTimer, saveExerciseLog, handleEndSession,
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
     useEffect(() => {
@@ -48,14 +50,48 @@ export default function GuitarPlayer() {
         }
     }, [initialUrlToLoad, scriptReady]);
 
-    const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
-    const isScoreMode = ['free', 'library', 'routine'].includes(mode)
-        && activeExercise?.title !== 'Escalas'
-        && activeExercise?.title !== 'Improvisación';
+    // ── Mode helpers ────────────────────────────────────────────────────────
+    const { formatExercise } = useTranslatedExercise();
 
-    const isSidebarDisabled = !isScoreMode || !!hasNoScore;
+    // translatedExercise is used for display only — activeExercise keeps the raw keys
+    const translatedExercise = activeExercise ? formatExercise(activeExercise) : null;
 
-    const isBpmDisabled = mode === 'free' && !isLoaded;
+    const isSpecialMode =
+        mode === 'scales'        || activeExercise?.title === 'sys_scales_title'        ||
+        mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title' ||
+        mode === 'composition'   || activeExercise?.title === 'sys_composition_title';
+
+    const specialPanel =
+        (mode === 'scales'        || activeExercise?.title === 'sys_scales_title')        ? <ScalesPanel />      :
+        (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') ? <ImprovPanel />      :
+        (mode === 'composition'   || activeExercise?.title === 'sys_composition_title')   ? <CompositionPanel /> :
+        null;
+
+    const hasNoScore       = mode !== 'free' && activeExercise && !activeExercise.file_url;
+    const isSidebarDisabled = isSpecialMode || !!hasNoScore;
+    const isBpmDisabled     = mode === 'free' && !isLoaded;
+
+    // ── Loading skeleton — prevents flash of wrong mode/onboarding ──────────
+    if (!isReady) {
+        return (
+            <div style={{
+                display: 'flex', width: '100%', height: '100%',
+                minHeight: '600px', borderRadius: '12px',
+                background: 'var(--surface)', overflow: 'hidden',
+                alignItems: 'center', justifyContent: 'center',
+            }}>
+                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
+                    <div style={{
+                        width: '40px', height: '40px', borderRadius: '50%',
+                        border: '2px solid rgba(220,185,138,0.15)',
+                        borderTopColor: 'var(--gold)',
+                        animation: 'gp-spin 0.8s linear infinite',
+                    }} />
+                    <style>{`@keyframes gp-spin { to { transform: rotate(360deg); } }`}</style>
+                </div>
+            </div>
+        );
+    }
 
     return (
         <>
@@ -82,7 +118,7 @@ export default function GuitarPlayer() {
                         onPrev={handlePrevExercise}
                         onNext={handleNextExercise}
                         onEndSession={(overrideTotal?: number) => handleEndSession('/routines', overrideTotal)}
-                        exercise={activeExercise}
+                        exercise={translatedExercise}
                         routineTargetBpm={routineList[currentIndex]?.target_bpm ?? null}
                         routineTargetDuration={routineList[currentIndex]?.target_duration_seconds ?? null}
                         elapsedSeconds={elapsedSeconds}
@@ -97,7 +133,7 @@ export default function GuitarPlayer() {
                             if (activeExercise) {
                                 await saveExerciseLog(
                                     activeExercise.id, bpmCurrent, bpmGoal,
-                                    routineList[currentIndex]?.id || null
+                                    routineList[currentIndex]?.id || null,
                                 );
                             }
                         }}
@@ -109,54 +145,54 @@ export default function GuitarPlayer() {
                         flex: 1, overflow: 'auto', display: 'flex',
                         flexDirection: 'column', position: 'relative', width: '100%',
                     }}>
-                        {(mode === 'scales' || activeExercise?.title === 'Escalas') && (
-                            <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><ScalesPanel /></div>
-                        )}
-                        {(mode === 'improvisation' || activeExercise?.title === 'Improvisación') && (
-                            <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><ImprovPanel /></div>
-                        )}
-                        {(mode === 'composition' || activeExercise?.title === 'Composición') && (
-                            <div style={{ padding: '1rem 2rem', flexShrink: 0 }}><CompositionPanel /></div>
-                        )}
+                        {/* Special modes — AlphaTab is NOT in the DOM when these render */}
+                        {isSpecialMode ? (
+                            <div style={{ padding: '1rem 2rem', flexShrink: 0 }}>
+                                {specialPanel}
+                            </div>
+                        ) : (
+                            /* Score mode — AlphaTab mounts only here */
+                            <div style={{
+                                flex: 1, position: 'relative',
+                                width: '100%', minWidth: 0,
+                                display: 'flex', flexDirection: 'column',
+                            }}>
+                                <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
 
-                        <div style={{
-                            flex: 1, position: 'relative',
-                            width: '100%', minWidth: 0,
-                            display: isScoreMode ? 'flex' : 'none',
-                            flexDirection: 'column',
-                        }}>
-                            <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
-
-                            {hasNoScore && (
-                                <div style={{
-                                    position: 'absolute', inset: 0,
-                                    display: 'flex', flexDirection: 'column',
-                                    alignItems: 'center', justifyContent: 'center',
-                                    color: 'var(--muted)', gap: '1.5rem', padding: '2rem', textAlign: 'center',
-                                    background: 'var(--surface)', zIndex: 10
-                                }}>
+                                {hasNoScore && (
                                     <div style={{
-                                        width: '80px', height: '80px', borderRadius: '50%',
-                                        background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.2)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)'
+                                        position: 'absolute', inset: 0,
+                                        display: 'flex', flexDirection: 'column',
+                                        alignItems: 'center', justifyContent: 'center',
+                                        color: 'var(--muted)', gap: '1.5rem', padding: '2rem',
+                                        textAlign: 'center', background: 'var(--surface)', zIndex: 10,
                                     }}>
-                                        <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                            <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
-                                            <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
-                                            <line x1="12" y1="19" x2="12" y2="22" />
-                                        </svg>
+                                        <div style={{
+                                            width: '80px', height: '80px', borderRadius: '50%',
+                                            background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.2)',
+                                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)',
+                                        }}>
+                                            <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                                                <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
+                                                <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
+                                                <line x1="12" y1="19" x2="12" y2="22" />
+                                            </svg>
+                                        </div>
+                                        <div>
+                                            <h2 style={{
+                                                fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem',
+                                                margin: '0 0 0.5rem 0', color: 'var(--text)', letterSpacing: '0.05em',
+                                            }}>
+                                                {t('noScore.title')}
+                                            </h2>
+                                            <p style={{ margin: 0, maxWidth: '420px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                                                {t('noScore.description')}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div>
-                                        <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', margin: '0 0 0.5rem 0', color: 'var(--text)', letterSpacing: '0.05em' }}>
-                                            {t('noScore.title')}
-                                        </h2>
-                                        <p style={{ margin: 0, maxWidth: '420px', lineHeight: 1.6, fontSize: '0.95rem' }}>
-                                            {t('noScore.description')}
-                                        </p>
-                                    </div>
-                                </div>
-                            )}
-                        </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </main>
 

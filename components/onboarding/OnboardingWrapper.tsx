@@ -10,7 +10,9 @@ export function OnboardingWrapper() {
         isLastStep, next, prev, complete,
     } = useOnboarding();
 
-    if (loading || !active) return null;
+    // Don't render anything until we know whether to show onboarding
+    if (loading) return null;
+    if (!active) return null;
 
     return (
         <OnboardingModal

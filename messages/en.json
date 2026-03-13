@@ -8,7 +8,7 @@
       "startFree": "Start for free"
     },
     "hero": {
-      "eyebrow": "The practice tool for serious guitarists",
+      "eyebrow": "Optimize your practice. Accelerate your progress.",
       "title1": "PLAY",
       "title_em": "BETTER",
       "title2": "EVERY DAY",
@@ -105,9 +105,9 @@
       "title1": "STOP",
       "title2": "PLAYING",
       "title_em": "AIMLESSLY",
-      "desc": "Join thousands of guitarists who practice with intention, track their progress, and improve every week.",
+      "desc": "Join the guitarists who practice with intention, track their progress, and improve every week.",
       "btn": "Start for free — no card required",
-      "note": "✓ Free forever  ·  ✓ No installation  ·  ✓ Cancel anytime"
+      "note": "✓ Free  ·  ✓ No installation  ·  ✓ Cancel anytime"
     },
     "footer": {
       "privacy": "Privacy",
@@ -744,7 +744,8 @@
       "progress": "Progress",
       "saving": "Saving...",
       "saved": "✓ Saved",
-      "saveProgress": "Save progress"
+      "saveProgress": "Save progress",      
+      "timerAutoStarted": "Session started: Keep the flow. Pause if needed."
     },
     "tooltips": {
       "pauseMetronome": "Pause metronome",
@@ -1553,5 +1554,9 @@
     },
     "cta": "Start practising →",
     "emailNote": "A receipt has been sent to your email."
+  },
+  "Metadata": {
+    "title": "RiffRoutine — Master your practice",
+    "description": "The practice app for serious guitarists. Interactive tabs, routines, BPM tracking and stats."
   }
 }

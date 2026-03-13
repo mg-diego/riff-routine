@@ -13,13 +13,15 @@ export function usePracticeSession(mode: string, routineId: string | null, activ
   const currentKey = activeExerciseId || 'free-mode';
   const elapsedSeconds = exerciseTimes[currentKey] || 0;
 
+  // Start timer automatically for non-free modes on mount
   useEffect(() => {
     setIsTimerRunning(mode !== 'free');
   }, [mode]);
 
+  // In routine mode: auto-start timer when exercise changes
   useEffect(() => {
     if (mode === 'routine') {
-      setIsTimerRunning(false);
+      setIsTimerRunning(true);
     }
   }, [activeExerciseId, mode]);
 

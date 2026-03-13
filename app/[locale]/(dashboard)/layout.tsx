@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, usePathname } from 'next/navigation';
 import { supabase } from '../../../lib/supabase';
 import Navbar from '../../../components/layout/Navbar';
 import { Footer } from '../../../components/layout/Footer';
@@ -9,6 +9,7 @@ import { OnboardingWrapper } from '@/components/onboarding/OnboardingWrapper';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {

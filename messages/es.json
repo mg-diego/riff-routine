@@ -8,7 +8,7 @@
       "startFree": "Empezar gratis"
     },
     "hero": {
-      "eyebrow": "La herramienta de práctica para guitarristas serios",
+      "eyebrow": "Optimiza tu práctica. Acelera tu progreso.",
       "title1": "TOCA",
       "title_em": "MEJOR",
       "title2": "CADA DÍA",
@@ -105,9 +105,9 @@
       "title1": "DEJA DE",
       "title2": "TOCAR AL",
       "title_em": "AZAR",
-      "desc": "Únete a miles de guitarristas que practican con intención, miden su progreso y mejoran cada semana.",
+      "desc": "Únete a los guitarristas que practican con intención, miden su progreso y mejoran cada semana.",
       "btn": "Empieza gratis — sin tarjeta",
-      "note": "✓ Gratis para siempre  ·  ✓ Sin instalación  ·  ✓ Cancela cuando quieras"
+      "note": "✓ Gratis  ·  ✓ Sin instalación  ·  ✓ Cancela cuando quieras"
     },
     "footer": {
       "privacy": "Privacidad",
@@ -744,7 +744,8 @@
       "progress": "Progreso",
       "saving": "Guardando...",
       "saved": "✓ Guardado",
-      "saveProgress": "Guardar progreso"
+      "saveProgress": "Guardar progreso",
+      "timerAutoStarted": "Sesión iniciada: Mantén el ritmo. Pausa si lo necesitas."
     },
     "tooltips": {
       "pauseMetronome": "Pausar metrónomo",
@@ -1553,5 +1554,9 @@
     },
     "cta": "Empezar a practicar →",
     "emailNote": "Se ha enviado un recibo a tu correo electrónico."
+  },
+  "Metadata": {
+    "title": "RiffRoutine — Domina tu práctica",
+    "description": "La app de práctica para guitarristas serios. Tabs interactivos, rutinas, seguimiento de BPM y estadísticas."
   }
 }

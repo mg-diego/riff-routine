@@ -529,6 +529,7 @@ export default function LandingPage() {
           </div>
         </div>
 
+        {/*
         <div className="stats-bar reveal">
           <div className="stat-item">
             <div className="stat-value" data-target="12400">0</div>
@@ -547,6 +548,7 @@ export default function LandingPage() {
             <div className="stat-label">{t('stats.active')}</div>
           </div>
         </div>
+        */}
 
         <section className="features" id="features">
           <div className="features-header reveal">
@@ -691,6 +693,7 @@ export default function LandingPage() {
           </div>
         </section>
 
+        {/*
         <section className="proof" id="testimonios">
           <div className="proof-header reveal">
             <span className="section-label">{t('testimonials.label')}</span>
@@ -732,6 +735,7 @@ export default function LandingPage() {
             </div>
           </div>
         </section>
+        */}
 
         <section
           className="cta-section"

@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Bebas_Neue, DM_Sans } from "next/font/google";
 import "../globals.css";
 import { NextIntlClientProvider } from 'next-intl';
-import { getMessages, setRequestLocale } from 'next-intl/server';
+import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { LanguageSync } from '../../components/ui/LanguageSync';
 
 const bebasNeue = Bebas_Neue({
@@ -17,10 +17,17 @@ const dmSans = DM_Sans({
   weight: ["300", "400", "600", "700"],
 });
 
-export const metadata: Metadata = {
-  title: "RiffRoutine — Domina tu práctica",
-  description: "La app de práctica para guitarristas serios. Tabs interactivos, rutinas, seguimiento de BPM y estadísticas.",
-};
+export async function generateMetadata(
+  { params }: { params: Promise<{ locale: string }> }
+): Promise<Metadata> {
+  const { locale } = await params;
+  const t = await getTranslations({ locale, namespace: 'Metadata' });
+
+  return {
+    title: t('title'),
+    description: t('description'),
+  };
+}
 
 export function generateStaticParams() {
   return [{ locale: 'es' }, { locale: 'en' }];

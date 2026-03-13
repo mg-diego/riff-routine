@@ -14,7 +14,13 @@ export interface SpotlightRect {
 
 export function useOnboarding() {
     const locale = useLocale();
-    const [active, setActive] = useState(false);
+    const [active, setActive] = useState(() => {
+        // Si hay un step guardado en session, el onboarding estaba activo
+        if (typeof window !== 'undefined') {
+            return sessionStorage.getItem('onboarding_step') !== null;
+        }
+        return false;
+    });
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);

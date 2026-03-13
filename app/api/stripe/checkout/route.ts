@@ -26,6 +26,7 @@ export async function POST(req: Request) {
         mode: 'payment',
         allow_promotion_codes: true,
         payment_method_types: ['card'],
+        customer_creation: 'always',
         line_items: [{ price: priceId, quantity: 1 }],
         success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pro/success?plan=lifetime`,
         cancel_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pro`,

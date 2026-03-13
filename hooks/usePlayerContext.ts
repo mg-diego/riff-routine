@@ -3,6 +3,7 @@ import { supabase } from '../lib/supabase';
 import { Exercise } from '../lib/types';
 
 export function usePlayerContext() {
+    const [isReady, setIsReady] = useState(false);
     const [mode, setMode] = useState<'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition'>('free');
     const [routineList, setRoutineList] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
@@ -14,15 +15,15 @@ export function usePlayerContext() {
         const loadData = async () => {
             const params = new URLSearchParams(window.location.search);
             const routineId = params.get('routine');
-            const fileUrl = params.get('file');
-            const idParam = params.get('id');
+            const fileUrl   = params.get('file');
+            const idParam   = params.get('id');
             const modeParam = params.get('mode');
 
             if (routineId) {
                 setMode('routine');
                 const { data } = await supabase
                     .from('routine_exercises')
-                    .select('*, exercises(id, title, technique, file_url, created_at, bpm_goal, difficulty, notes, bpm_suggested, has_bpm)')
+                    .select('*, exercises(id, title, technique, file_url, created_at, bpm_goal, difficulty, notes, bpm_suggested, has_bpm, user_id)')
                     .eq('routine_id', routineId)
                     .order('order_index', { ascending: true });
 
@@ -46,7 +47,7 @@ export function usePlayerContext() {
                 setInitialUrlToLoad(decodedUrl);
             } else if (idParam) {
                 const { data } = await supabase.from('exercises').select('*').eq('id', idParam).single();
-                
+
                 if (data) {
                     setMode('library');
                     setActiveExercise(data);
@@ -57,11 +58,23 @@ export function usePlayerContext() {
                 setInitialUrlToLoad(null);
             } else if (modeParam) {
                 setMode(modeParam as any);
-                const titles: Record<string, string> = { 'scales': 'Escalas', 'improvisation': 'Improvisación' };
-                setActiveExercise({ title: titles[modeParam] || modeParam, has_bpm: false } as Exercise);
+
+                const sysTitles: Record<string, string> = {
+                    scales:        'sys_scales_title',
+                    improvisation: 'sys_improvisation_title',
+                    composition:   'sys_composition_title',
+                };
+
+                setActiveExercise({
+                    title:   sysTitles[modeParam] || modeParam,
+                    user_id: null,
+                    has_bpm: false,
+                } as unknown as Exercise);
             } else {
                 setMode('free');
             }
+
+            setIsReady(true);
         };
 
         loadData();
@@ -80,8 +93,9 @@ export function usePlayerContext() {
     const handleNextExercise = () => changeExercise(currentIndex + 1);
     const handlePrevExercise = () => changeExercise(currentIndex - 1);
 
-    return { 
-        mode, routineList, currentIndex, activeExercise, fileName, setFileName, 
-        initialUrlToLoad, handleNextExercise, handlePrevExercise 
+    return {
+        isReady,
+        mode, routineList, currentIndex, activeExercise, fileName, setFileName,
+        initialUrlToLoad, handleNextExercise, handlePrevExercise,
     };
 }

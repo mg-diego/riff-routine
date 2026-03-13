@@ -98,6 +98,30 @@ export function PlayerHeader({
   
   const [metronomeBpm, setMetronomeBpm] = useState<number>(100);
 
+  // ── Auto-timer tooltip ──────────────────────────────────────────────────
+  const [showTimerTooltip, setShowTimerTooltip] = useState(false);
+  const tooltipTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const shownForExerciseRef = useRef<string | null>(null);
+
+  useEffect(() => {
+    if (!isRoutine || !isTimerRunning) return;
+
+    const exerciseKey = exercise?.id || 'unknown';
+    if (shownForExerciseRef.current === exerciseKey) return;
+
+    shownForExerciseRef.current = exerciseKey;
+    setShowTimerTooltip(true);
+
+    tooltipTimerRef.current = setTimeout(() => {
+      setShowTimerTooltip(false);
+    }, 3500);
+
+    return () => {
+      if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
+    };
+  }, [isTimerRunning, exercise?.id, isRoutine]);
+  // ───────────────────────────────────────────────────────────────────────
+
   const alertedRef = useRef(false);
 
   const currentExerciseKey = exercise?.id || 'free-mode';
@@ -144,9 +168,7 @@ export function PlayerHeader({
     }
   }, [propElapsedSeconds, isTimerRunning, currentExerciseKey]);
 
-  useEffect(() => {
-    if (isRoutine && isTimerRunning) onToggleTimer();
-  }, [currentIndex]);
+  // REMOVED: effect that paused timer on currentIndex change in routine mode
 
   useEffect(() => {
     if (disableBpmInputs || !showBpmInputs) { setBpmGoal(''); return; }
@@ -285,6 +307,47 @@ export function PlayerHeader({
         .logs-scroll::-webkit-scrollbar-track { background: rgba(0,0,0,0.1); border-radius: 4px; }
         .logs-scroll::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
         .logs-scroll::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.2); }
+
+        /* ── Auto-timer tooltip ── */
+        .ph-timer-tooltip {
+          position: absolute;
+          bottom: calc(100% + 10px);
+          left: 50%;
+          transform: translateX(-50%);
+          background: rgba(167,139,250,0.15);
+          border: 1px solid rgba(167,139,250,0.35);
+          border-radius: 8px;
+          padding: 0.45rem 0.75rem;
+          white-space: nowrap;
+          font-size: 0.72rem;
+          font-weight: 600;
+          color: #c4b5fd;
+          pointer-events: none;
+          display: flex;
+          align-items: center;
+          gap: 0.4rem;
+          backdrop-filter: blur(6px);
+          z-index: 20;
+        }
+        .ph-timer-tooltip::after {
+          content: '';
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          border: 5px solid transparent;
+          border-top-color: rgba(167,139,250,0.35);
+        }
+        @keyframes ph-tooltip-in {
+          from { opacity: 0; transform: translateX(-50%) translateY(4px); }
+          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+        }
+        @keyframes ph-tooltip-out {
+          from { opacity: 1; }
+          to   { opacity: 0; }
+        }
+        .ph-timer-tooltip.entering { animation: ph-tooltip-in 0.25s ease forwards; }
+        .ph-timer-tooltip.leaving  { animation: ph-tooltip-out 0.4s ease 3.1s forwards; }
       `}</style>
 
       <div className="ph-root">
@@ -471,35 +534,46 @@ export function PlayerHeader({
             </div>
 
             <div className="ph-timer-section">
-              <button
-                className={`ph-timer-btn${timerDone ? ' done' : ''}`}
-                onClick={onToggleTimer}
-                style={{
-                  color: timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80',
-                  background: timerDone
-                    ? 'rgba(74,222,128,0.12)'
-                    : isTimerRunning
-                      ? 'rgba(231,76,60,0.1)'
-                      : 'rgba(255,255,255,0.05)',
-                  border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center'
-                }}
-              >
-                {timerDone ? (
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
-                    <polyline points="20 6 9 17 4 12" />
-                  </svg>
-                ) : isTimerRunning ? (
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
-                    <rect x="4" y="3" width="6" height="18" rx="1" />
-                    <rect x="14" y="3" width="6" height="18" rx="1" />
-                  </svg>
-                ) : (
-                  <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}>
-                    <path d="M5 3L19 12L5 21V3Z" />
-                  </svg>
+              {/* Timer button with auto-start tooltip */}
+              <div style={{ position: 'relative', flexShrink: 0 }}>
+                {showTimerTooltip && (
+                  <div className="ph-timer-tooltip entering leaving">
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
+                    </svg>
+                    {t('labels.timerAutoStarted')}
+                  </div>
                 )}
-              </button>
+                <button
+                  className={`ph-timer-btn${timerDone ? ' done' : ''}`}
+                  onClick={onToggleTimer}
+                  style={{
+                    color: timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80',
+                    background: timerDone
+                      ? 'rgba(74,222,128,0.12)'
+                      : isTimerRunning
+                        ? 'rgba(231,76,60,0.1)'
+                        : 'rgba(255,255,255,0.05)',
+                    border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center'
+                  }}
+                >
+                  {timerDone ? (
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                      <polyline points="20 6 9 17 4 12" />
+                    </svg>
+                  ) : isTimerRunning ? (
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor">
+                      <rect x="4" y="3" width="6" height="18" rx="1" />
+                      <rect x="14" y="3" width="6" height="18" rx="1" />
+                    </svg>
+                  ) : (
+                    <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}>
+                      <path d="M5 3L19 12L5 21V3Z" />
+                    </svg>
+                  )}
+                </button>
+              </div>
 
               <div className="ph-timer-display">
                 <span
