@@ -6,33 +6,34 @@ import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 
-const MONTHLY_PRICE  = 7.99;
-const ANNUAL_PRICE   = 4.99;
-const LIFETIME_PRICE = 79;
+const MONTHLY_PRICE = 4.99;
+const ANNUAL_TOTAL = 39.99;
+const LIFETIME_PRICE = 119;
+const ANNUAL_MONTHLY_EQUIVALENT = (ANNUAL_TOTAL / 12).toFixed(2);
 
-type Plan         = 'free' | 'pro' | 'lifetime';
+type Plan = 'free' | 'pro' | 'lifetime';
 type FeatureValue = boolean | string;
 
 interface Feature {
-    label:    string;
-    free:     FeatureValue;
-    pro:      FeatureValue;
+    label: string;
+    free: FeatureValue;
+    pro: FeatureValue;
     lifetime: FeatureValue;
 }
 
 export default function ProPage() {
-    const t      = useTranslations('Pro');
+    const t = useTranslations('Pro');
     const router = useRouter();
     const locale = useLocale();
 
-    const [billing,     setBilling]     = useState<'monthly' | 'annual'>('annual');
+    const [billing, setBilling] = useState<'monthly' | 'annual'>('annual');
     const [currentTier, setCurrentTier] = useState<Plan>('free');
-    const [isLoading,   setIsLoading]   = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
     const [tierLoading, setTierLoading] = useState(true);
 
-    const price       = billing === 'annual' ? ANNUAL_PRICE : MONTHLY_PRICE;
-    const annualSaving = Math.round((1 - ANNUAL_PRICE / MONTHLY_PRICE) * 100);
-
+    const price = billing === 'annual' ? ANNUAL_MONTHLY_EQUIVALENT : MONTHLY_PRICE.toFixed(2);
+    const annualSaving = Math.round((1 - ANNUAL_TOTAL / (MONTHLY_PRICE * 12)) * 100);
+    
     useEffect(() => {
         const load = async () => {
             try {
@@ -116,7 +117,7 @@ export default function ProPage() {
             return { label: t('free.cta'), disabled: true };
         }
         if (plan === 'pro') {
-            if (currentTier === 'pro')      return { label: t('currentPlan'), disabled: true };
+            if (currentTier === 'pro') return { label: t('currentPlan'), disabled: true };
             if (currentTier === 'lifetime') return { label: t('notAvailable'), disabled: true };
             return { label: isLoading ? t('loading') : t('pro.cta'), disabled: isLoading, action: handleUpgradePro };
         }
@@ -128,15 +129,15 @@ export default function ProPage() {
     };
 
     const features: Feature[] = [
-        { label: t('features.routines'),          free: t('features.routinesFree'),  pro: t('features.unlimited'),   lifetime: t('features.unlimited') },
-        { label: t('features.exercises'),          free: t('features.exercisesFree'), pro: t('features.unlimited'),   lifetime: t('features.unlimited') },
-        { label: t('features.library'),            free: true,                         pro: true,                       lifetime: true },
-        { label: t('features.scales'),             free: true,                         pro: true,                       lifetime: true },
-        { label: t('features.stats'),              free: t('features.statsBasic'),    pro: t('features.statsFull'),   lifetime: t('features.statsFull') },
-        { label: t('features.player'),             free: t('features.playerBasic'),   pro: t('features.playerFull'),  lifetime: t('features.playerFull') },
-        { label: t('features.earlyAccess'),        free: false,                        pro: false,                      lifetime: true },
-        { label: t('features.noFuturePriceRaise'), free: false,                        pro: false,                      lifetime: true },
-        { label: t('features.support'),            free: t('features.supportCom'),    pro: t('features.supportPri'), lifetime: t('features.supportDedicated') },
+        { label: t('features.routines'), free: t('features.routinesFree'), pro: t('features.unlimited'), lifetime: t('features.unlimited') },
+        { label: t('features.exercises'), free: t('features.exercisesFree'), pro: t('features.unlimited'), lifetime: t('features.unlimited') },
+        { label: t('features.library'), free: true, pro: true, lifetime: true },
+        { label: t('features.scales'), free: true, pro: true, lifetime: true },
+        { label: t('features.stats'), free: t('features.statsBasic'), pro: t('features.statsFull'), lifetime: t('features.statsFull') },
+        { label: t('features.player'), free: t('features.playerBasic'), pro: t('features.playerFull'), lifetime: t('features.playerFull') },
+        { label: t('features.earlyAccess'), free: false, pro: false, lifetime: true },
+        { label: t('features.noFuturePriceRaise'), free: false, pro: false, lifetime: true },
+        { label: t('features.support'), free: t('features.supportCom'), pro: t('features.supportPri'), lifetime: t('features.supportDedicated') },
     ];
 
     return (
@@ -204,10 +205,13 @@ export default function ProPage() {
                 <PlanCard
                     plan="pro"
                     title="Pro"
-                    price={`€${price.toFixed(2)}`}
+                    price={`€${price}`}
                     priceSub={t('billing.perMonth')}
-                    priceNote={billing === 'annual' ? t('billing.billedAnnually', { total: (ANNUAL_PRICE * 12).toFixed(2) }) : undefined}
-                    description={t('pro.description')}
+                    priceNote={
+                        billing === 'annual'
+                            ? t('billing.billedAnnually', { total: ANNUAL_TOTAL.toFixed(2) })
+                            : undefined
+                    } description={t('pro.description')}
                     badge={t('pro.badge')}
                     highlighted
                     ctaState={getCtaState('pro')}
@@ -239,18 +243,18 @@ export default function ProPage() {
 interface CtaState { label: string; disabled: boolean; action?: () => void; }
 
 interface PlanCardProps {
-    plan:         Plan;
-    title:        string;
-    price:        string;
-    priceSub:     string;
-    priceNote?:   string;
-    description:  string;
-    badge?:       string;
+    plan: Plan;
+    title: string;
+    price: string;
+    priceSub: string;
+    priceNote?: string;
+    description: string;
+    badge?: string;
     highlighted?: boolean;
-    ctaState:     CtaState;
+    ctaState: CtaState;
     currentTier?: Plan;
-    features:     Feature[];
-    t:            (key: string, values?: Record<string, string>) => string;
+    features: Feature[];
+    t: (key: string, values?: Record<string, string>) => string;
 }
 
 function PlanCard({
@@ -258,7 +262,7 @@ function PlanCard({
     description, badge, highlighted, ctaState,
     currentTier, features, t,
 }: PlanCardProps) {
-    const isLifetime   = plan === 'lifetime';
+    const isLifetime = plan === 'lifetime';
     const isCurrentPlan = currentTier === plan;
 
     return (
@@ -323,7 +327,7 @@ function PlanCard({
             {/* Features */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', flex: 1 }}>
                 {features.map((f, i) => {
-                    const val    = f[plan];
+                    const val = f[plan];
                     const active = val !== false;
                     return (
                         <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem' }}>
