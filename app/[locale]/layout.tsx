@@ -1,21 +1,8 @@
 import type { Metadata } from "next";
-import { Bebas_Neue, DM_Sans } from "next/font/google";
 import "../globals.css";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
 import { LanguageSync } from '../../components/ui/LanguageSync';
-
-const bebasNeue = Bebas_Neue({
-  variable: "--font-bebas",
-  subsets: ["latin"],
-  weight: "400",
-});
-
-const dmSans = DM_Sans({
-  variable: "--font-dm-sans",
-  subsets: ["latin"],
-  weight: ["300", "400", "600", "700"],
-});
 
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string }> }
@@ -33,7 +20,7 @@ export function generateStaticParams() {
   return [{ locale: 'es' }, { locale: 'en' }];
 }
 
-export default async function RootLayout({
+export default async function LocaleLayout({
   children,
   params
 }: {
@@ -45,13 +32,9 @@ export default async function RootLayout({
   const messages = await getMessages();
 
   return (
-    <html lang={locale}>
-      <body className={`${bebasNeue.variable} ${dmSans.variable}`}>
-        <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
-          <LanguageSync />
-          {children}
-        </NextIntlClientProvider>
-      </body>
-    </html>
+    <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
+      <LanguageSync />
+      {children}
+    </NextIntlClientProvider>
   );
 }

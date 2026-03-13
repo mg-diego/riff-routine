@@ -591,13 +591,19 @@
       "library": "Mi Biblioteca",
       "explore": "Explorar",
       "practice": "Practicar",
-      "stats": "Estadísticas"
+      "stats": "Estadísticas",
+      "teacherDashboard": "Dashboard",
+      "students": "Mis alumnos",
+      "assignments": "Asignaciones"
     },
     "profile": "Mi Perfil",
     "languageLabel": "Idioma",
     "logout": "Cerrar sesión",
     "logoAlt": "Logo de RiffRoutine",
-    "upgradePro": "Pasar a PRO"
+    "upgradePro": "Pasar a PRO",
+    "modeStudent": "Estudiante",
+    "modeTeacher": "Profesor",
+    "activateTeacher": "Activar modo profesor"
   },
   "Footer": {
     "logoAlt": "Logo de RiffRoutine",
