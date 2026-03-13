@@ -744,7 +744,7 @@
       "progress": "Progress",
       "saving": "Saving...",
       "saved": "✓ Saved",
-      "saveProgress": "Save progress",      
+      "saveProgress": "Save progress",
       "timerAutoStarted": "Session started: Keep the flow. Pause if needed."
     },
     "tooltips": {
@@ -1154,18 +1154,18 @@
   },
   "Profile": {
     "subscription": {
-      "title": "Suscripción",
-      "description": "Gestiona tu plan y facturación",
-      "currentPlan": "Plan actual",
-      "renewsOn": "Se renueva el",
-      "lifetime": "Acceso de por vida",
-      "lifetimeDesc": "Tu acceso nunca caduca",
-      "lifetimeManage": "Tu acceso Lifetime es permanente. No hay nada que gestionar.",
-      "upgrade": "Mejorar a Pro",
-      "upgradeLifetime": "Mejorar a Lifetime",
-      "manage": "Gestionar suscripción",
-      "loading": "Cargando...",
-      "portalError": "No se pudo abrir el portal. Inténtalo de nuevo."
+      "title": "Subscription",
+      "description": "Manage your plan and billing",
+      "currentPlan": "Current plan",
+      "renewsOn": "Renews on",
+      "lifetime": "Lifetime access",
+      "lifetimeDesc": "Your access never expires",
+      "lifetimeManage": "Your Lifetime access is permanent. There's nothing to manage.",
+      "upgrade": "Upgrade to Pro",
+      "upgradeLifetime": "Upgrade to Lifetime",
+      "manage": "Manage subscription",
+      "loading": "Loading...",
+      "portalError": "Could not open the portal. Please try again."
     },
     "avatar": {
       "invalidFormat": "The file must be a valid image (JPG, PNG, WebP).",
