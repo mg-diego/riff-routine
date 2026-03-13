@@ -16,6 +16,7 @@ export async function POST(req: Request) {
 
       const checkoutSession = await stripe.checkout.sessions.create({
         mode: 'payment',
+        allow_promotion_codes: true,
         payment_method_types: ['card'],
         line_items: [{ price: priceId, quantity: 1 }],
         success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pro/success?plan=lifetime`,
@@ -36,6 +37,7 @@ export async function POST(req: Request) {
 
     const checkoutSession = await stripe.checkout.sessions.create({
       mode: 'subscription',
+      allow_promotion_codes: true,
       payment_method_types: ['card'],
       line_items: [{ price: priceId, quantity: 1 }],
       success_url: `${process.env.NEXT_PUBLIC_SITE_URL}/pro/success?plan=pro`,
