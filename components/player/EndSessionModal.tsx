@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '../../lib/supabase';
 import { useTranslations } from 'next-intl';
+import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
 
 interface EndSessionModalProps {
     sessionId: string;
@@ -22,6 +23,7 @@ export function EndSessionModal({
     onEndSession
 }: EndSessionModalProps) {
     const t = useTranslations('EndSessionModal');
+    const { formatExercise } = useTranslatedExercise();
     const [finalLogs, setFinalLogs] = useState<any[]>([]);
     const [loadingLogs, setLoadingLogs] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
@@ -32,17 +34,20 @@ export function EndSessionModal({
                 const { data: sessionData } = await supabase.from('practice_sessions').select('routine_id').eq('id', sessionId).single();
                 if (!sessionData?.routine_id) { onEndSession(); return; }
 
-                const { data: routineExercises } = await supabase.from('routine_exercises').select('exercise_id, exercises(title, file_url)').eq('routine_id', sessionData.routine_id).order('order_index', { ascending: true });
+                const { data: routineExercises } = await supabase.from('routine_exercises').select('exercise_id, exercises(*)').eq('routine_id', sessionData.routine_id).order('order_index', { ascending: true });
                 const { data: existingLogs } = await supabase.from('practice_logs').select('id, exercise_id, bpm_used, duration_seconds').eq('session_id', sessionId);
 
                 const grouped: Record<string, any> = {};
 
                 routineExercises?.forEach(re => {
                     const ed = re.exercises as any;
+                    const exerciseData = Array.isArray(ed) ? ed[0] : ed;
+                    const translatedEx = exerciseData ? formatExercise(exerciseData) : null;
+
                     grouped[re.exercise_id] = {
                         exercise_id: re.exercise_id,
-                        title: (Array.isArray(ed) ? ed[0]?.title : ed?.title) || t('exerciseLabel'),
-                        hasFile: !!(Array.isArray(ed) ? ed[0]?.file_url : ed?.file_url),
+                        title: translatedEx?.title || t('exerciseLabel'),
+                        hasFile: !!translatedEx?.file_url,
                         bpm_used: '',
                         duration_seconds: 0,
                         idsToDelete: []
@@ -68,7 +73,7 @@ export function EndSessionModal({
         };
 
         fetchLogs();
-    }, [sessionId, onEndSession, t]);
+    }, [sessionId, onEndSession, t, formatExercise]);
 
     const updateFinalLog = (index: number, field: string, value: string) => {
         const updated = [...finalLogs];
