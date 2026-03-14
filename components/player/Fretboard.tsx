@@ -20,6 +20,7 @@ export function Fretboard({
   labelMode,
   scaleNotes,
   getIntervalColor,
+  showGhostNotes, // <-- NUEVA PROP
   t
 }: any) {
   const rootIndexGlobal = CHROMATIC_NOTES.indexOf(rootNote);
@@ -140,17 +141,37 @@ export function Fretboard({
                   const intervalNameStr = aliases[interval] || INTERVAL_NAMES[interval];
                   const currentOctave = baseOctave + Math.floor((stringRootIndex + fret) / 12);
 
-                  let isActive = false;
+                  // --- LOGICA DE RENDERIZADO MEJORADA ---
+                  let isNoteInScale = scaleNotes.includes(currentNote);
+                  let isInActiveList = false;
+                  
                   if (isCurrentlyEditing || activeNotesList) {
-                    isActive = (displayedNotes || []).some((n: any) => n.string === stringIndex && n.fret === fret);
-                  } else {
-                    isActive = scaleNotes.includes(currentNote);
+                    isInActiveList = (displayedNotes || []).some((n: any) => n.string === stringIndex && n.fret === fret);
                   }
+
+                  let isActive = false;
+                  let noteOpacity = 1;
+
+                  if (isCurrentlyEditing) {
+                    isActive = isInActiveList;
+                    noteOpacity = isNoteInScale ? 1 : 0.4;
+                  } else if (activeNotesList) {
+                    if (showGhostNotes) {
+                      isActive = isNoteInScale;
+                      noteOpacity = isInActiveList ? 1 : 0.15; // El "Modo Fantasma"
+                    } else {
+                      isActive = isInActiveList;
+                      noteOpacity = 1;
+                    }
+                  } else {
+                    isActive = isNoteInScale;
+                    noteOpacity = 1;
+                  }
+                  // --------------------------------------
 
                   const isMarked = MARKED_FRETS.includes(fret);
                   const bgColor = getIntervalColor(interval);
                   const textColor = (bgColor === '#f1c40f' || bgColor === '#2ecc71') ? '#000' : '#fff';
-                  const isNoteInScale = scaleNotes.includes(currentNote);
 
                   const isSingleDotFret = [3, 5, 7, 9, 15, 17, 19, 21].includes(fret);
                   const isDoubleDotFret = fret === 12 || fret === 24;
@@ -169,16 +190,10 @@ export function Fretboard({
 
                       {(hasSingleDot || hasDoubleDot) && (
                         <div style={{
-                          position: 'absolute',
-                          top: '100%',
-                          left: '50%',
-                          transform: 'translate(-50%, -50%)',
-                          width: 'clamp(10px, 1.5vw, 16px)',
-                          height: 'clamp(10px, 1.5vw, 16px)',
-                          borderRadius: '50%',
-                          backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                          zIndex: 0,
-                          pointerEvents: 'none'
+                          position: 'absolute', top: '100%', left: '50%', transform: 'translate(-50%, -50%)',
+                          width: 'clamp(10px, 1.5vw, 16px)', height: 'clamp(10px, 1.5vw, 16px)',
+                          borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.15)',
+                          zIndex: 0, pointerEvents: 'none'
                         }} />
                       )}
 
@@ -201,7 +216,7 @@ export function Fretboard({
                             cursor: isCurrentlyEditing ? 'crosshair' : 'pointer',
                             transform: leftyMode ? 'scaleX(-1)' : 'none',
                             transition: 'transform 0.1s',
-                            opacity: isCurrentlyEditing && !isNoteInScale ? 0.4 : 1
+                            opacity: noteOpacity
                           }}
                           onMouseEnter={e => {
                             if (!isCurrentlyEditing) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';

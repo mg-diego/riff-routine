@@ -763,38 +763,39 @@
     }
   },
   "ScalesPanel": {
-    "playScale": "▶ Play Scale",
-    "viewMode": {
-      "full": "Full",
-      "positions": "Positions"
-    },
+    "playScale": "Play Scale",
+    "leftyMode": "Lefty",
+    "scaleConfig": "Scale Configuration & Theory",
+    "positionTitle": "Position {pos}",
+    "positionFretTitle": "Position {pos} (fret {fret})",
     "labelMode": {
       "notes": "Notes",
       "intervals": "Intervals"
     },
-    "leftyMode": "Lefty",
-    "scaleConfig": "Scale Configuration",
+    "viewMode": {
+      "full": "Full Fretboard",
+      "positions": "Positions / Shapes"
+    },
     "chordType": {
       "triads": "Triads",
-      "tetrads": "Tetrads"
+      "tetrads": "7th Chords"
     },
     "labels": {
       "notes": "Notes",
       "intervals": "Intervals",
       "chords": "Chords",
-      "colors": "Colors"
-    },
-    "theory": {
-      "usage": "🎵 Usage:",
-      "targetNotes": "🎯 Notes:",
-      "playOver": "🎸 Play over:",
-      "noInfo": "Select a scale to see its theoretical information."
+      "colors": "Colors",
+      "playChordTooltip": "Click to play chord"
     },
     "fretboard": {
       "playPosition": "▶ Play Position"
     },
-    "positionTitle": "Position {pos}",
-    "positionFretTitle": "Position {pos} (fret {fret})"
+    "theory": {
+      "usage": "Suggested Usage",
+      "targetNotes": "Target Notes",
+      "playOver": "Play Over",
+      "noInfo": "No additional theory information available for this scale."
+    }
   },
   "SidebarControls": {
     "toasts": {

@@ -763,38 +763,39 @@
     }
   },
   "ScalesPanel": {
-    "playScale": "▶ Reproducir Escala",
-    "viewMode": {
-      "full": "Completo",
-      "positions": "Posiciones"
-    },
+    "playScale": "Reproducir Escala",
+    "leftyMode": "Zurdo",
+    "scaleConfig": "Configuración de Escala & Teoría",
+    "positionTitle": "Posición {pos}",    
+    "positionFretTitle": "Posición {pos} (traste {fret})",
     "labelMode": {
       "notes": "Notas",
       "intervals": "Intervalos"
     },
-    "leftyMode": "Zurdo",
-    "scaleConfig": "Configuración de la Escala",
+    "viewMode": {
+      "full": "Mástil Completo",
+      "positions": "Posiciones / Shapes"
+    },
     "chordType": {
       "triads": "Tríadas",
-      "tetrads": "Tétradas"
+      "tetrads": "Cuatríadas"
     },
     "labels": {
       "notes": "Notas",
       "intervals": "Intervalos",
       "chords": "Acordes",
-      "colors": "Colores"
+      "colors": "Colores",
+      "playChordTooltip": "Click para escuchar el acorde"
     },
     "theory": {
-      "usage": "🎵 Uso:",
-      "targetNotes": "🎯 Notas:",
-      "playOver": "🎸 Tocar sobre:",
-      "noInfo": "Selecciona una escala para ver su información teórica."
+      "usage": "Uso Sugerido",
+      "targetNotes": "Notas Objetivo",
+      "playOver": "Tocar Sobre",
+      "noInfo": "No hay información teórica adicional para esta escala."
     },
     "fretboard": {
       "playPosition": "▶ Reproducir Posición"
-    },
-    "positionTitle": "Posición {pos}",
-    "positionFretTitle": "Posición {pos} (traste {fret})"
+    }
   },
   "SidebarControls": {
     "toasts": {
