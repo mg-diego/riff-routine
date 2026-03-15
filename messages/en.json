@@ -509,6 +509,14 @@
     }
   },
   "HomePage": {
+    "invites": {
+      "badge": "Invitation",
+      "message": "{teacher} has invited you to their class",
+      "accept": "Accept",
+      "accepting": "Joining...",
+      "decline": "Decline",
+      "unknownTeacher": "A teacher"
+    },
     "nav": {
       "practice": {
         "label": "Practice",
@@ -774,7 +782,9 @@
     },
     "viewMode": {
       "full": "Full Fretboard",
-      "positions": "Positions / Shapes"
+      "positions": "Positions / Shapes",
+      "carousel": "Carousel",
+      "list": "List"
     },
     "chordType": {
       "triads": "Triads",
@@ -1160,6 +1170,23 @@
     }
   },
   "Profile": {
+    "teacher": {
+      "title": "Teacher mode",
+      "description": "Share routines and track your students' progress.",
+      "feature1": "Invite students and manage them from a single dashboard",
+      "feature2": "Assign routines with optional due dates and notes",
+      "feature3": "Track each student's BPM progress and practice time",
+      "activate": "Activate teacher mode",
+      "activating": "Activating...",
+      "activateSuccess": "Teacher mode activated",
+      "activateError": "Could not activate teacher mode",
+      "active": "Teacher mode active",
+      "bioLabel": "Bio",
+      "bioPlaceholder": "Tell your students a bit about you...",
+      "deactivate": "Deactivate",
+      "deactivateSuccess": "Teacher mode deactivated",
+      "deactivateError": "Could not deactivate teacher mode"
+    },
     "subscription": {
       "title": "Subscription",
       "description": "Manage your plan and billing",
@@ -1565,5 +1592,130 @@
   "Metadata": {
     "title": "RiffRoutine — Master your practice",
     "description": "The practice app for serious guitarists. Interactive tabs, routines, BPM tracking and stats."
+  },
+  "TeacherDashboard": {
+    "label": "Teacher mode",
+    "title": "Dashboard",
+    "inviteStudent": "Invite student",
+    "seeAll": "See all",
+    "stats": {
+      "activeStudents": "Active students",
+      "pending": "{count} pending",
+      "practicedWeek": "Practiced this week",
+      "outOf": "out of {total}",
+      "assignments": "Assignments",
+      "active": "active",
+      "totalStudents": "Total students"
+    },
+    "students": {
+      "title": "My students",
+      "empty": "You haven't invited any students yet."
+    },
+    "assignments": {
+      "title": "Recent assignments",
+      "empty": "No assignments yet.",
+      "create": "Create assignment",
+      "active": "Active",
+      "done": "Done",
+      "due": "Due"
+    },
+    "invite": {
+      "title": "Invite student",
+      "subtitle": "They'll receive an email to join your class.",
+      "emailPlaceholder": "student@email.com",
+      "send": "Send invite",
+      "sending": "Sending...",
+      "limitReached": "You've reached your student limit. Upgrade to Lifetime for unlimited students.",
+      "alreadyInvited": "This student has already been invited.",
+      "error": "Could not send the invite. Please try again."
+    },
+    "time": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days} days ago"
+    }
+  },
+  "Teacher": {
+    "time": {
+      "today": "Today",
+      "yesterday": "Yesterday",
+      "daysAgo": "{days} days ago"
+    },
+    "invite": {
+      "title": "Invite student",
+      "subtitle": "They will see the invitation on their home screen.",
+      "emailPlaceholder": "student@email.com",
+      "send": "Send invite",
+      "sending": "Sending...",
+      "limitReached": "You have reached your student limit. Upgrade to Lifetime for unlimited students.",
+      "alreadyInvited": "This student has already been invited.",
+      "error": "Could not send the invite. Please try again."
+    }
+  },
+  "TeacherStudents": {
+    "label": "Teacher mode",
+    "title": "My students",
+    "back": "Back to dashboard",
+    "invite": "Invite student",
+    "empty": "No students yet. Invite someone to get started.",
+    "filter": {
+      "all": "All",
+      "active": "Active",
+      "pending": "Pending"
+    },
+    "col": {
+      "student": "Student",
+      "activity": "Activity",
+      "lastRoutine": "Last routine",
+      "thisWeek": "This week"
+    },
+    "status": {
+      "pending": "Pending"
+    },
+    "activity": {
+      "active": "Active",
+      "recent": "Recent",
+      "away": "Away",
+      "inactive": "Inactive"
+    },
+    "actions": {
+      "stats": "View stats",
+      "resend": "Resend invite",
+      "remove": "Remove"
+    },
+    "remove": {
+      "title": "Remove student",
+      "confirm": "Are you sure you want to remove {name} from your class? Their practice data will not be deleted.",
+      "confirm_btn": "Remove",
+      "cancel": "Cancel",
+      "removing": "Removing..."
+    }
+  },
+  "TeacherAssignments": {
+    "label": "Teacher mode",
+    "title": "Assignments",
+    "back": "Back to dashboard",
+    "newContent": "New content",
+    "empty": "No content yet. Create something to assign to your students.",
+    "filter": {
+      "all": "All"
+    },
+    "create": {
+      "title": "New assignment",
+      "typeLabel": "Type",
+      "contentLabel": "Content",
+      "optionsLabel": "Options",
+      "studentsLabel": "Assign to",
+      "selectRoutine": "Select a routine...",
+      "selectFile": "Choose a file...",
+      "titlePlaceholder": "Title",
+      "notePlaceholder": "Write your note here...",
+      "messagePlaceholder": "Note for the student (optional)",
+      "noActiveStudents": "You have no active students yet.",
+      "noStudents": "Select at least one student.",
+      "submit": "Create assignment",
+      "uploading": "Uploading...",
+      "error": "Something went wrong. Please try again."
+    }
   }
 }

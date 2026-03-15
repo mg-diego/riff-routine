@@ -226,10 +226,10 @@ export function ScalesPanel() {
           {viewMode === 'positions' && (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', borderLeft: '1px solid #333', paddingLeft: '1rem' }}>
               <button onClick={() => setPosViewMode('carousel')} style={{ background: posViewMode === 'carousel' ? '#333' : 'transparent', color: posViewMode === 'carousel' ? '#fff' : '#888', border: '1px solid #333', padding: '0.4rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
-                Carrusel
+                {t('viewMode.carousel')}
               </button>
               <button onClick={() => setPosViewMode('list')} style={{ background: posViewMode === 'list' ? '#333' : 'transparent', color: posViewMode === 'list' ? '#fff' : '#888', border: '1px solid #333', padding: '0.4rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
-                Lista
+                {t('viewMode.list')}
               </button>
             </div>
           )}

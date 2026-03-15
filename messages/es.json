@@ -509,6 +509,14 @@
     }
   },
   "HomePage": {
+    "invites": {
+      "badge": "Invitación",
+      "message": "{teacher} te ha invitado a su clase",
+      "accept": "Aceptar",
+      "accepting": "Uniéndose...",
+      "decline": "Rechazar",
+      "unknownTeacher": "Un profesor"
+    },
     "nav": {
       "practice": {
         "label": "Practicar",
@@ -766,7 +774,7 @@
     "playScale": "Reproducir Escala",
     "leftyMode": "Zurdo",
     "scaleConfig": "Configuración de Escala & Teoría",
-    "positionTitle": "Posición {pos}",    
+    "positionTitle": "Posición {pos}",
     "positionFretTitle": "Posición {pos} (traste {fret})",
     "labelMode": {
       "notes": "Notas",
@@ -774,7 +782,9 @@
     },
     "viewMode": {
       "full": "Mástil Completo",
-      "positions": "Posiciones / Shapes"
+      "positions": "Posiciones / Shapes",
+      "carousel": "Carrusel",
+      "list": "Lista"
     },
     "chordType": {
       "triads": "Tríadas",
@@ -1160,6 +1170,23 @@
     }
   },
   "Profile": {
+    "teacher": {
+      "title": "Modo profesor",
+      "description": "Comparte rutinas y sigue el progreso de tus alumnos.",
+      "feature1": "Invita alumnos y gestiónales desde un solo panel",
+      "feature2": "Asigna rutinas con fecha límite y notas opcionales",
+      "feature3": "Consulta el progreso de BPM y tiempo de práctica de cada alumno",
+      "activate": "Activar modo profesor",
+      "activating": "Activando...",
+      "activateSuccess": "Modo profesor activado",
+      "activateError": "No se pudo activar el modo profesor",
+      "active": "Modo profesor activo",
+      "bioLabel": "Bio",
+      "bioPlaceholder": "Cuéntales algo a tus alumnos...",
+      "deactivate": "Desactivar",
+      "deactivateSuccess": "Modo profesor desactivado",
+      "deactivateError": "No se pudo desactivar el modo profesor"
+    },
     "subscription": {
       "title": "Suscripción",
       "description": "Gestiona tu plan y facturación",
@@ -1565,5 +1592,130 @@
   "Metadata": {
     "title": "RiffRoutine — Domina tu práctica",
     "description": "La app de práctica para guitarristas serios. Tabs interactivos, rutinas, seguimiento de BPM y estadísticas."
+  },
+  "TeacherDashboard": {
+    "label": "Modo profesor",
+    "title": "Dashboard",
+    "inviteStudent": "Invitar alumno",
+    "seeAll": "Ver todos",
+    "stats": {
+      "activeStudents": "Alumnos activos",
+      "pending": "{count} pendientes",
+      "practicedWeek": "Practicaron esta semana",
+      "outOf": "de {total}",
+      "assignments": "Asignaciones",
+      "active": "activas",
+      "totalStudents": "Total alumnos"
+    },
+    "students": {
+      "title": "Mis alumnos",
+      "empty": "Todavía no has invitado a ningún alumno."
+    },
+    "assignments": {
+      "title": "Asignaciones recientes",
+      "empty": "Todavía no hay asignaciones.",
+      "create": "Crear asignación",
+      "active": "Activa",
+      "done": "Completada",
+      "due": "Entrega"
+    },
+    "invite": {
+      "title": "Invitar alumno",
+      "subtitle": "Recibirá un email para unirse a tu clase.",
+      "emailPlaceholder": "alumno@email.com",
+      "send": "Enviar invitación",
+      "sending": "Enviando...",
+      "limitReached": "Has alcanzado el límite de alumnos. Mejora a Lifetime para tener alumnos ilimitados.",
+      "alreadyInvited": "Este alumno ya ha sido invitado.",
+      "error": "No se pudo enviar la invitación. Inténtalo de nuevo."
+    },
+    "time": {
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "daysAgo": "Hace {days} días"
+    }
+  },
+  "Teacher": {
+    "time": {
+      "today": "Hoy",
+      "yesterday": "Ayer",
+      "daysAgo": "Hace {days} días"
+    },
+    "invite": {
+      "title": "Invitar alumno",
+      "subtitle": "Verá la invitación en su pantalla de inicio.",
+      "emailPlaceholder": "alumno@email.com",
+      "send": "Enviar invitación",
+      "sending": "Enviando...",
+      "limitReached": "Has alcanzado el límite de alumnos. Mejora a Lifetime para tener alumnos ilimitados.",
+      "alreadyInvited": "Este alumno ya ha sido invitado.",
+      "error": "No se pudo enviar la invitación. Inténtalo de nuevo."
+    }
+  },
+  "TeacherStudents": {
+    "label": "Modo profesor",
+    "title": "Mis alumnos",
+    "back": "Volver al dashboard",
+    "invite": "Invitar alumno",
+    "empty": "Todavía no tienes alumnos. Invita a alguien para empezar.",
+    "filter": {
+      "all": "Todos",
+      "active": "Activos",
+      "pending": "Pendientes"
+    },
+    "col": {
+      "student": "Alumno",
+      "activity": "Actividad",
+      "lastRoutine": "Última rutina",
+      "thisWeek": "Esta semana"
+    },
+    "status": {
+      "pending": "Pendiente"
+    },
+    "activity": {
+      "active": "Activo",
+      "recent": "Reciente",
+      "away": "Inactivo",
+      "inactive": "Sin actividad"
+    },
+    "actions": {
+      "stats": "Ver estadísticas",
+      "resend": "Reenviar invitación",
+      "remove": "Eliminar"
+    },
+    "remove": {
+      "title": "Eliminar alumno",
+      "confirm": "¿Seguro que quieres eliminar a {name} de tu clase? Sus datos de práctica no se borrarán.",
+      "confirm_btn": "Eliminar",
+      "cancel": "Cancelar",
+      "removing": "Eliminando..."
+    }
+  },
+  "TeacherAssignments": {
+    "label": "Modo profesor",
+    "title": "Asignaciones",
+    "back": "Volver al dashboard",
+    "newContent": "Nuevo contenido",
+    "empty": "Todavía no hay contenido. Crea algo para asignar a tus alumnos.",
+    "filter": {
+      "all": "Todo"
+    },
+    "create": {
+      "title": "Nueva asignación",
+      "typeLabel": "Tipo",
+      "contentLabel": "Contenido",
+      "optionsLabel": "Opciones",
+      "studentsLabel": "Asignar a",
+      "selectRoutine": "Selecciona una rutina...",
+      "selectFile": "Elige un archivo...",
+      "titlePlaceholder": "Título",
+      "notePlaceholder": "Escribe tu nota aquí...",
+      "messagePlaceholder": "Nota para el alumno (opcional)",
+      "noActiveStudents": "Todavía no tienes alumnos activos.",
+      "noStudents": "Selecciona al menos un alumno.",
+      "submit": "Crear asignación",
+      "uploading": "Subiendo...",
+      "error": "Algo salió mal. Inténtalo de nuevo."
+    }
   }
 }
