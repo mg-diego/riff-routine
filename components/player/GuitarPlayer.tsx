@@ -13,6 +13,7 @@ import { usePracticeSession } from '../../hooks/usePracticeSession';
 import { useTranslations } from 'next-intl';
 import { CompositionPanel } from './CompositionPanel';
 import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
+import { ChordsPanel } from './ChordsPanel';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -59,13 +60,15 @@ export default function GuitarPlayer() {
     const isSpecialMode =
         mode === 'scales' || activeExercise?.title === 'sys_scales_title' ||
         mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title' ||
-        mode === 'composition' || activeExercise?.title === 'sys_composition_title';
+        mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
+        mode === 'chords' || activeExercise?.title === 'sys_chords_title';
 
     const specialPanel =
         (mode === 'scales' || activeExercise?.title === 'sys_scales_title') ? <ScalesPanel /> :
             (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') ? <ImprovPanel /> :
-                (mode === 'composition' || activeExercise?.title === 'sys_composition_title') ? <CompositionPanel /> :
-                    null;
+                (mode === 'composition' || activeExercise?.title === 'sys_composition_title') ? <CompositionPanel /> :                
+                    (mode === 'chords' || activeExercise?.title === 'sys_chords_title') ? <ChordsPanel /> :
+                        null;
 
     const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
     const isSidebarDisabled = isSpecialMode || !!hasNoScore;
@@ -142,21 +145,35 @@ export default function GuitarPlayer() {
                     />
 
                     <div ref={mainScrollRef} style={{
-                        flex: 1, overflow: 'auto', display: 'flex',
-                        flexDirection: 'column', position: 'relative', width: '100%',
+                        flex: 1,
+                        overflowX: 'hidden', // Previene scrolls horizontales accidentales
+                        overflowY: 'auto',   // Scroll vertical principal
+                        display: 'flex',
+                        flexDirection: 'column',
+                        position: 'relative',
+                        width: '100%',
                     }}>
                         {isSpecialMode && (
-                            <div style={{ padding: '1rem 2rem', flexShrink: 0 }}>
+                            <div style={{
+                                padding: '1rem 2rem',
+                                flex: '1 0 auto',           // Permite que el panel crezca sin restricciones
+                                minHeight: 'min-content',   // Evita que el contenedor recorte el contenido
+                                display: 'flex',
+                                flexDirection: 'column'
+                            }}>
                                 {specialPanel}
                             </div>
                         )}
 
                         <div style={{
-                            flex: 1, position: 'relative',
-                            width: '100%', minWidth: 0,
-                            display: isSpecialMode ? 'none' : 'flex', flexDirection: 'column',
+                            //flex: '1 0 auto',
+                            //minHeight: 'min-content',
+                            position: 'relative',
+                            width: '100%',
+                            display: isSpecialMode ? 'none' : 'flex',
+                            flexDirection: 'column',
                         }}>
-                            <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} />
+                            <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} isLoaded={isLoaded} />
 
                             {hasNoScore && !isSpecialMode && (
                                 <div style={{

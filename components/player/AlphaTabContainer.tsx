@@ -6,9 +6,10 @@ import { useTranslations } from 'next-intl';
 interface AlphaTabContainerProps {
     wrapperRef: RefObject<HTMLDivElement | null>;
     hasNoScore: boolean;
+    isLoaded: boolean;
 }
 
-export function AlphaTabContainer({ wrapperRef, hasNoScore }: AlphaTabContainerProps) {
+export function AlphaTabContainer({ wrapperRef, hasNoScore, isLoaded }: AlphaTabContainerProps) {
     const t = useTranslations('AlphaTabContainer');
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -49,16 +50,14 @@ export function AlphaTabContainer({ wrapperRef, hasNoScore }: AlphaTabContainerP
                 className="alphatab-wrapper"
                 style={{
                     padding: '0 2rem',
-                    flex: 1,
-                    minHeight: 0,
                     display: hasNoScore ? 'none' : 'block',
                     width: '100%',
-                    overflow: 'hidden'
+                    overflow: 'visible'
                 }}
             >
                 <div
                     className="alphatab-container"
-                    style={{ position: 'relative', minHeight: '300px', width: '100%' }}
+                    style={{ position: 'relative', minHeight: isLoaded ? 0 : '300px', width: '100%' }}
                 >
                     <div ref={wrapperRef} style={{ width: '100%' }} />
                 </div>

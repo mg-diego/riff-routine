@@ -9,7 +9,7 @@ import { EndSessionModal } from './EndSessionModal';
 import { useTranslations } from 'next-intl';
 
 interface PlayerHeaderProps {
-  mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition';
+  mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords';
   routineLength: number;
   currentIndex: number;
   onPrev: () => void;
@@ -79,7 +79,8 @@ export function PlayerHeader({
     routine: { label: t('modes.routine'), icon: '🔁', color: '#a78bfa' },
     scales: { label: t('modes.scales'), icon: '🎹', color: 'var(--gold)' },
     improvisation: { label: t('modes.improvisation'), icon: '🎷', color: 'var(--gold)' },
-    composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },
+    composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },    
+    chords: { label: t('modes.chords'), icon: '🧠', color: 'var(--gold)' },
   }), [t]);
 
   const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
@@ -120,6 +121,41 @@ export function PlayerHeader({
       if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current);
     };
   }, [isTimerRunning, exercise?.id, isRoutine]);
+  // ───────────────────────────────────────────────────────────────────────
+
+  // ── Auto-pause al cambiar de pestaña ─────────────────────────────────────
+  const autoPausedRef = useRef(false);
+  const isTimerRunningRef = useRef(isTimerRunning);
+
+  // Mantenemos la referencia actualizada sin relanzar el effect principal
+  useEffect(() => {
+    isTimerRunningRef.current = isTimerRunning;
+  }, [isTimerRunning]);
+
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.hidden) {
+        // Si el usuario cambia de pestaña y el timer está corriendo, lo pausamos y lo recordamos
+        if (isTimerRunningRef.current) {
+          onToggleTimer();
+          autoPausedRef.current = true;
+        }
+      } else {
+        // Si el usuario vuelve a la pestaña y fuimos nosotros quienes lo pausamos, lo reanudamos
+        if (autoPausedRef.current) {
+          if (!isTimerRunningRef.current) {
+            onToggleTimer();
+          }
+          autoPausedRef.current = false;
+        }
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [onToggleTimer]);
   // ───────────────────────────────────────────────────────────────────────
 
   const alertedRef = useRef(false);
@@ -167,8 +203,6 @@ export function PlayerHeader({
       }));
     }
   }, [propElapsedSeconds, isTimerRunning, currentExerciseKey]);
-
-  // REMOVED: effect that paused timer on currentIndex change in routine mode
 
   useEffect(() => {
     if (disableBpmInputs || !showBpmInputs) { setBpmGoal(''); return; }

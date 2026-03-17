@@ -602,7 +602,8 @@
       "stats": "Estadísticas",
       "teacherDashboard": "Dashboard",
       "students": "Mis alumnos",
-      "assignments": "Asignaciones"
+      "assignments": "Asignaciones",
+      "calendar": "Calendario"
     },
     "profile": "Mi Perfil",
     "languageLabel": "Idioma",
@@ -702,6 +703,7 @@
     "bpmFinalLabel": "BPM Final",
     "noBpmLog": "Sin registro de BPM",
     "timeLabel": "Tiempo",
+    "endLog": "Borrar registro",
     "actions": {
       "backToPractice": "Volver a la práctica",
       "saving": "Guardando...",
@@ -736,7 +738,8 @@
       "routine": "Rutina",
       "scales": "Escalas",
       "improvisation": "Improvisación",
-      "composition": "Composición"
+      "composition": "Composición",
+      "chords": "Acordes"
     },
     "alerts": {
       "unsavedTime": "Tienes tiempo sin registrar. ¿Seguro que quieres salir?"
@@ -1495,7 +1498,10 @@
     "sys_improvisation_notes": "Improvisación libre. Pon a prueba tus licks, fraseo y musicalidad sin depender de una partitura.",
     "sys_scales_title": "Escalas",
     "sys_scales_technique": "Escalas",
-    "sys_scales_notes": "Practica las escalas de arriba a abajo usando el metrónomo. Concéntrate en la precisión de ambas manos."
+    "sys_scales_notes": "Practica las escalas de arriba a abajo usando el metrónomo. Concéntrate en la precisión de ambas manos.",
+    "sys_chords_title": "Acordes",
+    "sys_chords_technique": "Acordes",
+    "sys_chords_notes": "Domina el mástil practicando acordes e inversiones en cualquier posición."
   },
   "CompositionPanel": {
     "title": "Centro de Composición",
@@ -1597,6 +1603,7 @@
     "label": "Modo profesor",
     "title": "Dashboard",
     "inviteStudent": "Invitar alumno",
+    "cannotInviteSelf": "No puedes invitarte a ti mismo",
     "seeAll": "Ver todos",
     "stats": {
       "activeStudents": "Alumnos activos",
@@ -1717,5 +1724,35 @@
       "uploading": "Subiendo...",
       "error": "Algo salió mal. Inténtalo de nuevo."
     }
+  },
+  "TeacherCalendar": {
+    "label": "Gestión de Horarios",
+    "title": "Calendario de Clases",
+    "modal": {
+      "title": "Asignar Alumno",
+      "empty": "No tienes alumnos activos."
+    },
+    "days": {
+      "1": "Lunes",
+      "2": "Martes",
+      "3": "Miércoles",
+      "4": "Jueves",
+      "5": "Viernes",
+      "6": "Sábado",
+      "0": "Domingo"
+    }
+  },
+  "ChordsPanel": {
+    "title": "Diccionario de Acordes",
+    "fingers": "Dedos",
+    "notes": "Notas",
+    "loading": "Cargando acorde...",
+    "notFound": "Acorde no encontrado",
+    "inversion": "INVERSIÓN (Bajo en {note})",
+    "position": "Posición {current} / {total}",
+    "fingerIndex": "Índice (1)",
+    "fingerMiddle": "Medio (2)",
+    "fingerRing": "Anular (3)",
+    "fingerPinky": "Meñique (4)"
   }
 }

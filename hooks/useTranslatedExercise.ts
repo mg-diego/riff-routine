@@ -11,6 +11,9 @@ const SYS_KEYS = new Set([
   'sys_composition_title',
   'sys_composition_technique',
   'sys_composition_notes',
+  'sys_chords_title',
+  'sys_chords_technique',
+  'sys_chords_notes'
 ]);
 
 const safeTranslate = (st: (key: string) => string, key: string): string => {

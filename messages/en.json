@@ -602,7 +602,8 @@
       "stats": "Stats",
       "teacherDashboard": "Dashboard",
       "students": "My students",
-      "assignments": "Assignments"
+      "assignments": "Assignments",
+      "calendar": "Calendario"
     },
     "profile": "My Profile",
     "languageLabel": "Language",
@@ -702,6 +703,7 @@
     "bpmFinalLabel": "Final BPM",
     "noBpmLog": "No BPM record",
     "timeLabel": "Time",
+    "clearLog": "Delete register",
     "actions": {
       "backToPractice": "Back to practice",
       "saving": "Saving...",
@@ -736,7 +738,8 @@
       "routine": "Routine",
       "scales": "Scales",
       "improvisation": "Improvisation",
-      "composition": "Composition"
+      "composition": "Composition",
+      "chords": "Chords"
     },
     "alerts": {
       "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
@@ -1495,7 +1498,10 @@
     "sys_improvisation_notes": "Free improvisation. Test your licks, phrasing, and musicality without relying on a score.",
     "sys_scales_title": "Scales",
     "sys_scales_technique": "Scales",
-    "sys_scales_notes": "Practice scales up and down using the metronome. Focus on the precision of both hands."
+    "sys_scales_notes": "Practice scales up and down using the metronome. Focus on the precision of both hands.",
+    "sys_chords_title": "Chords",
+    "sys_chords_technique": "Chords",
+    "sys_chords_notes": "Master the fretboard by practicing chords and inversions in any position."
   },
   "CompositionPanel": {
     "title": "Composition Center",
@@ -1597,6 +1603,7 @@
     "label": "Teacher mode",
     "title": "Dashboard",
     "inviteStudent": "Invite student",
+    "cannotInviteSelf": "You can't invite yourself.",
     "seeAll": "See all",
     "stats": {
       "activeStudents": "Active students",
@@ -1717,5 +1724,35 @@
       "uploading": "Uploading...",
       "error": "Something went wrong. Please try again."
     }
+  },
+  "TeacherCalendar": {
+    "label": "Gestión de Horarios",
+    "title": "Calendario de Clases",
+    "modal": {
+      "title": "Asignar Alumno",
+      "empty": "No tienes alumnos activos."
+    },
+    "days": {
+      "1": "Lunes",
+      "2": "Martes",
+      "3": "Miércoles",
+      "4": "Jueves",
+      "5": "Viernes",
+      "6": "Sábado",
+      "0": "Domingo"
+    }
+  },
+  "ChordsPanel": {
+    "title": "Chord Dictionary",
+    "fingers": "Fingers",
+    "notes": "Notes",
+    "loading": "Loading chord...",
+    "notFound": "Chord not found",
+    "inversion": "INVERSION ({note} bass)",
+    "position": "Position {current} / {total}",
+    "fingerIndex": "Index (1)",
+    "fingerMiddle": "Middle (2)",
+    "fingerRing": "Ring (3)",
+    "fingerPinky": "Pinky (4)"
   }
 }

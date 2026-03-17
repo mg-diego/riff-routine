@@ -1,6 +1,13 @@
 import React from 'react';
 import { CHROMATIC_NOTES, INTERVAL_NAMES, MARKED_FRETS, STANDARD_BASES, STANDARD_TUNING } from '@/lib/constants';
 
+const FINGER_COLORS: Record<number, string> = {
+  1: '#3b82f6',
+  2: '#10b981',
+  3: '#f59e0b',
+  4: '#ef4444'
+};
+
 export function Fretboard({
   activeNotesList,
   title,
@@ -20,11 +27,14 @@ export function Fretboard({
   labelMode,
   scaleNotes,
   getIntervalColor,
-  showGhostNotes, // <-- NUEVA PROP
+  showGhostNotes,
+  isChordMode,
+  chordDisplayMode,
+  absoluteBarres,
   t
 }: any) {
   const rootIndexGlobal = CHROMATIC_NOTES.indexOf(rootNote);
-  const aliases = scaleData.intervalAliases || {};
+  const aliases = scaleData?.intervalAliases || {};
   const isCurrentlyEditing = isEditingPos === positionIndex && positionIndex !== undefined;
   const isDevMode = process.env.NODE_ENV === 'development';
   const displayedNotes = isCurrentlyEditing ? draftPosNotes : activeNotesList;
@@ -106,6 +116,7 @@ export function Fretboard({
       )}
       <div style={{ width: '100%', paddingBottom: '1rem' }}>
         <div style={{
+          position: 'relative',
           display: 'grid',
           gridTemplateColumns: `minmax(15px, 4%) ${fretCols}`,
           background: '#2a1a0a',
@@ -141,12 +152,16 @@ export function Fretboard({
                   const intervalNameStr = aliases[interval] || INTERVAL_NAMES[interval];
                   const currentOctave = baseOctave + Math.floor((stringRootIndex + fret) / 12);
 
-                  // --- LOGICA DE RENDERIZADO MEJORADA ---
-                  let isNoteInScale = scaleNotes.includes(currentNote);
+                  let isNoteInScale = scaleNotes?.includes(currentNote);
                   let isInActiveList = false;
+                  let currentFinger = 0;
                   
                   if (isCurrentlyEditing || activeNotesList) {
-                    isInActiveList = (displayedNotes || []).some((n: any) => n.string === stringIndex && n.fret === fret);
+                    const activeNote = (displayedNotes || []).find((n: any) => n.string === stringIndex && n.fret === fret);
+                    if (activeNote) {
+                      isInActiveList = true;
+                      currentFinger = activeNote.finger || 0;
+                    }
                   }
 
                   let isActive = false;
@@ -156,9 +171,9 @@ export function Fretboard({
                     isActive = isInActiveList;
                     noteOpacity = isNoteInScale ? 1 : 0.4;
                   } else if (activeNotesList) {
-                    if (showGhostNotes) {
+                    if (showGhostNotes && !isChordMode) {
                       isActive = isNoteInScale;
-                      noteOpacity = isInActiveList ? 1 : 0.15; // El "Modo Fantasma"
+                      noteOpacity = isInActiveList ? 1 : 0.15;
                     } else {
                       isActive = isInActiveList;
                       noteOpacity = 1;
@@ -167,11 +182,48 @@ export function Fretboard({
                     isActive = isNoteInScale;
                     noteOpacity = 1;
                   }
-                  // --------------------------------------
 
                   const isMarked = MARKED_FRETS.includes(fret);
-                  const bgColor = getIntervalColor(interval);
-                  const textColor = (bgColor === '#f1c40f' || bgColor === '#2ecc71') ? '#000' : '#fff';
+                  let bgColor = getIntervalColor ? getIntervalColor(interval) : '#c4b5fd';
+                  let textColor = (bgColor === '#f1c40f' || bgColor === '#2ecc71') ? '#000' : '#fff';
+                  let displayText = labelMode === 'notes' ? currentNote : intervalNameStr;
+
+                  if (isChordMode && isInActiveList) {
+                    if (currentFinger > 0) {
+                      bgColor = FINGER_COLORS[currentFinger] || bgColor;
+                      textColor = '#fff';
+                      if (chordDisplayMode === 'fingers') {
+                        displayText = currentFinger.toString();
+                      } else {
+                        displayText = currentNote;
+                      }
+                    } else {
+                      displayText = currentNote;
+                    }
+                  }
+
+                  let isBarreTop = false;
+                  let isBarreBottom = false;
+                  let isBarreMiddle = false;
+
+                  if (isChordMode && absoluteBarres?.includes(fret)) {
+                    const allNotesInChord = displayedNotes || [];
+                    const notesAtBarreFret = allNotesInChord.filter((n: any) => n.fret === fret);
+                    
+                    if (notesAtBarreFret.length > 0) {
+                      const barreLowestPitchStr = Math.max(...notesAtBarreFret.map((n: any) => n.string));
+                      const chordHighestPitchStr = Math.min(...allNotesInChord.map((n: any) => n.string));
+                      
+                      const minStr = chordHighestPitchStr;
+                      const maxStr = barreLowestPitchStr;
+                      
+                      if (stringIndex >= minStr && stringIndex <= maxStr) {
+                        if (stringIndex === minStr) isBarreTop = true;
+                        if (stringIndex === maxStr) isBarreBottom = true;
+                        if (stringIndex > minStr && stringIndex < maxStr) isBarreMiddle = true;
+                      }
+                    }
+                  }
 
                   const isSingleDotFret = [3, 5, 7, 9, 15, 17, 19, 21].includes(fret);
                   const isDoubleDotFret = fret === 12 || fret === 24;
@@ -205,6 +257,24 @@ export function Fretboard({
                         top: '50%', transform: 'translateY(-50%)'
                       }} />
 
+                      {(isBarreTop || isBarreMiddle || isBarreBottom) && (
+                        <div style={{
+                          position: 'absolute',
+                          top: isBarreTop ? '15%' : '0',
+                          bottom: isBarreBottom ? '15%' : '0',
+                          left: '50%',
+                          transform: 'translateX(-50%)',
+                          width: 'clamp(14px, 2.5vw, 24px)',
+                          backgroundColor: 'rgba(196, 181, 253, 0.4)',
+                          borderTopLeftRadius: isBarreTop ? '999px' : '0',
+                          borderTopRightRadius: isBarreTop ? '999px' : '0',
+                          borderBottomLeftRadius: isBarreBottom ? '999px' : '0',
+                          borderBottomRightRadius: isBarreBottom ? '999px' : '0',
+                          zIndex: 2,
+                          pointerEvents: 'none'
+                        }} />
+                      )}
+
                       {isActive && (
                         <div
                           style={{
@@ -212,7 +282,7 @@ export function Fretboard({
                             backgroundColor: bgColor, color: textColor,
                             fontSize: 'clamp(6px, 1vw, 11px)', fontWeight: 'bold',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            zIndex: 2, boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                            zIndex: 3, boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
                             cursor: isCurrentlyEditing ? 'crosshair' : 'pointer',
                             transform: leftyMode ? 'scaleX(-1)' : 'none',
                             transition: 'transform 0.1s',
@@ -225,7 +295,7 @@ export function Fretboard({
                             if (!isCurrentlyEditing) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
                           }}
                         >
-                          {labelMode === 'notes' ? currentNote : intervalNameStr}
+                          {displayText}
                         </div>
                       )}
                     </div>
