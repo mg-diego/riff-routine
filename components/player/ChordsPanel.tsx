@@ -244,22 +244,11 @@ export function ChordsPanel() {
                                         activeNotesList={chordData.activeNotesList}
                                         rootNote={rootNote}
                                         scaleData={{ intervalAliases: {} }}
-                                        scaleNotes={[]}
-                                        getIntervalColor={() => '#c4b5fd'}
-                                        showGhostNotes={false}
                                         labelMode="notes"
-                                        leftyMode={false}
-                                        isEditingPos={false}
-                                        t={t}
-                                        initAudio={dummyFn}
-                                        playFreq={dummyFn}
-                                        getNoteFrequency={() => 0}
-                                        setDraftPosNotes={dummyFn}
-                                        setIsEditingPos={dummyFn}
-                                        handleExportCustomPosition={dummyFn}
                                         isChordMode={true}
                                         chordDisplayMode={chordDisplayMode}
                                         absoluteBarres={chordData.absoluteBarres}
+                                        t={t}
                                     />
                                 </div>
 

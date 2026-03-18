@@ -183,7 +183,7 @@ export default function StatsPage() {
         </div>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
+      <div data-onboarding="stats-02" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
         <div style={{ minWidth: 0 }}>
           <StatsCarousel dateFilter={dateFilter} />
         </div>

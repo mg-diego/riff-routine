@@ -99,6 +99,7 @@ export default function RoutinesPage() {
 
   const handleCreateClick = () => {
     if (canCreateRoutine) {
+      window.dispatchEvent(new CustomEvent('app:open-new-routine-modal'));
       router.push('/routines/new');
     } else {
       setShowProModal(true);
@@ -132,7 +133,7 @@ export default function RoutinesPage() {
           <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('emptyState.subtitle')}</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div data-onboarding="routines-05" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
           {routines.map((routine, index) => {
             const isReadonly = userTier === SUBSCRIPTION_TIERS.FREE && index >= MAX_FREE_ROUTINES;
             

@@ -5,15 +5,18 @@ import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { Exercise } from '../../../../lib/types';
 import { useTranslations } from 'next-intl';
+import { ExerciseHistory } from '@/components/library/ExerciseHistory';
+import { HistoryButton } from '@/components/ui/HistoryButton';
 
 export default function ExplorePage() {
     const router = useRouter();
     const t = useTranslations('ExplorePage');
-    const st = useTranslations('SystemExercises'); // Nuevo hook para los textos de la BD
+    const st = useTranslations('SystemExercises');
     
     const [systemExercises, setSystemExercises] = useState<Exercise[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [historyExerciseId, setHistoryExerciseId] = useState<string | null>(null);
 
     useEffect(() => {
         fetchSystemExercises();
@@ -36,7 +39,6 @@ export default function ExplorePage() {
     };
 
     const handlePlay = (dbTitleKey: string) => {
-        // Ahora mapeamos usando la clave de la base de datos, no el texto en español
         const routes: Record<string, string> = {
             'sys_scales_title': 'scales',
             'sys_improvisation_title': 'improvisation',
@@ -75,28 +77,31 @@ export default function ExplorePage() {
                     <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>{t('emptyState')}</p>
                 </div>
             ) : (
-                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
+                <div data-onboarding="explore-01" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))', gap: '1.5rem' }}>
                     {systemExercises.map((exercise) => {
-                        // Traducimos los campos al vuelo
                         const displayTitle = st(exercise.title);
                         const displayTechnique = exercise.technique ? st(exercise.technique) : '';
                         const displayNotes = exercise.notes ? st(exercise.notes) : '';
                         
-                        // Dividimos las técnicas ya traducidas (asumiendo que en el JSON pones "Técnica 1, Técnica 2")
                         const cats = displayTechnique ? displayTechnique.split(', ') : [];
 
                         return (
                             <div key={exercise.id} style={{
                                 background: 'var(--surface)', padding: '1.5rem', borderRadius: '10px',
                                 border: '1px solid rgba(255,255,255,0.05)', display: 'flex',
-                                flexDirection: 'column', gap: '1rem', transition: 'border-color 0.2s',
+                                flexDirection: 'column', gap: '1rem', transition: 'border-color 0.2s', position: 'relative'
                             }}
                                 onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(220,185,138,0.2)'}
                                 onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.05)'}
                             >
                                 <div>
                                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem', marginBottom: '0.5rem' }}>
-                                        <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>{displayTitle}</h3>
+                                        <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600, paddingRight: '2.5rem' }}>{displayTitle}</h3>
+                                        
+                                        {/* Botón de Historial */}
+                                        <HistoryButton
+                                            onClick={() => setHistoryExerciseId(exercise.id)}
+                                        />
                                     </div>
 
                                     {cats.length > 0 && (
@@ -131,12 +136,19 @@ export default function ExplorePage() {
                                         onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
                                     >
                                         {t('exercise.playButton')}
-                                    </button>
+                                    </button>                                    
                                 </div>
                             </div>
                         );
                     })}
                 </div>
+            )}
+
+            {historyExerciseId && (
+                <ExerciseHistory
+                    exerciseId={historyExerciseId}
+                    onClose={() => setHistoryExerciseId(null)}
+                />
             )}
         </div>
     );

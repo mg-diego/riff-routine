@@ -129,6 +129,7 @@ export default function NewExercisePage() {
 
       if (dbError) throw dbError;
 
+      window.dispatchEvent(new CustomEvent('app:exercise-created'));
       router.push('/library');
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -138,7 +139,7 @@ export default function NewExercisePage() {
   };
 
   return (
-    <div style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
+    <div data-onboarding="library-08" style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
       <button
         onClick={() => router.push('/library')}
         style={{
@@ -161,6 +162,7 @@ export default function NewExercisePage() {
         </h1>
 
         <div
+          data-onboarding="library-02"
           onDrop={handleFileDrop}
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}

@@ -177,12 +177,14 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
       <div style={{ flex: '0 0 auto', display: 'flex', gap: '0.6rem', marginLeft: 'auto', alignItems: 'center' }}>
         
         <button
+          data-onboarding="library-10"
           title={readonly ? t('lockedTooltip') : undefined}
           onClick={(e) => {
             if (readonly) {
               e.preventDefault();
               return;
             }
+            window.dispatchEvent(new CustomEvent('app:play-exercise'));
             if (file.file_url) {
               window.location.href = `/practice?file=${encodeURIComponent(file.file_url)}`;
             } else {

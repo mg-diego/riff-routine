@@ -131,7 +131,7 @@ export function EndSessionModal({
                     });
                 }
             }
-
+            window.dispatchEvent(new CustomEvent('app:end-routine-practice'));
             onEndSession(totalRoutineSeconds);
         } catch (e) { } finally {
             setIsSaving(false);
@@ -139,8 +139,8 @@ export function EndSessionModal({
     };
 
     return (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-            <div style={{ background: '#141414', border: '1px solid rgba(220,185,138,0.2)', borderRadius: '12px', padding: '2rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', fontFamily: 'DM Sans, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
+        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
+            <div data-onboarding="practice-06" style={{ background: '#141414', border: '1px solid rgba(220,185,138,0.2)', borderRadius: '12px', padding: '2rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', fontFamily: 'DM Sans, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
                 <div style={{ flexShrink: 0, marginBottom: '1.2rem' }}>
                     <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 0.2rem 0', lineHeight: 1 }}>{t('title')}</h2>
                     <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('subtitle')}</p>
@@ -150,7 +150,7 @@ export function EndSessionModal({
                         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>{t('loading')}</div>
                     ) : (
                         finalLogs.map((log, i) => (
-                            <div key={log.exercise_id} style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
+                            <div data-onboarding="practice-05" key={log.exercise_id} style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
                                 <p style={{ margin: '0 0 0.8rem 0', color: 'var(--text)', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                     {log.title}
                                 </p>

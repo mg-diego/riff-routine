@@ -14,36 +14,58 @@ export interface SpotlightRect {
 
 export function useOnboarding() {
     const locale = useLocale();
-    const [active, setActive] = useState(() => {
-        // Si hay un step guardado en session, el onboarding estaba activo
-        if (typeof window !== 'undefined') {
-            return sessionStorage.getItem('onboarding_step') !== null;
-        }
-        return false;
-    });
+
+    const [active, setActive] = useState(false);
+    const [eligible, setEligible] = useState(false);
     const [loading, setLoading] = useState(true);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [spotlightRect, setSpotlightRect] = useState<SpotlightRect | null>(null);
     const [navigating, setNavigating] = useState(false);
     const observerRef = useRef<MutationObserver | null>(null);
 
-    // Check flag on mount
+    // ── Sync state from sessionStorage ──────────────────────────────────────
+    useEffect(() => {
+        const syncState = () => {
+            const saved = sessionStorage.getItem('onboarding_step');
+            if (saved !== null) {
+                setActive(true);
+                setCurrentIndex(parseInt(saved, 10));
+            } else {
+                setActive(false);
+            }
+        };
+        syncState();
+        window.addEventListener('onboarding_state_change', syncState);
+        return () => window.removeEventListener('onboarding_state_change', syncState);
+    }, []);
+
+    // ── Check eligibility from DB ────────────────────────────────────────────
     useEffect(() => {
         const check = async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) { setLoading(false); return; }
+
             const { data: profile } = await supabase
                 .from('profiles')
                 .select('has_completed_onboarding')
                 .eq('id', user.id)
                 .single();
-            if (profile && !profile.has_completed_onboarding) setActive(true);
+
+            if (profile && !profile.has_completed_onboarding) {
+                if (!sessionStorage.getItem('onboarding_step')) {
+                    setEligible(true);
+                    setActive(false);
+                }
+            } else {
+                sessionStorage.removeItem('onboarding_step');
+                setActive(false);
+            }
             setLoading(false);
         };
         check();
     }, []);
 
-    // When index changes, navigate + wait for element
+    // ── Apply step when index or active changes ──────────────────────────────
     useEffect(() => {
         if (!active) return;
         const step = ONBOARDING_STEPS[currentIndex];
@@ -51,66 +73,83 @@ export function useOnboarding() {
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [currentIndex, active]);
 
-    // Cleanup observer on unmount
+    // ── Listen for waitForEvent — advances when event fires ──────────────────
+    // The tooltip STAYS VISIBLE while waiting (no special hiding logic needed —
+    // the modal renders as long as active=true regardless of waitForEvent).
+    useEffect(() => {
+        if (!active) return;
+        const step = ONBOARDING_STEPS[currentIndex];
+        const eventName = step.waitForEvent;
+        if (!eventName) return;
+
+        const handleEvent = () => {
+            setTimeout(() => next(), 50);
+        };
+
+        window.addEventListener(eventName, handleEvent);
+        return () => window.removeEventListener(eventName, handleEvent);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [active, currentIndex]);
+
+    // ── Cleanup observer ─────────────────────────────────────────────────────
     useEffect(() => {
         return () => observerRef.current?.disconnect();
     }, []);
 
     const applyStep = (step: OnboardingStep) => {
-        // Welcome step — no navigation, no spotlight
+        // Welcome / finish steps — no spotlight needed
         if (!step.route && !step.target) {
             setSpotlightRect(null);
             setNavigating(false);
             return;
         }
 
-        // Navigate if needed
+        // Navigate if the step requires a different route
         const targetPath = `/${locale}${step.route}`;
         const currentPath = window.location.pathname + window.location.search;
-        const needsNavigation = step.route && !currentPath.startsWith(`/${locale}${step.route.split('?')[0]}`);
+        const needsNavigation = step.route &&
+            !currentPath.startsWith(`/${locale}${step.route.split('?')[0]}`);
 
         if (needsNavigation) {
             setNavigating(true);
             setSpotlightRect(null);
             window.location.href = targetPath;
-            // After navigation the page reloads — onboarding state is restored
-            // via sessionStorage (see persistIndex below)
             return;
         }
 
-        // Wait for element to appear in DOM
+        // Wait for the target element to appear in the DOM
         if (step.target) {
-            waitForElement(step.target, (el) => {
+            waitForElement(step, (el) => {
                 setNavigating(false);
                 updateSpotlight(el);
-                // Update on resize
                 window.addEventListener('resize', () => updateSpotlight(el), { passive: true });
             });
         }
     };
 
-    const waitForElement = (target: string, cb: (el: HTMLElement) => void) => {
+    const waitForElement = (step: OnboardingStep, cb: (el: HTMLElement) => void) => {
         observerRef.current?.disconnect();
 
-        const selector = `[data-onboarding="${target}"]`;
-        const existing = document.querySelector<HTMLElement>(selector);
-        if (existing) { cb(existing); return; }
+        const selector = `[data-onboarding="${step.target}"]`;
 
-        const observer = new MutationObserver(() => {
+        const findAndBind = () => {
             const el = document.querySelector<HTMLElement>(selector);
-            if (el) {
-                observer.disconnect();
-                cb(el);
-            }
+            if (!el) return false;
+            cb(el);
+            return true;
+        };
+
+        if (findAndBind()) return;
+
+        // Element not in DOM yet — observe until it appears (e.g. after navigation)
+        const observer = new MutationObserver(() => {
+            if (findAndBind()) observer.disconnect();
         });
         observer.observe(document.body, { childList: true, subtree: true });
         observerRef.current = observer;
 
-        // Fallback timeout after 5s
-        setTimeout(() => {
-            observer.disconnect();
-            setNavigating(false);
-        }, 5000);
+        // Safety timeout — stop waiting after 8s to avoid hanging
+        setTimeout(() => observer.disconnect(), 8000);
     };
 
     const updateSpotlight = (el: HTMLElement) => {
@@ -121,15 +160,24 @@ export function useOnboarding() {
             width: rect.width,
             height: rect.height,
         });
-        // Scroll element into view
         el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    };
+
+    const notifyStateChange = () => {
+        window.dispatchEvent(new Event('onboarding_state_change'));
+    };
+
+    const start = () => {
+        setEligible(false);
+        sessionStorage.setItem('onboarding_step', '0');
+        notifyStateChange();
     };
 
     const next = () => {
         if (currentIndex < ONBOARDING_STEPS.length - 1) {
             const nextIndex = currentIndex + 1;
-            persistIndex(nextIndex);
-            setCurrentIndex(nextIndex);
+            sessionStorage.setItem('onboarding_step', String(nextIndex));
+            notifyStateChange();
         } else {
             complete();
         }
@@ -138,14 +186,16 @@ export function useOnboarding() {
     const prev = () => {
         if (currentIndex > 0) {
             const prevIndex = currentIndex - 1;
-            persistIndex(prevIndex);
-            setCurrentIndex(prevIndex);
+            sessionStorage.setItem('onboarding_step', String(prevIndex));
+            notifyStateChange();
         }
     };
 
     const complete = async () => {
+        sessionStorage.removeItem('onboarding_step');
+        notifyStateChange();
+        setEligible(false);
         setActive(false);
-        clearPersistedIndex();
 
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return;
@@ -164,32 +214,19 @@ export function useOnboarding() {
             .eq('id', user.id);
     };
 
-    const persistIndex = (index: number) => {
-        sessionStorage.setItem('onboarding_step', String(index));
-    };
-
-    const clearPersistedIndex = () => {
-        sessionStorage.removeItem('onboarding_step');
-    };
-
-    useEffect(() => {
-        const saved = sessionStorage.getItem('onboarding_step');
-        if (saved !== null) {
-            setCurrentIndex(parseInt(saved, 10));
-        }
-    }, []);
-
     const isLastStep = currentIndex === ONBOARDING_STEPS.length - 1;
     const currentStep = ONBOARDING_STEPS[currentIndex];
 
     return {
         active,
+        eligible,
         loading,
         navigating,
         currentIndex,
         currentStep,
         spotlightRect,
         isLastStep,
+        start,
         next,
         prev,
         complete,

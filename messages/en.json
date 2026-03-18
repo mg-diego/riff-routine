@@ -589,7 +589,13 @@
       "desc": "Upload a tab and start playing without a routine",
       "btn": "Open player"
     },
-    "quickAccess": "Go to"
+    "quickAccess": "Go to",
+    "onboarding": {
+      "title": "Would you like to take the app tutorial?",
+      "desc": "Learn how to make the most out of all the practice and analysis tools.",
+      "btnStart": "Start",
+      "btnSkip": "Mark as completed"
+    }
   },
   "ExplorePage": {
     "title": "Explore Catalog",
@@ -1485,32 +1491,137 @@
     "skip": "Skip",
     "next": "Next →",
     "prev": "← Back",
-    "finish": "Let's go!",
+    "finish": "Get Started!",
     "navigating": "Taking you there...",
+    "actionRequired": "Action Required",
     "slides": {
       "welcome": {
         "title": "Welcome to RiffRoutine",
-        "description": "Your personal guitar practice companion. Let's take a quick tour so you can hit the ground running."
+        "description": "Your personal guitar practice companion. Let's take a quick tour so you can start playing right away."
       },
-      "routines": {
-        "title": "Practice Routines",
-        "description": "Build structured routines with your exercises. Set target BPMs, durations and track every session."
+      "home": {
+        "title": "Your Dashboard",
+        "description": "Here you'll see a summary of your progress: your practice streaks, time spent this week, and shortcuts to pick up exactly where you left off."
       },
-      "library": {
+      "navbarLibrary": {
         "title": "Exercise Library",
-        "description": "Browse and organise all your exercises. Upload Guitar Pro files and access them anytime."
+        "description": "Explore and organize all your exercises. Upload Guitar Pro files and access them anytime."
       },
-      "scales": {
-        "title": "Scale Visualiser",
-        "description": "Explore scales across the full fretboard. Switch keys, visualise positions and play along."
+      "library-01": {
+        "title": "Create Your Content",
+        "description": "Click the '+' button to add your first custom exercise and start building your own practice catalog."
       },
-      "stats": {
+      "library-02": {
+        "title": "Upload Your Tablature",
+        "description": "You can drag and drop your .gp5 or .gp file here to view the interactive sheet music and practice with the built-in player."
+      },
+      "library-03": {
+        "title": "Give It a Name",
+        "description": "Type a title for your exercise. This will help you keep your library organized and find it quickly for your routines."
+      },
+      "library-04": {
+        "title": "Categorize Your Technique",
+        "description": "Assign tags like Alternate Picking or Sweep Picking to organize your library and filter your exercises by specific technique."
+      },
+      "library-05": {
+        "title": "Define the Tempo",
+        "description": "Set your current BPM and your final goal. This allows the tool to monitor your progress and adjust the metronome automatically."
+      },
+      "library-06": {
+        "title": "Difficulty Level",
+        "description": "Rate the challenge from 1 to 5 stars. This will let you filter your practice sessions based on your energy or technical level for the day."
+      },
+      "library-07": {
+        "title": "Extra Notes",
+        "description": "Add reminders about posture, fingering, or any technical detail you should keep in mind while practicing this exercise."
+      },
+      "library-08": {
+        "title": "Your Turn!",
+        "description": "Now that you know all the options, upload a .gp5 or .gp file, fill in the exercise details, and hit 'Save'. The tutorial will automatically continue once it's created."
+      },
+      "library-09": {
+        "title": "Exercise Created!",
+        "description": "Here is your new exercise. From now on, it will always appear in your library, ready to be practiced or added to a routine."
+      },
+      "library-10": {
+        "title": "Time to Practice!",
+        "description": "Click the 'Play' button to open the interactive player. This is where the magic happens: you can adjust speed, use the metronome, and follow the tab in real-time."
+      },
+      "practice-01": {
+        "title": "Practice Panel",
+        "description": "Control your session from here: view the exercise name, adjust the BPM in real-time, and save your progress to update your stats when you finish."
+      },
+      "practice-02": {
+        "title": "Musical Control Panel",
+        "description": "By loading a .gp5 file, you unlock the side panel. From here, you can mute tracks, change instruments, and adjust the metronome to fit your pace. Let's move on to routines."
+      },
+      "navbarRoutines": {
+        "title": "Practice Routines",
+        "description": "Create structured routines with your exercises. Set BPMs, target durations, and log every session."
+      },
+      "routines-01": {
+        "title": "Design Your Workout",
+        "description": "Click '+' to create a new routine. Here you can group your exercises, define practice times, and organize your week to keep improving."
+      },
+      "routines-02": {
+        "title": "Routine Details",
+        "description": "You can assign a name and a description to your routine. Organize them by goals, like 'Daily Warm-up' or 'Advanced Technique'."
+      },
+      "routines-03": {
+        "title": "Add Your Exercises",
+        "description": "Use the selector to search your library and include the exercises you want to practice in this routine."
+      },
+      "routines-04": {
+        "title": "Configure Your Routine",
+        "description": "Fill in the details and add at least two exercises to complete your first routine. You can assign a specific time to each one to organize your practice."
+      },
+      "routines-05": {
+        "title": "Your Plan Is Ready",
+        "description": "Your new routine appears here. Now you have a structured workflow to make your practice sessions much more efficient."
+      },
+      "routines-06": {
+        "title": "Start Your Session",
+        "description": "Press 'Play' to start your workout. The timer will keep track for you and alert you when it's time to move to the next exercise."
+      },
+      "practice-03": {
+        "title": "Navigate Your Routine",
+        "description": "Use the exercise selector or the arrows to jump between different parts of your workout without leaving the player."
+      },
+      "practice-04": {
+        "title": "Finish and Save",
+        "description": "Click this button to end your session. We'll record your practice time and progress so you can see your evolution in the stats panel."
+      },
+      "practice-05": {
+        "title": "Session Summary",
+        "description": "Review your practice time and adjust the reached BPM before saving. This data will feed your progress charts and personal statistics."
+      },
+      "practice-06": {
+        "title": "Mission Accomplished!",
+        "description": "Confirm the final data of your session. Upon saving, we'll update your practice streak and speed records on the dashboard. Let's head to the app catalog."
+      },
+      "navbarExplore": {
+        "title": "Explore and Learn",
+        "description": "The theoretical heart of the app. Here you'll find our chord library, interactive scales, and improvisation tools designed to expand your musical vocabulary."
+      },
+      "explore-01": {
+        "title": "Explore the Basics",
+        "description": "We've prepared a selection of essential exercises: from scales and chords to improvisation techniques. Use them for warming up or as a base for your own routines."
+      },
+      "navbarStats": {
         "title": "Track Your Progress",
-        "description": "Every session is logged. Watch your BPM and practice time grow over weeks and months."
+        "description": "Every session is recorded. Watch your BPM and practice time grow week by week."
+      },
+      "stats-01": {
+        "title": "Your Progress in Figures",
+        "description": "Take a look at your global indicators: total hours practiced, consecutive day streak, and your average BPM evolution. It's the best way to keep motivation high."
+      },
+      "stats-02": {
+        "title": "Detailed Analysis",
+        "description": "Explore your progression charts and recent session history. Identify where you're excelling and which techniques need an extra boost."
       },
       "finish": {
-        "title": "You're all set!",
-        "description": "You now know the essentials. Start your first routine or explore the library."
+        "title": "All Set!",
+        "description": "You've completed the tour! You now have the tools to create exercises, organize routines, and see your daily improvement. Time to rock that guitar!"
       }
     }
   },

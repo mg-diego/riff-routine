@@ -233,7 +233,15 @@ export default function LibraryPage() {
   const MAX_FREE_EXERCISES = 10;
   const canCreateExercise  = userTier !== SUBSCRIPTION_TIERS.FREE || files.length < MAX_FREE_EXERCISES;
 
-  const handleCreateClick = () => canCreateExercise ? router.push('/library/new')    : setShowProModal(true);
+  const handleCreateClick = () => {
+    if (canCreateExercise) {
+      window.dispatchEvent(new CustomEvent('app:open-new-exercise-modal'));
+      router.push('/library/new');
+    } else {
+      setShowProModal(true);
+    }
+  }
+  
   const handleImportClick = () => canCreateExercise ? router.push('/library/import') : setShowProModal(true);
 
   // Active filter count for badge
@@ -263,9 +271,10 @@ export default function LibraryPage() {
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+        <div  style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <Tooltip text={t('tooltips.newExercise')}>
             <button
+              data-onboarding="library-01"
               onClick={handleCreateClick}
               style={{
                 display: 'flex', alignItems: 'center', gap: '0.6rem',
@@ -523,7 +532,7 @@ export default function LibraryPage() {
         </div>
       ) : (
         <>
-          <div data-onboarding="library-list" style={{
+          <div data-onboarding="library-09" style={{
             display: viewMode === 'cards' ? 'grid' : 'flex',
             gridTemplateColumns: viewMode === 'cards' ? 'repeat(auto-fill, minmax(320px, 1fr))' : 'none',
             flexDirection: viewMode === 'rows' ? 'column' : 'row',

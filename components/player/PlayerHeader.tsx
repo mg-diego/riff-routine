@@ -348,6 +348,7 @@ export function PlayerHeader({
       onEndSession(); 
       return; 
     }
+    window.dispatchEvent(new CustomEvent('app:open-end-routine-modal'));
     setShowEndModal(true);
   };
 
@@ -470,7 +471,7 @@ export function PlayerHeader({
         .ph-timer-tooltip.leaving  { animation: ph-tooltip-out 0.4s ease 3.1s forwards; }
       `}</style>
 
-      <div className="ph-root">
+      <div data-onboarding="practice-01" className="ph-root">
         <div className="ph-row1">
           <div className="ph-badge" style={{ color: cfg.color }}>
             <span style={{ fontSize: '0.8rem' }}>{cfg.icon}</span>
@@ -501,7 +502,7 @@ export function PlayerHeader({
           )}
 
           {!isFree && isRoutine && routineLength > 1 && (
-            <div className="ph-routine-nav">
+            <div data-onboarding="practice-03" className="ph-routine-nav">
               <button className="ph-nav-btn" onClick={handlePrev} disabled={currentIndex === 0}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
               </button>
@@ -512,7 +513,7 @@ export function PlayerHeader({
             </div>
           )}
 
-          <button className="ph-close-btn" onClick={handleCloseClick}>
+          <button data-onboarding="practice-04" className="ph-close-btn" onClick={handleCloseClick}>
             {isRoutine ? t('labels.endRoutine') : t('labels.closeExercise')}
           </button>
         </div>
@@ -720,7 +721,7 @@ export function PlayerHeader({
 
             <div className="ph-right-section">
               {isRoutine ? (
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
+                <div data-onboarding="practice-03" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
                   <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>
                     {t('labels.progress')}
                   </span>

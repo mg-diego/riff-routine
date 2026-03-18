@@ -99,28 +99,28 @@ export function RoutineCard({ routine, onDelete, readonly = false }: RoutineCard
             fontSize: '0.8rem'
           }}>▶</span>
           <div>
-<h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>
-  {routine.title}
-  {readonly && (
-    <span style={{
-      marginLeft: '0.75rem',
-      fontSize: '0.7rem',
-      background: 'rgba(255,193,7,0.1)', // Un tono más de advertencia
-      padding: '0.2rem 0.5rem',
-      borderRadius: '4px',
-      color: 'var(--gold)',
-      fontWeight: 'bold',
-      verticalAlign: 'middle'
-    }}>
-      {t('lockedTooltip').toUpperCase()}
-    </span>
-  )}
-</h3>
-{readonly && (
-  <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
-    {t('lockedDescription')}
-  </p>
-)}
+            <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600 }}>
+              {routine.title}
+              {readonly && (
+                <span style={{
+                  marginLeft: '0.75rem',
+                  fontSize: '0.7rem',
+                  background: 'rgba(255,193,7,0.1)', // Un tono más de advertencia
+                  padding: '0.2rem 0.5rem',
+                  borderRadius: '4px',
+                  color: 'var(--gold)',
+                  fontWeight: 'bold',
+                  verticalAlign: 'middle'
+                }}>
+                  {t('lockedTooltip').toUpperCase()}
+                </span>
+              )}
+            </h3>
+            {readonly && (
+              <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
+                {t('lockedDescription')}
+              </p>
+            )}
             <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--muted)' }}>
               {t('exerciseCount', { count: displayCount })}
             </p>
@@ -129,12 +129,14 @@ export function RoutineCard({ routine, onDelete, readonly = false }: RoutineCard
 
         <div style={{ display: 'flex', gap: '0.5rem' }} onClick={e => e.stopPropagation()}>
           <button
+            data-onboarding="routines-06"
             title={readonly ? t('lockedTooltip') : undefined}
             onClick={(e) => {
               if (readonly) {
                 e.stopPropagation();
                 return;
               }
+              window.dispatchEvent(new CustomEvent('app:play-routine'));
               router.push(`/practice?routine=${routine.id}`);
             }}
             style={{
@@ -164,11 +166,11 @@ export function RoutineCard({ routine, onDelete, readonly = false }: RoutineCard
             {t('playButton')}
           </button>
 
-          <div 
+          <div
             title={readonly ? t('lockedTooltip') : undefined}
-            style={{ 
-              opacity: readonly ? 0.5 : 1, 
-              cursor: readonly ? 'not-allowed' : 'pointer' 
+            style={{
+              opacity: readonly ? 0.5 : 1,
+              cursor: readonly ? 'not-allowed' : 'pointer'
             }}
             onClick={(e) => {
               if (readonly) {
@@ -179,7 +181,7 @@ export function RoutineCard({ routine, onDelete, readonly = false }: RoutineCard
             }}
           >
             <div style={{ pointerEvents: readonly ? 'none' : 'auto' }}>
-              <EditButton onClick={() => {}} />
+              <EditButton onClick={() => { }} />
             </div>
           </div>
 

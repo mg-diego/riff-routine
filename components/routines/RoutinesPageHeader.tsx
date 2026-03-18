@@ -23,7 +23,7 @@ export function RoutinesPageHeader({ count, loading, canCreateRoutine, onCreateC
           {loading ? t('loading') : t('routineCount', { count })}
         </p>
       </div>
-      <button data-onboarding="create-routine" onClick={onCreateClick} style={{
+      <button data-onboarding="routines-01" onClick={onCreateClick} style={{
         display: 'flex', alignItems: 'center', gap: '0.6rem',
         background: canCreateRoutine ? 'var(--gold)' : 'transparent',
         color: canCreateRoutine ? '#111' : 'var(--gold)',

@@ -8,14 +8,43 @@ const FINGER_COLORS: Record<number, string> = {
   4: '#ef4444'
 };
 
+export interface FretboardProps {
+  activeNotesList?: { string: number; fret: number; finger?: number }[];
+  title?: string;
+  positionIndex?: number | string;
+  rootNote: string;
+  scaleData: any;
+  scaleNotes?: string[];
+
+  leftyMode?: boolean;
+  labelMode?: 'notes' | 'intervals';
+  showGhostNotes?: boolean;
+  isChordMode?: boolean;
+  chordDisplayMode?: 'notes' | 'fingers';
+  absoluteBarres?: number[];
+  getIntervalColor?: (interval: number) => string;
+  t?: any;
+
+  initAudio?: () => void;
+  audioCtx?: AudioContext | null;
+  playFreq?: (freq: number, startTime: number, duration: number, vol?: number) => void;
+  getNoteFrequency?: (noteName: string, octave: number) => number;
+
+  isEditingPos?: number | string | null;
+  draftPosNotes?: { string: number; fret: number; finger?: number }[];
+  setDraftPosNotes?: React.Dispatch<React.SetStateAction<any[]>>;
+  setIsEditingPos?: (val: string | number | null) => void;
+  handleExportCustomPosition?: () => void;
+}
+
 export function Fretboard({
-  activeNotesList,
+  activeNotesList = [],
   title,
   positionIndex,
   rootNote,
   scaleData,
   isEditingPos,
-  draftPosNotes,
+  draftPosNotes = [],
   setDraftPosNotes,
   setIsEditingPos,
   handleExportCustomPosition,
@@ -23,25 +52,26 @@ export function Fretboard({
   audioCtx,
   playFreq,
   getNoteFrequency,
-  leftyMode,
-  labelMode,
-  scaleNotes,
+  leftyMode = false,
+  labelMode = 'notes',
+  scaleNotes = [],
   getIntervalColor,
-  showGhostNotes,
-  isChordMode,
-  chordDisplayMode,
-  absoluteBarres,
-  t
-}: any) {
+  showGhostNotes = false,
+  isChordMode = false,
+  chordDisplayMode = 'notes',
+  absoluteBarres = [],
+  t = (key: string) => key
+}: FretboardProps) {
+
   const rootIndexGlobal = CHROMATIC_NOTES.indexOf(rootNote);
   const aliases = scaleData?.intervalAliases || {};
-  const isCurrentlyEditing = isEditingPos === positionIndex && positionIndex !== undefined;
+  const isCurrentlyEditing = isEditingPos === positionIndex && positionIndex !== undefined && positionIndex !== null;
   const isDevMode = process.env.NODE_ENV === 'development';
   const displayedNotes = isCurrentlyEditing ? draftPosNotes : activeNotesList;
 
   const handlePlayPos = () => {
+    if (!initAudio || !playFreq || !audioCtx || !displayedNotes) return;
     initAudio();
-    if (!audioCtx || !displayedNotes) return;
 
     const sortedNotes = [...displayedNotes].sort((a: any, b: any) => {
       const pitchA = STANDARD_BASES[a.string] + a.fret;
@@ -58,16 +88,16 @@ export function Fretboard({
   };
 
   const handleCellClick = (stringIndex: number, fret: number, currentNote: string, currentOctave: number) => {
-    if (isCurrentlyEditing) {
+    if (isCurrentlyEditing && setDraftPosNotes) {
       setDraftPosNotes((prev: any) => {
         const exists = prev.find((n: any) => n.string === stringIndex && n.fret === fret);
         if (exists) return prev.filter((n: any) => !(n.string === stringIndex && n.fret === fret));
         return [...prev, { string: stringIndex, fret }];
       });
-    } else {
+    } else if (initAudio && getNoteFrequency && playFreq && audioCtx) {
       initAudio();
       const freq = getNoteFrequency(currentNote, currentOctave);
-      playFreq(freq, audioCtx!.currentTime, 0.8, 0.2);
+      playFreq(freq, audioCtx.currentTime, 0.8, 0.2);
     }
   };
 
@@ -84,7 +114,7 @@ export function Fretboard({
         <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', padding: '0 1rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
             <h3 style={{ color: 'var(--gold)', margin: 0 }}>{title}</h3>
-            {isDevMode && positionIndex !== undefined && (
+            {isDevMode && positionIndex !== undefined && setIsEditingPos && setDraftPosNotes && (
               isCurrentlyEditing ? (
                 <div style={{ display: 'flex', gap: '0.5rem' }}>
                   <button onClick={() => setDraftPosNotes([])} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
@@ -107,7 +137,7 @@ export function Fretboard({
               )
             )}
           </div>
-          {displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && (
+          {displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && initAudio && (
             <button onClick={handlePlayPos} style={{ background: 'var(--surface2)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>
               {t('fretboard.playPosition')}
             </button>
@@ -155,7 +185,7 @@ export function Fretboard({
                   let isNoteInScale = scaleNotes?.includes(currentNote);
                   let isInActiveList = false;
                   let currentFinger = 0;
-                  
+
                   if (isCurrentlyEditing || activeNotesList) {
                     const activeNote = (displayedNotes || []).find((n: any) => n.string === stringIndex && n.fret === fret);
                     if (activeNote) {
@@ -170,7 +200,7 @@ export function Fretboard({
                   if (isCurrentlyEditing) {
                     isActive = isInActiveList;
                     noteOpacity = isNoteInScale ? 1 : 0.4;
-                  } else if (activeNotesList) {
+                  } else if (activeNotesList && activeNotesList.length > 0) {
                     if (showGhostNotes && !isChordMode) {
                       isActive = isNoteInScale;
                       noteOpacity = isInActiveList ? 1 : 0.15;
@@ -209,14 +239,14 @@ export function Fretboard({
                   if (isChordMode && absoluteBarres?.includes(fret)) {
                     const allNotesInChord = displayedNotes || [];
                     const notesAtBarreFret = allNotesInChord.filter((n: any) => n.fret === fret);
-                    
+
                     if (notesAtBarreFret.length > 0) {
                       const barreLowestPitchStr = Math.max(...notesAtBarreFret.map((n: any) => n.string));
                       const chordHighestPitchStr = Math.min(...allNotesInChord.map((n: any) => n.string));
-                      
+
                       const minStr = chordHighestPitchStr;
                       const maxStr = barreLowestPitchStr;
-                      
+
                       if (stringIndex >= minStr && stringIndex <= maxStr) {
                         if (stringIndex === minStr) isBarreTop = true;
                         if (stringIndex === maxStr) isBarreBottom = true;
@@ -237,7 +267,7 @@ export function Fretboard({
                         position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         borderRight: 'clamp(1px, 0.2vw, 3px) solid silver', height: 'clamp(20px, 3.5vw, 42px)',
                         backgroundColor: isMarked ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
-                        cursor: isCurrentlyEditing ? 'crosshair' : 'default'
+                        cursor: isCurrentlyEditing || initAudio ? 'pointer' : 'default'
                       }}>
 
                       {(hasSingleDot || hasDoubleDot) && (
@@ -283,16 +313,15 @@ export function Fretboard({
                             fontSize: 'clamp(6px, 1vw, 11px)', fontWeight: 'bold',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             zIndex: 3, boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
-                            cursor: isCurrentlyEditing ? 'crosshair' : 'pointer',
                             transform: leftyMode ? 'scaleX(-1)' : 'none',
                             transition: 'transform 0.1s',
                             opacity: noteOpacity
                           }}
                           onMouseEnter={e => {
-                            if (!isCurrentlyEditing) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
+                            if (!isCurrentlyEditing && initAudio) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
                           }}
                           onMouseLeave={e => {
-                            if (!isCurrentlyEditing) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
+                            if (!isCurrentlyEditing && initAudio) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
                           }}
                         >
                           {displayText}

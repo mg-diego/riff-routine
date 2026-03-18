@@ -353,7 +353,7 @@ export function SidebarControls({
         </div>
       )}
 
-      <aside className={`sidebar-root ${actuallyOpen ? 'open' : 'closed'}`}>
+      <aside data-onboarding="practice-02" className={`sidebar-root ${actuallyOpen ? 'open' : 'closed'}`}>
         {!forceDisabled && (
           <button
             className="sidebar-toggle"

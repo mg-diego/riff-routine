@@ -129,7 +129,8 @@ export default function CreateRoutinePage() {
         if (insertExercisesError) throw insertExercisesError;
       }
 
-      router.push(`/routines/${routineData.id}`);
+      window.dispatchEvent(new CustomEvent('app:routine-created'));
+      router.push(`/routines`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
       setSaving(false);
@@ -166,9 +167,9 @@ export default function CreateRoutinePage() {
         {t('backButton')}
       </button>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
+      <div data-onboarding="routines-04" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
 
-        <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div data-onboarding="routines-02" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
           <div>
             <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
               {t('title')}
@@ -285,7 +286,7 @@ export default function CreateRoutinePage() {
           </div>
         </div>
 
-        <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: '2rem', height: 'calc(100vh - 4rem)', display: 'flex', flexDirection: 'column' }}>
+        <div data-onboarding="routines-03" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: '2rem', height: 'calc(100vh - 4rem)', display: 'flex', flexDirection: 'column' }}>
           <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', color: 'var(--text)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
             {t('library.title')}
           </h2>

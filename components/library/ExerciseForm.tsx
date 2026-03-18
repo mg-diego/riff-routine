@@ -42,7 +42,7 @@ export function ExerciseForm({
 
     return (
         <>
-            <div>
+            <div data-onboarding="library-03">
                 <label style={labelStyle}>{t('name')}</label>
                 <input type="text" value={name} onChange={e => setName(e.target.value)}
                     placeholder={t('namePlaceholder')} style={inputStyle}
@@ -50,7 +50,7 @@ export function ExerciseForm({
                     onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'} />
             </div>
 
-            <div>
+            <div data-onboarding="library-04">
                 <label style={labelStyle}>
                     {t('categories')}
                     {categories.length > 0 && (
@@ -97,7 +97,7 @@ export function ExerciseForm({
                 </div>
             </div>
 
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div data-onboarding="library-05" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
                 <div>
                     <label style={labelStyle}>{t('bpmSuggested')}</label>
                     <input type="number" min="20" max="300" value={bpmSuggested} onChange={e => setBpmSuggested(e.target.value)}
@@ -114,7 +114,7 @@ export function ExerciseForm({
                 </div>
             </div>
 
-            <div>
+            <div data-onboarding="library-06">
                 <label style={labelStyle}>
                     {t('difficulty')}
                     <span style={{ marginLeft: '0.6rem', color: DIFFICULTY_COLORS[difficulty], fontWeight: 700 }}>
@@ -136,7 +136,7 @@ export function ExerciseForm({
                 </div>
             </div>
 
-            <div>
+            <div data-onboarding="library-07">
                 <label style={labelStyle}>{t('notes')}</label>
                 <textarea value={notes} onChange={e => setNotes(e.target.value)}
                     placeholder={t('notesPlaceholder')}

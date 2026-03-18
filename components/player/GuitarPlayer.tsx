@@ -109,7 +109,7 @@ export default function GuitarPlayer() {
                 minHeight: '600px', borderRadius: '12px',
                 background: 'var(--surface)', overflow: 'hidden', position: 'relative',
             }}>
-                <main className="main-panel" style={{
+                <main  className="main-panel" style={{
                     flex: 1, width: 0, minWidth: 0,
                     display: 'flex', flexDirection: 'column',
                     overflow: 'hidden', position: 'relative',

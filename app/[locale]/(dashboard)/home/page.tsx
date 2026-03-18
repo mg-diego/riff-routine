@@ -4,20 +4,28 @@ import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '../../../../lib/supabase';
 import { useTranslations } from 'next-intl';
+import { useOnboarding } from '@/hooks/useOnboarding'; // Asegúrate de ajustar la ruta si es necesario
 
 const Icons = {
-  Guitar: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18"/></svg>,
-  Routine: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><polyline points="10 9 9 9 8 9"/></svg>,
-  Library: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>,
-  Explore: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>,
-  Stats: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>,
-  Play: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"/></svg>,
-  Fire: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z"/></svg>,
-  Clock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>,
-  Target: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>,
-  ChevronRight: () => <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg>,
-  Upload: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>,
+  Guitar: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M9 3H5a2 2 0 0 0-2 2v4m6-6h10a2 2 0 0 1 2 2v4M9 3v18m0 0h10a2 2 0 0 0 2-2v-4M9 21H5a2 2 0 0 1-2-2v-4m0 0h18" /></svg>,
+  Routine: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z" /><polyline points="14 2 14 8 20 8" /><line x1="16" y1="13" x2="8" y2="13" /><line x1="16" y1="17" x2="8" y2="17" /><polyline points="10 9 9 9 8 9" /></svg>,
+  Library: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20" /><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z" /></svg>,
+  Explore: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg>,
+  Stats: () => <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>,
+  Play: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>,
+  Fire: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.38-.5-2-1-3-1.072-2.143-.224-4.054 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.153.433-2.294 1-3a2.5 2.5 0 0 0 2.5 2.5z" /></svg>,
+  Clock: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" /></svg>,
+  Target: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><circle cx="12" cy="12" r="6" /><circle cx="12" cy="12" r="2" /></svg>,
+  Upload: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
+  Info: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
 };
+
+interface PendingInvite {
+  id: string;
+  teacher_id: string;
+  teacher_name: string | null;
+  teacher_avatar: string | null;
+}
 
 function formatKpiTime(totalSecs: number, minLabel: string) {
   if (!totalSecs) return `0 ${minLabel}`;
@@ -37,10 +45,107 @@ function timeAgo(isoString: string, t: any) {
   return t('timeAgo.days', { days });
 }
 
+// ── Invite card ──────────────────────────────────────────────────────────────
+function InviteCard({ invite, onAccept, onDecline }: {
+  invite: PendingInvite;
+  onAccept: (id: string, teacherId: string) => Promise<void>;
+  onDecline: (id: string) => Promise<void>;
+}) {
+  const t = useTranslations('HomePage');
+  const [loading, setLoading] = useState<'accept' | 'decline' | null>(null);
+  const name = invite.teacher_name ?? t('invites.unknownTeacher');
+  const initials = name.slice(0, 2).toUpperCase();
+
+  const handle = async (action: 'accept' | 'decline') => {
+    setLoading(action);
+    if (action === 'accept') await onAccept(invite.id, invite.teacher_id);
+    else await onDecline(invite.id);
+    setLoading(null);
+  };
+
+  return (
+    <div style={{
+      background: 'rgba(167,139,250,0.06)',
+      border: '1px solid rgba(167,139,250,0.2)',
+      borderRadius: '12px',
+      padding: '1.1rem 1.25rem',
+      display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
+    }}>
+      {/* Teacher avatar */}
+      <div style={{
+        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
+        background: invite.teacher_avatar ? 'transparent' : 'rgba(167,139,250,0.15)',
+        border: '1px solid rgba(167,139,250,0.25)',
+        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
+      }}>
+        {invite.teacher_avatar
+          ? <img src={invite.teacher_avatar} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+          : <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1rem', color: '#c4b5fd' }}>{initials}</span>
+        }
+      </div>
+
+      {/* Text */}
+      <div style={{ flex: 1, minWidth: '160px' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
+          <span style={{
+            fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em',
+            background: 'rgba(167,139,250,0.15)', color: '#c4b5fd',
+            padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase',
+          }}>
+            {t('invites.badge')}
+          </span>
+        </div>
+        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>
+          {t('invites.message', { teacher: name })}
+        </p>
+      </div>
+
+      {/* Actions */}
+      <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+        <button
+          onClick={() => handle('decline')}
+          disabled={!!loading}
+          style={{
+            padding: '0.45rem 0.85rem', background: 'transparent',
+            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px',
+            color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 600,
+            fontFamily: 'DM Sans, sans-serif', cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading === 'decline' ? 0.5 : 1, transition: 'all 0.15s',
+          }}
+        >
+          {t('invites.decline')}
+        </button>
+        <button
+          onClick={() => handle('accept')}
+          disabled={!!loading}
+          style={{
+            padding: '0.45rem 0.85rem',
+            background: loading === 'accept' ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.2)',
+            border: '1px solid rgba(167,139,250,0.35)', borderRadius: '7px',
+            color: '#c4b5fd', fontSize: '0.8rem', fontWeight: 700,
+            fontFamily: 'DM Sans, sans-serif', cursor: loading ? 'not-allowed' : 'pointer',
+            opacity: loading === 'accept' ? 0.6 : 1, transition: 'all 0.15s',
+          }}
+        >
+          {loading === 'accept' ? t('invites.accepting') : t('invites.accept')}
+        </button>
+      </div>
+    </div>
+  );
+}
+// ─────────────────────────────────────────────────────────────────────────────
+
 export default function HomePage() {
   const router = useRouter();
   const t = useTranslations('HomePage');
+  const {
+    eligible: onboardingEligible,
+    start: startOnboarding,
+    complete: completeOnboarding
+  } = useOnboarding();
+
   const [userName, setUserName] = useState('');
+  const [userId, setUserId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
   const [streak, setStreak] = useState(0);
@@ -49,10 +154,14 @@ export default function HomePage() {
   const [lastSession, setLastSession] = useState<{ routineName: string | null; startedAt: string; durationSeconds: number; routineId: string | null } | null>(null);
   const [closestExercise, setClosestExercise] = useState<{ title: string; pct: number; lastBpm: number; targetBpm: number; exerciseId: string } | null>(null);
 
+  // ── Pending invites ────────────────────────────────────────────────────────
+  const [pendingInvites, setPendingInvites] = useState<PendingInvite[]>([]);
+  // ──────────────────────────────────────────────────────────────────────────
+
   const navSections = [
     { label: t('nav.practice.label'), href: '/practice', icon: Icons.Guitar, desc: t('nav.practice.desc'), accent: '#dcb98a' },
-    { label: t('nav.routines.label'), href: '/routines', icon: Icons.Routine, desc: t('nav.routines.desc'), accent: '#a78bfa' },
     { label: t('nav.library.label'), href: '/library', icon: Icons.Library, desc: t('nav.library.desc'), accent: '#60a5fa' },
+    { label: t('nav.routines.label'), href: '/routines', icon: Icons.Routine, desc: t('nav.routines.desc'), accent: '#a78bfa' },
     { label: t('nav.explore.label'), href: '/explore', icon: Icons.Explore, desc: t('nav.explore.desc'), accent: '#34d399' },
     { label: t('nav.stats.label'), href: '/stats', icon: Icons.Stats, desc: t('nav.stats.desc'), accent: '#f87171' },
   ];
@@ -63,9 +172,33 @@ export default function HomePage() {
     setLoading(true);
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
+    setUserId(user.id);
 
-    const { data: profile } = await supabase.from('profiles').select('username').eq('id', user.id).single();
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('username')
+      .eq('id', user.id)
+      .single();
     setUserName(profile?.username || user.email?.split('@')[0] || t('defaultUser'));
+
+    // ── Fetch pending invites ──────────────────────────────────────────────
+    if (user.email) {
+      const { data: invites } = await supabase
+        .from('teacher_students')
+        .select('id, teacher_id, profiles:teacher_id(username, avatar_url)')
+        .eq('invite_email', user.email.toLowerCase())
+        .eq('status', 'pending');
+
+      if (invites) {
+        setPendingInvites(invites.map(i => ({
+          id: i.id,
+          teacher_id: i.teacher_id,
+          teacher_name: (i.profiles as any)?.username ?? null,
+          teacher_avatar: (i.profiles as any)?.avatar_url ?? null,
+        })));
+      }
+    }
+    // ──────────────────────────────────────────────────────────────────────
 
     const { data: sessions } = await supabase
       .from('practice_sessions')
@@ -142,14 +275,34 @@ export default function HomePage() {
     setLoading(false);
   };
 
+  // ── Invite handlers ────────────────────────────────────────────────────────
+  const handleAcceptInvite = async (inviteId: string, teacherId: string) => {
+    if (!userId) return;
+    await supabase
+      .from('teacher_students')
+      .update({ student_id: userId, status: 'active', invite_token: null, updated_at: new Date().toISOString() })
+      .eq('id', inviteId);
+    setPendingInvites(prev => prev.filter(i => i.id !== inviteId));
+  };
+
+  const handleDeclineInvite = async (inviteId: string) => {
+    await supabase
+      .from('teacher_students')
+      .update({ status: 'removed', updated_at: new Date().toISOString() })
+      .eq('id', inviteId);
+    setPendingInvites(prev => prev.filter(i => i.id !== inviteId));
+  };
+  // ──────────────────────────────────────────────────────────────────────────
+
   const weekDelta = weekMinutes - prevWeekMinutes;
   const greetingHour = new Date().getHours();
   const greeting = greetingHour < 13 ? t('greeting.morning') : greetingHour < 20 ? t('greeting.afternoon') : t('greeting.evening');
 
   return (
-    <div style={{ maxWidth: 900, margin: '0 auto', paddingBottom: '4rem' }}>
+    <div data-onboarding="home" style={{ maxWidth: 900, margin: '0 auto', paddingBottom: '4rem' }}>
 
-      <div style={{ marginBottom: '2.5rem' }}>
+      {/* Header */}
+      <div  style={{ marginBottom: '2.5rem' }}>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 0.25rem' }}>{greeting},</p>
         <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3.5rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
           {loading ? '...' : userName}
@@ -159,19 +312,92 @@ export default function HomePage() {
         </p>
       </div>
 
+      {/* ── Pending invites ── */}
+      {pendingInvites.length > 0 && (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
+          {pendingInvites.map(invite => (
+            <InviteCard
+              key={invite.id}
+              invite={invite}
+              onAccept={handleAcceptInvite}
+              onDecline={handleDeclineInvite}
+            />
+          ))}
+        </div>
+      )}
+
+      {/* ── Onboarding CTA (Conditional) ── */}
+      {onboardingEligible && (
+        <div style={{
+          background: 'linear-gradient(to right, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.02))',
+          border: '1px solid rgba(52, 211, 153, 0.3)',
+          borderRadius: '16px',
+          padding: '1.5rem 2rem',
+          marginBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          gap: '1.5rem',
+          flexWrap: 'wrap'
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{
+              color: '#34d399',
+              background: 'rgba(52, 211, 153, 0.1)',
+              width: '48px',
+              height: '48px',
+              borderRadius: '50%',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              flexShrink: 0
+            }}>
+              <Icons.Info />
+            </div>
+            <div>
+              <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)', fontWeight: 'bold' }}>
+                {t('onboarding.title', { defaultValue: '¿Quieres realizar el tutorial de la aplicación?' })}
+              </h3>
+              <p style={{ margin: '0.3rem 0 0', fontSize: '0.9rem', color: 'var(--muted)' }}>
+                {t('onboarding.desc', { defaultValue: 'Descubre cómo sacarle el máximo partido a todas las herramientas.' })}
+              </p>
+            </div>
+          </div>
+
+          <div style={{ display: 'flex', gap: '0.8rem' }}>
+            <button
+              onClick={startOnboarding}
+              style={{
+                background: '#34d399', color: '#111', border: 'none', borderRadius: '8px',
+                padding: '0.6rem 1.2rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
+                fontFamily: 'DM Sans, sans-serif'
+              }}
+            >
+              {t('onboarding.btnStart', { defaultValue: 'Comenzar' })}
+            </button>
+            <button
+              onClick={completeOnboarding}
+              style={{
+                background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: '8px', padding: '0.6rem 1.2rem', fontWeight: 600, cursor: 'pointer',
+                fontSize: '0.9rem', fontFamily: 'DM Sans, sans-serif', transition: 'background 0.2s'
+              }}
+              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+            >
+              {t('onboarding.btnSkip', { defaultValue: 'Marcar como completado' })}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Main CTA */}
       <div style={{
         background: 'linear-gradient(135deg, rgba(220,185,138,0.12) 0%, rgba(220,185,138,0.04) 100%)',
-        border: '1px solid rgba(220,185,138,0.25)',
-        borderRadius: '16px',
-        padding: '1.75rem 2rem',
-        marginBottom: '1.5rem',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        gap: '1.5rem',
-        flexWrap: 'wrap',
-        cursor: 'pointer',
-        transition: 'border-color 0.2s',
+        border: '1px solid rgba(220,185,138,0.25)', borderRadius: '16px',
+        padding: '1.75rem 2rem', marginBottom: '1.5rem',
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        gap: '1.5rem', flexWrap: 'wrap', cursor: 'pointer', transition: 'border-color 0.2s',
       }}
         onClick={() => lastSession?.routineId ? router.push(`/practice?routine=${lastSession.routineId}`) : router.push('/practice')}
         onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.5)')}
@@ -186,10 +412,7 @@ export default function HomePage() {
           </h2>
           {lastSession && (
             <p style={{ margin: '0.4rem 0 0', fontSize: '0.82rem', color: 'var(--muted)' }}>
-              {t('mainCta.lastSession', { 
-                time: timeAgo(lastSession.startedAt, t), 
-                duration: formatKpiTime(lastSession.durationSeconds, t('time.min')) 
-              })}
+              {t('mainCta.lastSession', { time: timeAgo(lastSession.startedAt, t), duration: formatKpiTime(lastSession.durationSeconds, t('time.min')) })}
             </p>
           )}
         </div>
@@ -203,8 +426,8 @@ export default function HomePage() {
         </button>
       </div>
 
+      {/* KPIs */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
-
         <div style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '1.25rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
             <span style={{ color: streak > 0 ? '#fb923c' : 'var(--muted)' }}><Icons.Fire /></span>
@@ -232,7 +455,7 @@ export default function HomePage() {
 
         <div
           style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '1.25rem', cursor: closestExercise ? 'pointer' : 'default', transition: 'border-color 0.2s' }}
-          onClick={() => closestExercise && router.push(`/library`)}
+          onClick={() => closestExercise && router.push('/library')}
           onMouseEnter={e => closestExercise && (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.3)')}
           onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)')}
         >
@@ -258,12 +481,13 @@ export default function HomePage() {
         </div>
       </div>
 
+      {/* Secondary CTA */}
       <div style={{
         background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px',
         padding: '1.25rem 1.5rem', marginBottom: '2.5rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div  style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ background: 'rgba(220,185,138,0.08)', borderRadius: '10px', padding: '0.7rem', color: 'var(--gold)' }}>
             <Icons.Upload />
           </div>
@@ -282,6 +506,7 @@ export default function HomePage() {
         </button>
       </div>
 
+      {/* Quick access */}
       <div>
         <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.4rem', color: 'var(--muted)', letterSpacing: '0.08em', margin: '0 0 1rem' }}>{t('quickAccess')}</h2>
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem' }}>
