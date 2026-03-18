@@ -4,7 +4,6 @@ export interface Exercise {
   title: string;
   file_url: string | null;
   technique: string | null;
-  bpm_initial: number | null;
   bpm_suggested: number | null;
   bpm_goal: number | null;
   difficulty: number;

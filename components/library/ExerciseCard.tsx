@@ -18,12 +18,12 @@ interface ExerciseCardProps {
 }
 
 export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, readonly = false }: ExerciseCardProps) {
-  const t = useTranslations('ExerciseRow'); // Reusing ExerciseRow translations for consistency
+  const t = useTranslations('ExerciseRow');
   
   const cats = file.technique ? file.technique.split(', ') : [];
   const diff = file.difficulty || 1;
 
-  const activeBpm = currentBpm || file.bpm_suggested || file.bpm_initial;
+  const activeBpm = currentBpm || file.bpm_suggested;
   const isCurrent = !!currentBpm;
   const isSuggested = !currentBpm && !!file.bpm_suggested;
 

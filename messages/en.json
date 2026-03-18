@@ -605,6 +605,11 @@
       "start": "Start",
       "goal": "Goal",
       "playButton": "▶ Play"
+    },
+    "blocks": {
+      "tools": "Musical Language",
+      "exercises": "Exercise Library",
+      "general": "General Technique"
     }
   },
   "Navbar": {
@@ -1637,7 +1642,13 @@
     "sys_scales_notes": "Practice scales up and down using the metronome. Focus on the precision of both hands.",
     "sys_chords_title": "Chords",
     "sys_chords_technique": "Chords",
-    "sys_chords_notes": "Master the fretboard by practicing chords and inversions in any position."
+    "sys_chords_notes": "Master the fretboard by practicing chords and inversions in any position.",
+    "sys_3_notes_beat_title": "3 Notes per Beat",
+    "sys_3_notes_beat_technique": "Alternate Picking",
+    "sys_3_notes_beat_notes": "Rhythmic exercise based on triplets. Perfect for developing timing in compound meters or blues and rock licks.",
+    "sys_4_notes_beat_title": "4 Notes per Beat",
+    "sys_4_notes_beat_technique": "Alternate Picking",
+    "sys_4_notes_beat_notes": "Sixteenth note practice to improve speed and binary subdivision. Essential for fast passages and shredding."
   },
   "CompositionPanel": {
     "title": "Composition Center",

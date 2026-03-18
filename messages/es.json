@@ -605,6 +605,11 @@
       "start": "Inicio",
       "goal": "Meta",
       "playButton": "▶ Tocar"
+    },
+    "blocks": {
+      "tools": "Lenguaje Musical",
+      "exercises": "Biblioteca de Ejercicios",
+      "general": "Técnica General"
     }
   },
   "Navbar": {
@@ -1637,7 +1642,13 @@
     "sys_scales_notes": "Practica las escalas de arriba a abajo usando el metrónomo. Concéntrate en la precisión de ambas manos.",
     "sys_chords_title": "Acordes",
     "sys_chords_technique": "Acordes",
-    "sys_chords_notes": "Domina el mástil practicando acordes e inversiones en cualquier posición."
+    "sys_chords_notes": "Domina el mástil practicando acordes e inversiones en cualquier posición.",
+    "sys_3_notes_beat_title": "3 Notas por Beat",
+    "sys_3_notes_beat_technique": "Alternate Picking",
+    "sys_3_notes_beat_notes": "Ejercicio rítmico basado en tresillos. Ideal para desarrollar el sentido del tiempo en compases compuestos o licks de blues y rock.",
+    "sys_4_notes_beat_title": "4 Notas por Beat",
+    "sys_4_notes_beat_technique": "Alternate Picking",
+    "sys_4_notes_beat_notes": "Práctica de semicorcheas para mejorar la velocidad y la subdivisión binaria. Fundamental para pasajes rápidos y shred."
   },
   "CompositionPanel": {
     "title": "Centro de Composición",

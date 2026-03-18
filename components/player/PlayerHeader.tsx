@@ -368,7 +368,7 @@ export function PlayerHeader({
     finally { setIsSaving(false); }
   };
 
-  const bpmSuggested = exercise?.bpm_suggested || exercise?.bpm_initial || null;
+  const bpmSuggested = exercise?.bpm_suggested || null;
   const diff = exercise?.difficulty;
   const timerPct = routineTargetDuration ? Math.min(100, (displaySeconds / routineTargetDuration) * 100) : null;
 

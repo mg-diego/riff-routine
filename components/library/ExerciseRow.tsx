@@ -23,7 +23,7 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
   const cats = file.technique ? file.technique.split(', ') : [];
   const diff = file.difficulty || 1;
 
-  const activeBpm = currentBpm || file.bpm_suggested || file.bpm_initial;
+  const activeBpm = currentBpm || file.bpm_suggested;
   const isCurrent = !!currentBpm;
   const isSuggested = !currentBpm && !!file.bpm_suggested;
 
