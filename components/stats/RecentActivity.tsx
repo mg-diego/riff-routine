@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import { supabase } from '../../lib/supabase';
 import { getStartDate } from '../../lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
@@ -14,7 +15,7 @@ interface ActivityLog {
   created_at: string;
   bpm_used: number | null;
   duration_seconds: number | null;
-  exercises: { title: string; technique: string | null; };
+  exercises: { id: string; title: string; technique: string | null; };
 }
 
 interface GroupedDay {
@@ -42,6 +43,7 @@ function TechniqueTag({ technique }: { technique: string }) {
 }
 
 export function RecentActivity({ dateFilter }: Props) {
+  const router = useRouter();
   const t = useTranslations('RecentActivity');
   const locale = useLocale();
   const [logs, setLogs] = useState<ActivityLog[]>([]);
@@ -84,6 +86,7 @@ export function RecentActivity({ dateFilter }: Props) {
           bpm_used: log.bpm_used,
           duration_seconds: log.duration_seconds,
           exercises: {
+            id: rawExercise?.id || '',
             title: translatedEx?.title || '',
             technique: translatedEx?.technique || '',
           }
@@ -154,43 +157,64 @@ export function RecentActivity({ dateFilter }: Props) {
             </div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-              {group.logs.map(log => (
-                <div key={log.id} style={{
-                  display: 'grid', gridTemplateColumns: '1fr auto',
-                  alignItems: 'center', gap: '1rem',
-                  background: 'var(--surface)', padding: '0.9rem 1.25rem',
-                  borderRadius: '100px', border: '1px solid rgba(255,255,255,0.03)',
-                  transition: 'border-color 0.2s',
-                }}
-                  onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)'}
-                  onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)'}
-                >
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                      <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                        {log.exercises?.title || t('unknownExercise')}
-                      </span>
-                      {log.exercises?.technique && <TechniqueTag technique={log.exercises.technique} />}
-                    </div>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.15rem', display: 'block' }}>
-                      {new Date(log.created_at).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
-                    </span>
-                  </div>
+              {group.logs.map(log => {
+                const isClickable = log.bpm_used != null && log.exercises?.id;
 
-                  <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexShrink: 0 }}>
-                    <div style={{ textAlign: 'right' }}>
-                      <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', display: 'block' }}>{t('timeLabel')}</span>
-                      <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>{formatDuration(log.duration_seconds)}</span>
-                    </div>
-                    {log.bpm_used != null && (
-                      <div style={{ textAlign: 'right', minWidth: '52px' }}>
-                        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block' }}>{t('bpmLabel')}</span>
-                        <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold)', lineHeight: 1 }}>{log.bpm_used}</span>
+                return (
+                  <div key={log.id} 
+                    onClick={() => {
+                      if (isClickable) {
+                        router.push(`/library/${log.exercises.id}/history`);
+                      }
+                    }}
+                    style={{
+                      display: 'grid', gridTemplateColumns: '1fr auto',
+                      alignItems: 'center', gap: '1rem',
+                      background: 'var(--surface)', padding: '0.9rem 1.25rem',
+                      borderRadius: '100px', border: '1px solid rgba(255,255,255,0.03)',
+                      transition: 'border-color 0.2s, background 0.2s',
+                      cursor: isClickable ? 'pointer' : 'default',
+                    }}
+                    onMouseEnter={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
+                      if (isClickable) {
+                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
+                      }
+                    }}
+                    onMouseLeave={e => {
+                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)';
+                      if (isClickable) {
+                        e.currentTarget.style.background = 'var(--surface)';
+                      }
+                    }}
+                  >
+                    <div style={{ minWidth: 0 }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
+                        <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {log.exercises?.title || t('unknownExercise')}
+                        </span>
+                        {log.exercises?.technique && <TechniqueTag technique={log.exercises.technique} />}
                       </div>
-                    )}
+                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.15rem', display: 'block' }}>
+                        {new Date(log.created_at).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
+                      </span>
+                    </div>
+
+                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexShrink: 0 }}>
+                      <div style={{ textAlign: 'right' }}>
+                        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', display: 'block' }}>{t('timeLabel')}</span>
+                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>{formatDuration(log.duration_seconds)}</span>
+                      </div>
+                      {log.bpm_used != null && (
+                        <div style={{ textAlign: 'right', minWidth: '52px' }}>
+                          <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block' }}>{t('bpmLabel')}</span>
+                          <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold)', lineHeight: 1 }}>{log.bpm_used}</span>
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         ))}

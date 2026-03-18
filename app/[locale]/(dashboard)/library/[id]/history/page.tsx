@@ -14,6 +14,7 @@ import {
   Legend
 } from 'recharts';
 import { useTranslations, useLocale } from 'next-intl';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 
 interface PracticeLog {
   id: string;
@@ -31,8 +32,11 @@ export default function ExerciseHistoryPage() {
   const t = useTranslations('ExerciseHistoryPage');
   const exerciseId = params.id as string;
 
-  const [exerciseName, setExerciseName] = useState<string>('');
+  const [exerciseName, setExerciseName] = useState<string>('');  
+  const { formatExercise } = useTranslatedExercise();
+        
   const [targetBpm, setTargetBpm] = useState<number | null>(null);
+  const [hasBpm, setHasBpm] = useState<boolean>(true);
   const [logs, setLogs] = useState<PracticeLog[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -71,14 +75,16 @@ export default function ExerciseHistoryPage() {
 
       const { data: exerciseData, error: exerciseError } = await supabase
         .from('exercises')
-        .select('title, bpm_goal')
+        .select('*')
         .eq('id', exerciseId)
         .single();
 
       if (exerciseError) throw exerciseError;
       if (exerciseData) {
-        setExerciseName(exerciseData.title);
+        let formattedExercise = formatExercise(exerciseData as any);
+        setExerciseName(formattedExercise?.title || exerciseData.title);
         setTargetBpm(exerciseData.bpm_goal);
+        setHasBpm(exerciseData.has_bpm !== false);
       }
 
       const { data: logsData, error: logsError } = await supabase
@@ -119,8 +125,8 @@ export default function ExerciseHistoryPage() {
     
     setEditForm({
       date: localISOTime,
-      bpm: log.bpm_used,
-      durationMinutes: Math.floor(log.duration_seconds / 60)
+      bpm: log.bpm_used || 0,
+      durationMinutes: Math.floor((log.duration_seconds || 0) / 60)
     });
   };
 
@@ -133,8 +139,8 @@ export default function ExerciseHistoryPage() {
       const dateObj = new Date(editForm.date);
       if (isNaN(dateObj.getTime())) throw new Error(t('errors.invalidDate'));
       
-      const bpm = parseInt(String(editForm.bpm), 10);
-      if (isNaN(bpm) || bpm <= 0) throw new Error(t('errors.invalidBpm'));
+      const bpm = hasBpm ? parseInt(String(editForm.bpm), 10) : 0;
+      if (hasBpm && (isNaN(bpm) || bpm <= 0)) throw new Error(t('errors.invalidBpm'));
 
       const minutes = parseInt(String(editForm.durationMinutes), 10);
       const durationSeconds = isNaN(minutes) ? 0 : minutes * 60;
@@ -180,8 +186,8 @@ export default function ExerciseHistoryPage() {
       const dateObj = new Date(manualEntryForm.date);
       if (isNaN(dateObj.getTime())) throw new Error(t('errors.invalidDate'));
 
-      const bpm = parseInt(manualEntryForm.bpm, 10);
-      if (isNaN(bpm) || bpm <= 0) throw new Error(t('errors.invalidBpm'));
+      const bpm = hasBpm ? parseInt(manualEntryForm.bpm, 10) : 0;
+      if (hasBpm && (isNaN(bpm) || bpm <= 0)) throw new Error(t('errors.invalidBpm'));
 
       const minutes = parseInt(manualEntryForm.durationMinutes, 10);
       const durationSeconds = isNaN(minutes) ? 0 : minutes * 60;
@@ -239,7 +245,7 @@ export default function ExerciseHistoryPage() {
         if (isNaN(dateObj.getTime())) throw new Error(t('errors.invalidLineDate', { line: i + 1, date: dateStr }));
 
         const bpm = parseInt(bpmStr, 10);
-        if (isNaN(bpm)) throw new Error(t('errors.invalidLineBpm', { line: i + 1, bpm: bpmStr }));
+        if (hasBpm && isNaN(bpm)) throw new Error(t('errors.invalidLineBpm', { line: i + 1, bpm: bpmStr }));
 
         let durationSeconds = 0;
         if (durationStr) {
@@ -251,7 +257,7 @@ export default function ExerciseHistoryPage() {
         logsToInsert.push({
           user_id: user.id,
           exercise_id: exerciseId,
-          bpm_used: bpm,
+          bpm_used: hasBpm ? bpm : 0,
           duration_seconds: durationSeconds,
           created_at: dateObj.toISOString(),
         });
@@ -355,7 +361,8 @@ export default function ExerciseHistoryPage() {
       exactTime: `${monthDay} ${year}, ${timeStr}`,
       xAxisLabel: xAxisLabel,
       BPM: log.bpm_used,
-      Objetivo: targetBpm
+      Objetivo: targetBpm,
+      Minutos: Math.floor((log.duration_seconds || 0) / 60)
     };
   });
 
@@ -549,41 +556,41 @@ export default function ExerciseHistoryPage() {
           
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1.5rem' }}>
 
-            <div style={{ 
-    background: 'var(--surface)', 
-    padding: '1.5rem', 
-    borderRadius: '10px', 
-    border: '1px solid rgba(255,255,255,0.03)',
-    position: 'relative',
-    overflow: 'hidden'
-  }}>
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-      <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
-        {t('stats.goalProgress')}
-      </span>
-      <span style={{ color: 'var(--gold)', fontSize: '0.8rem', fontWeight: 700 }}>
-        {t('stats.bpmFormat', { current: maxBpm, target: targetBpm || '--' })}
-      </span>
-    </div>
-    
-    <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
-      <p style={{ color: 'var(--text)', fontSize: '2.5rem', margin: 0, fontFamily: 'Bebas Neue, sans-serif', lineHeight: 1 }}>
-        {progressPercentage}%
-      </p>
-    </div>
+            {hasBpm && (
+              <div style={{ 
+                background: 'var(--surface)', 
+                padding: '1.5rem', 
+                borderRadius: '10px', 
+                border: '1px solid rgba(255,255,255,0.03)',
+                position: 'relative',
+                overflow: 'hidden'
+              }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>
+                    {t('stats.goalProgress')}
+                  </span>
+                  <span style={{ color: 'var(--gold)', fontSize: '0.8rem', fontWeight: 700 }}>
+                    {t('stats.bpmFormat', { current: maxBpm, target: targetBpm || '--' })}
+                  </span>
+                </div>
+                
+                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '1rem' }}>
+                  <p style={{ color: 'var(--text)', fontSize: '2.5rem', margin: 0, fontFamily: 'Bebas Neue, sans-serif', lineHeight: 1 }}>
+                    {progressPercentage}%
+                  </p>
+                </div>
 
-    <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
-      <div style={{ 
-        width: `${progressPercentage}%`, 
-        height: '100%', 
-        background: 'linear-gradient(90deg, var(--gold-dark), var(--gold))',
-        borderRadius: '10px',
-        transition: 'width 1s ease-out'
-      }} />
-    </div>
-  </div>
-
-
+                <div style={{ width: '100%', height: '6px', background: 'rgba(255,255,255,0.05)', borderRadius: '10px', overflow: 'hidden' }}>
+                  <div style={{ 
+                    width: `${progressPercentage}%`, 
+                    height: '100%', 
+                    background: 'linear-gradient(90deg, var(--gold-dark), var(--gold))',
+                    borderRadius: '10px',
+                    transition: 'width 1s ease-out'
+                  }} />
+                </div>
+              </div>
+            )}
 
             <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
               <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>{t('stats.logs')}</span>
@@ -628,27 +635,42 @@ export default function ExerciseHistoryPage() {
                   contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', color: 'var(--text)' }}
                 />
                 <Legend verticalAlign="top" height={36} iconType="plainline" />
-                {targetBpm && (
+                
+                {hasBpm ? (
+                  <>
+                    {targetBpm && (
+                      <Line 
+                        type="stepAfter" 
+                        name={t('chart.targetBpm')}
+                        dataKey="Objetivo" 
+                        stroke="#a78bfa" 
+                        strokeWidth={2} 
+                        strokeDasharray="5 5" 
+                        dot={false} 
+                        activeDot={false}
+                      />
+                    )}
+                    <Line 
+                      type="monotone" 
+                      name={t('chart.achievedBpm')}
+                      dataKey="BPM" 
+                      stroke="var(--gold)" 
+                      strokeWidth={3} 
+                      dot={{ fill: 'var(--surface)', stroke: 'var(--gold)', strokeWidth: 2, r: 4 }} 
+                      activeDot={{ r: 6, fill: 'var(--gold)' }} 
+                    />
+                  </>
+                ) : (
                   <Line 
-                    type="stepAfter" 
-                    name={t('chart.targetBpm')}
-                    dataKey="Objetivo" 
-                    stroke="#a78bfa" 
-                    strokeWidth={2} 
-                    strokeDasharray="5 5" 
-                    dot={false} 
-                    activeDot={false}
+                    type="monotone" 
+                    name={`${t('table.time')} (min)`}
+                    dataKey="Minutos" 
+                    stroke="var(--gold)" 
+                    strokeWidth={3} 
+                    dot={{ fill: 'var(--surface)', stroke: 'var(--gold)', strokeWidth: 2, r: 4 }} 
+                    activeDot={{ r: 6, fill: 'var(--gold)' }} 
                   />
                 )}
-                <Line 
-                  type="monotone" 
-                  name={t('chart.achievedBpm')}
-                  dataKey="BPM" 
-                  stroke="var(--gold)" 
-                  strokeWidth={3} 
-                  dot={{ fill: 'var(--surface)', stroke: 'var(--gold)', strokeWidth: 2, r: 4 }} 
-                  activeDot={{ r: 6, fill: 'var(--gold)' }} 
-                />
               </LineChart>
             </ResponsiveContainer>
           </div>
@@ -659,7 +681,7 @@ export default function ExerciseHistoryPage() {
             <thead>
               <tr style={{ background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                 {renderSortableHeader(t('table.dateTime'), 'date')}
-                {renderSortableHeader(t('table.bpm'), 'bpm')}
+                {hasBpm && renderSortableHeader(t('table.bpm'), 'bpm')}
                 {renderSortableHeader(t('table.time'), 'duration')}
                 <th style={{ padding: '1.2rem 1.5rem', fontWeight: 700, textAlign: 'right' }}>{t('table.actions')}</th>
               </tr>
@@ -677,14 +699,16 @@ export default function ExerciseHistoryPage() {
                           style={{ background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.5rem', borderRadius: '6px', width: '100%', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
                         />
                       </td>
-                      <td style={{ padding: '0.8rem 1.5rem' }}>
-                        <input 
-                          type="number" 
-                          value={editForm.bpm} 
-                          onChange={e => setEditForm({...editForm, bpm: e.target.value})}
-                          style={{ background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.5rem', borderRadius: '6px', width: '80px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
-                        />
-                      </td>
+                      {hasBpm && (
+                        <td style={{ padding: '0.8rem 1.5rem' }}>
+                          <input 
+                            type="number" 
+                            value={editForm.bpm} 
+                            onChange={e => setEditForm({...editForm, bpm: e.target.value})}
+                            style={{ background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.5rem', borderRadius: '6px', width: '80px', outline: 'none', fontFamily: 'DM Sans, sans-serif' }}
+                          />
+                        </td>
+                      )}
                       <td style={{ padding: '0.8rem 1.5rem' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                           <input 
@@ -710,7 +734,7 @@ export default function ExerciseHistoryPage() {
                   ) : (
                     <>
                       <td style={{ padding: '1rem 1.5rem', color: 'var(--text)', fontWeight: 500 }}>{log.dateTimeStr}</td>
-                      <td style={{ padding: '1rem 1.5rem', color: 'var(--gold)', fontWeight: 700, fontSize: '1.1rem' }}>{log.bpm_used}</td>
+                      {hasBpm && <td style={{ padding: '1rem 1.5rem', color: 'var(--gold)', fontWeight: 700, fontSize: '1.1rem' }}>{log.bpm_used}</td>}
                       <td style={{ padding: '1rem 1.5rem', color: 'var(--muted)' }}>{log.minutos} {t('table.min')}</td>
                       <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
                         <div style={{ display: 'flex', gap: '0.5rem', justifyContent: 'flex-end' }}>
@@ -770,17 +794,19 @@ export default function ExerciseHistoryPage() {
                 />
               </div>
               
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div>
-                  <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', fontWeight: 700 }}>{t('manualEntry.maxBpm')}</label>
-                  <input 
-                    type="number" 
-                    placeholder="Ej. 120"
-                    value={manualEntryForm.bpm}
-                    onChange={e => setManualEntryForm({...manualEntryForm, bpm: e.target.value})}
-                    style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.8rem', borderRadius: '8px', outline: 'none', fontFamily: 'DM Sans, sans-serif', fontWeight: 700 }}
-                  />
-                </div>
+              <div style={{ display: 'grid', gridTemplateColumns: hasBpm ? '1fr 1fr' : '1fr', gap: '1rem' }}>
+                {hasBpm && (
+                  <div>
+                    <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', fontWeight: 700 }}>{t('manualEntry.maxBpm')}</label>
+                    <input 
+                      type="number" 
+                      placeholder="Ej. 120"
+                      value={manualEntryForm.bpm}
+                      onChange={e => setManualEntryForm({...manualEntryForm, bpm: e.target.value})}
+                      style={{ width: '100%', background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.8rem', borderRadius: '8px', outline: 'none', fontFamily: 'DM Sans, sans-serif', fontWeight: 700 }}
+                    />
+                  </div>
+                )}
                 <div>
                   <label style={{ display: 'block', fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', fontWeight: 700 }}>{t('manualEntry.minutes')}</label>
                   <input 
@@ -806,8 +832,8 @@ export default function ExerciseHistoryPage() {
               </button>
               <button 
                 onClick={handleManualSubmit}
-                disabled={submittingManual || !manualEntryForm.date || !manualEntryForm.bpm}
-                style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '0.8rem', borderRadius: '8px', cursor: (submittingManual || !manualEntryForm.date || !manualEntryForm.bpm) ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: (submittingManual || !manualEntryForm.date || !manualEntryForm.bpm) ? 0.5 : 1, transition: 'all 0.2s' }}
+                disabled={submittingManual || !manualEntryForm.date || (hasBpm && !manualEntryForm.bpm)}
+                style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '0.8rem', borderRadius: '8px', cursor: (submittingManual || !manualEntryForm.date || (hasBpm && !manualEntryForm.bpm)) ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: (submittingManual || !manualEntryForm.date || (hasBpm && !manualEntryForm.bpm)) ? 0.5 : 1, transition: 'all 0.2s' }}
                 onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark)'}
                 onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}
               >

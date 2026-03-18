@@ -450,7 +450,7 @@
     }
   },
   "ExerciseHistoryPage": {
-    "back": "Back to library",
+    "back": "Back",
     "performanceIn": "Performance in",
     "practiceLogs": "practice logs",
     "buttons": {

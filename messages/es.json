@@ -450,7 +450,7 @@
     }
   },
   "ExerciseHistoryPage": {
-    "back": "Volver a la biblioteca",
+    "back": "Volver",
     "performanceIn": "Rendimiento en",
     "practiceLogs": "registros de práctica",
     "buttons": {
