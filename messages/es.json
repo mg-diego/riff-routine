@@ -353,6 +353,13 @@
       "load": "Error cargando ejercicios",
       "auth": "User no autenticado",
       "rls": "RLS bloqueó el borrado. Faltan permisos de DELETE."
+    },
+    "filtersBtn": "Filtros",
+    "sortLabel": "Ordenar por",
+    "clearFilters": "Limpiar todo",
+    "tooltips": {
+      "newExercise": "Crea un nuevo ejercicio y adjunta opcionalmente un archivo Guitar Pro",
+      "importList": "Importa ejercicios en bloque desde una lista"
     }
   },
   "NewExercisePage": {
@@ -368,7 +375,8 @@
     "form": {
       "nameRequired": "El nombre es obligatorio.",
       "categoryRequired": "Selecciona al menos una categoría.",
-      "authRequired": "Debes iniciar sesión."
+      "authRequired": "Debes iniciar sesión.",
+      "difficultyRequired": "Selecciona una dificultad."
     },
     "buttons": {
       "saving": "Creando ejercicio...",
@@ -430,7 +438,8 @@
     "form": {
       "nameRequired": "El nombre es obligatorio.",
       "categoryRequired": "Selecciona al menos una categoría.",
-      "authRequired": "Debes iniciar sesión."
+      "authRequired": "Debes iniciar sesión.",
+      "difficultyRequired": "Selecciona una dificultad."
     },
     "buttons": {
       "saving": "Guardando cambios...",
@@ -727,9 +736,25 @@
     "scaleSuggestionText": "Prueba a improvisar usando: ",
     "generateButton": "🎲 Otra progresión",
     "backingTrackTitle": "Backing Track (YouTube)",
-    "backingTrackPlaceholder": "Pega el enlace de un backing track de YouTube...",
     "notesTitle": "Bloc de Notas de Composición",
-    "notesPlaceholder": "Anota aquí los acordes, trastes o ideas que te vayan surgiendo..."
+    "notesPlaceholder": "Anota aquí los acordes, trastes o ideas que te vayan surgiendo...",
+    "analyzerTitle": "Backing Track Analyzer",
+    "backingTrackPlaceholder": "Pega aquí el enlace de YouTube de tu backing track...",
+    "changeVideo": "Cambiar vídeo ✕",
+    "knowTonality": "Sé la tonalidad",
+    "knowChords": "Sé los acordes",
+    "selectTonality": "Selecciona la Tonalidad",
+    "rootLabel": "Raíz...",
+    "typeLabel": "Tipo...",
+    "progressionTitle": "Progresión de Acordes",
+    "addChord": "Añadir",
+    "noteLabel": "Nota...",
+    "emptyChordsMessage": "Añade los acordes que identifiques en el track.",
+    "suggestedScales": "Escalas Sugeridas",
+    "globalScales": "Escalas para toda la progresión",
+    "noGlobalScales": "No se ha encontrado ninguna escala diatónica que encaje perfectamente sobre todos estos acordes. Prueba a modular usando las sugerencias por acorde.",
+    "perChordScales": "Opciones por Acorde",
+    "noScalesFound": "Sin sugerencias directas"
   },
   "PlayerHeader": {
     "modes": {

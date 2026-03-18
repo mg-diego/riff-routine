@@ -353,6 +353,13 @@
       "load": "Error loading exercises",
       "auth": "Unauthenticated user",
       "rls": "RLS blocked the deletion. Missing DELETE permissions."
+    },
+    "filtersBtn": "Filters",
+    "sortLabel": "Sort by",
+    "clearFilters": "Clear all",
+    "tooltips": {
+      "newExercise": "Create a new exercise and optionally attach a Guitar Pro file",
+      "importList": "Bulk import exercises from a list"
     }
   },
   "NewExercisePage": {
@@ -368,7 +375,8 @@
     "form": {
       "nameRequired": "Name is required.",
       "categoryRequired": "Select at least one category.",
-      "authRequired": "You must be logged in."
+      "authRequired": "You must be logged in.",
+      "difficultyRequired": "Difficulty is required."
     },
     "buttons": {
       "saving": "Creating exercise...",
@@ -430,7 +438,8 @@
     "form": {
       "nameRequired": "Name is required.",
       "categoryRequired": "Select at least one category.",
-      "authRequired": "You must be logged in."
+      "authRequired": "You must be logged in.",
+      "difficultyRequired": "Difficulty is required."
     },
     "buttons": {
       "saving": "Saving changes...",
@@ -729,7 +738,23 @@
     "backingTrackTitle": "Backing Track (YouTube)",
     "backingTrackPlaceholder": "Paste a YouTube backing track link here...",
     "notesTitle": "Composition Notepad",
-    "notesPlaceholder": "Jot down chords, frets, or ideas as they come to you..."
+    "notesPlaceholder": "Jot down chords, frets, or ideas as they come to you...",
+    "analyzerTitle": "Backing Track Analyzer",
+    "changeVideo": "Change video ✕",
+    "knowTonality": "I know the tonality",
+    "knowChords": "I know the chords",
+    "selectTonality": "Select Tonality",
+    "rootLabel": "Root...",
+    "typeLabel": "Type...",
+    "progressionTitle": "Chord Progression",
+    "addChord": "Add",
+    "noteLabel": "Note...",
+    "emptyChordsMessage": "Add the chords you identify in the track.",
+    "suggestedScales": "Suggested Scales",
+    "globalScales": "Scales for the entire progression",
+    "noGlobalScales": "No diatonic scale was found that fits perfectly over all these chords. Try modulating using the per-chord suggestions.",
+    "perChordScales": "Options per Chord",
+    "noScalesFound": "No direct suggestions"
   },
   "PlayerHeader": {
     "modes": {

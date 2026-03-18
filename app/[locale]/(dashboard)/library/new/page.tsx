@@ -26,7 +26,7 @@ export default function NewExercisePage() {
   const [categories, setCategories] = useState<string[]>([]);
   const [bpmSuggested, setBpmSuggested] = useState<string | number>('');
   const [bpmGoal, setBpmGoal] = useState<string | number>('');
-  const [difficulty, setDifficulty] = useState(3);
+  const [difficulty, setDifficulty] = useState(0);
   const [notes, setNotes] = useState('');
 
   // Estados para validación de tier
@@ -88,6 +88,7 @@ export default function NewExercisePage() {
   const handleSubmit = async () => {
     if (!name.trim()) return setError(t('form.nameRequired'));
     if (categories.length === 0) return setError(t('form.categoryRequired'));
+    if (difficulty < 1 || difficulty > 5) return setError(t('form.difficultyRequired'));
 
     // Validación de límite del Tier Free
     if (userTier === SUBSCRIPTION_TIERS.FREE && currentExerciseCount >= MAX_FREE_EXERCISES) {

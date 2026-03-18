@@ -80,7 +80,7 @@ export function PlayerHeader({
     scales: { label: t('modes.scales'), icon: '🎹', color: 'var(--gold)' },
     improvisation: { label: t('modes.improvisation'), icon: '🎷', color: 'var(--gold)' },
     composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },    
-    chords: { label: t('modes.chords'), icon: '🧠', color: 'var(--gold)' },
+    chords: { label: t('modes.chords'), icon: '🎵', color: 'var(--gold)' },
   }), [t]);
 
   const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
@@ -234,34 +234,120 @@ export function PlayerHeader({
     }
   }, [originalBpm, disableBpmInputs, showBpmInputs]);
 
-  const autoSaveLog = async () => {
-    if (!exercise || displaySeconds === 0) return;
+
+  // ── Bloque de seguridad contra cierre, recarga y navegación ────────────
+  const latestDataRef = useRef({
+    displaySeconds,
+    bpmCurrent,
+    bpmGoal,
+    exercise,
+    saved
+  });
+
+  useEffect(() => {
+    latestDataRef.current = { displaySeconds, bpmCurrent, bpmGoal, exercise, saved };
+  }, [displaySeconds, bpmCurrent, bpmGoal, exercise, saved]);
+
+  useEffect(() => {
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const { displaySeconds, saved } = latestDataRef.current;
+      if (displaySeconds >= 60 && !saved) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    };
+
+    const handleLinkClick = (e: MouseEvent) => {
+      const target = e.target as HTMLElement;
+      const anchor = target.closest('a');
+
+      if (!anchor || anchor.target === '_blank' || anchor.href === window.location.href) return;
+
+      const { displaySeconds, saved } = latestDataRef.current;
+
+      if (displaySeconds >= 60 && !saved) {
+        const confirmLeave = window.confirm(t('alerts.unsavedTime') || 'You have unsaved practice time. Are you sure you want to leave?');
+        if (!confirmLeave) {
+          e.preventDefault();
+          e.stopPropagation();
+        }
+      }
+    };
+
+    window.addEventListener('beforeunload', handleBeforeUnload);
+    document.addEventListener('click', handleLinkClick, true);
+
+    return () => {
+      window.removeEventListener('beforeunload', handleBeforeUnload);
+      document.removeEventListener('click', handleLinkClick, true);
+    };
+  }, [t]);
+
+  useEffect(() => {
+    return () => {
+      const { displaySeconds, bpmCurrent, bpmGoal, exercise, saved } = latestDataRef.current;
+      
+      if (displaySeconds >= 60 && !saved && exercise) {
+        let cur: number | null = null;
+        let goal: number | null = null;
+        
+        if (!disableBpmInputs && showBpmInputs) {
+          const parsedCur = parseInt(bpmCurrent);
+          cur = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
+          goal = bpmGoal ? parseInt(bpmGoal) : null;
+        }
+        
+        onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds).catch(() => {});
+      }
+    };
+  }, [onSaveExerciseLog, disableBpmInputs, showBpmInputs, originalBpm]);
+  // ───────────────────────────────────────────────────────────────────────
+
+  const autoSaveLog = async (secondsToSave: number, currentBpmValue: string, currentGoalValue: string) => {
+    if (!exercise || secondsToSave < 60) return;
     try {
       let cur: number | null = null;
       let goal: number | null = null;
       if (!disableBpmInputs && showBpmInputs) {
-        const parsedCur = parseInt(bpmCurrent);
+        const parsedCur = parseInt(currentBpmValue);
         cur = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
-        goal = bpmGoal ? parseInt(bpmGoal) : null;
+        goal = currentGoalValue ? parseInt(currentGoalValue) : null;
       }
-      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
+      await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, secondsToSave);
     } catch (err) {}
   };
 
-  const handleNext = async () => { if (isRoutine) await autoSaveLog(); onNext(); };
-  const handlePrev = async () => { if (isRoutine) await autoSaveLog(); onPrev(); };
+  const handleNext = async () => { 
+    if (isRoutine) await autoSaveLog(displaySeconds, bpmCurrent, bpmGoal); 
+    onNext(); 
+  };
+  
+  const handlePrev = async () => { 
+    if (isRoutine) await autoSaveLog(displaySeconds, bpmCurrent, bpmGoal); 
+    onPrev(); 
+  };
 
   const handleCloseClick = async () => {
-    if (isFree) { onEndSession(); return; }
-    if (!isRoutine) {
-      if (displaySeconds > 0 && !saved) {
-        if (!window.confirm(t('alerts.unsavedTime'))) return;
-      }
-      onEndSession(); return;
+    if (isFree) { 
+      onEndSession(); 
+      return; 
     }
+    
+    if (!isRoutine) {
+      if (displaySeconds >= 60 && !saved) {
+        await autoSaveLog(displaySeconds, bpmCurrent, bpmGoal);
+      }
+      onEndSession(); 
+      return;
+    }
+
     if (isTimerRunning) onToggleTimer();
-    await autoSaveLog();
-    if (!sessionId) { onEndSession(); return; }
+    await autoSaveLog(displaySeconds, bpmCurrent, bpmGoal);
+    
+    if (!sessionId) { 
+      onEndSession(); 
+      return; 
+    }
     setShowEndModal(true);
   };
 

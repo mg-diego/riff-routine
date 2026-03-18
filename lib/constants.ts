@@ -325,30 +325,10 @@ export const DEGREE_MAP_MINOR: Record<string, { idx: number, suffix: string }> =
     'III': { idx: 2, suffix: '' },
     'iv': { idx: 3, suffix: 'm' },
     'v': { idx: 4, suffix: 'm' },
-    'V': { idx: 4, suffix: '' }, // A veces se usa el V mayor en tonalidad menor (armónica)
+    'V': { idx: 4, suffix: '' },
     'VI': { idx: 5, suffix: '' },
     'VII': { idx: 6, suffix: '' },
 };
-
-const MAJOR_DEGREES = [
-  { roman: 'I', suffix: '' },
-  { roman: 'ii', suffix: 'm' },
-  { roman: 'iii', suffix: 'm' },
-  { roman: 'IV', suffix: '' },
-  { roman: 'V', suffix: '' },
-  { roman: 'vi', suffix: 'm' },
-  { roman: 'vii°', suffix: 'dim' }
-];
-
-const MINOR_DEGREES = [
-  { roman: 'i', suffix: 'm' },
-  { roman: 'ii°', suffix: 'dim' },
-  { roman: 'III', suffix: '' },
-  { roman: 'iv', suffix: 'm' },
-  { roman: 'v', suffix: 'm' },
-  { roman: 'VI', suffix: '' },
-  { roman: 'VII', suffix: '' }
-];
 
 export const ROLES = {
   STUDENT: 'student',
@@ -362,3 +342,20 @@ export const SUBSCRIPTION_TIERS = {
     PRO: 'pro'
 } as const;
 export type SubscriptionTier = typeof SUBSCRIPTION_TIERS[keyof typeof SUBSCRIPTION_TIERS];
+
+
+export const BASIC_SCALE_SUGGESTIONS = {
+  minor: [
+    'pentatonic-minor',
+    'aeolian',
+    'dorian',
+    'phrygian',
+    'hirajoshi'
+  ],
+  major: [
+    'pentatonic-major',
+    'ionian',
+    'mixolydian',
+    'lydian'
+  ]
+} as const;

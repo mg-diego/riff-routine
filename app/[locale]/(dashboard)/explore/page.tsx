@@ -40,7 +40,8 @@ export default function ExplorePage() {
         const routes: Record<string, string> = {
             'sys_scales_title': 'scales',
             'sys_improvisation_title': 'improvisation',
-            'sys_composition_title': 'composition'
+            'sys_composition_title': 'composition',
+            'sys_chords_title': 'chords'
         };
 
         const targetTitle = routes[dbTitleKey] || dbTitleKey;
