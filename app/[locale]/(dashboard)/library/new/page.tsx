@@ -29,7 +29,6 @@ export default function NewExercisePage() {
   const [difficulty, setDifficulty] = useState(0);
   const [notes, setNotes] = useState('');
 
-  // Estados para validación de tier
   const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
   const [currentExerciseCount, setCurrentExerciseCount] = useState(0);
   const [showProModal, setShowProModal] = useState(false);
@@ -83,6 +82,11 @@ export default function NewExercisePage() {
 
     setFile(f);
     setError(null);
+
+    if (!name.trim()) {
+      const fileNameWithoutExt = f.name.replace(/\.[^/.]+$/, "");
+      setName(fileNameWithoutExt);
+    }
   };
 
   const handleSubmit = async () => {
@@ -90,7 +94,6 @@ export default function NewExercisePage() {
     if (categories.length === 0) return setError(t('form.categoryRequired'));
     if (difficulty < 1 || difficulty > 5) return setError(t('form.difficultyRequired'));
 
-    // Validación de límite del Tier Free
     if (userTier === SUBSCRIPTION_TIERS.FREE && currentExerciseCount >= MAX_FREE_EXERCISES) {
       setShowProModal(true);
       return;
