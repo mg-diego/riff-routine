@@ -1,6 +1,6 @@
 export interface Exercise {
   id: string;
-  user_id: string;
+  user_id: string | null;
   title: string;
   file_url: string | null;
   technique: string | null;
@@ -10,6 +10,8 @@ export interface Exercise {
   notes: string | null;
   created_at: string;
   has_bpm?: boolean;
+  is_system: boolean;
+  forked_from: string | null;
 }
 
 export interface Routine {

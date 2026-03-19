@@ -12,9 +12,11 @@ export default function ExerciseDetailsPage() {
     const params = useParams();
     const router = useRouter();
     const t = useTranslations('ExerciseDetailsPage');
+    const { formatExercise } = useTranslatedExercise();
     const inputRef = useRef<HTMLInputElement>(null);
 
     const [exercise, setExercise] = useState<Exercise | null>(null);
+    const isSystem = !!exercise?.forked_from;
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -53,7 +55,7 @@ export default function ExerciseDetailsPage() {
             if (dbError || !data) throw new Error(t('errors.loadFailed'));
 
             setExercise(data);
-            setName(data.title || '');
+            setName(formatExercise(data).title || '');
             setCategories(data.technique ? data.technique.split(', ') : []);
             setBpmSuggested(data.bpm_suggested || '');
             setBpmGoal(data.bpm_goal || '');
@@ -88,8 +90,6 @@ export default function ExerciseDetailsPage() {
         setFile(f);
         setError(null);
     };
-
-    const { formatExercise } = useTranslatedExercise();
 
     const handleSubmit = async () => {
         if (!exercise) return;
@@ -199,7 +199,8 @@ export default function ExerciseDetailsPage() {
                             borderRadius: '10px',
                             padding: '1.5rem',
                             textAlign: 'center',
-                            cursor: 'pointer',
+                            cursor: isSystem ? 'not-allowed' : 'pointer',
+                            pointerEvents: isSystem ? 'none' : 'auto',
                             background: dragOver ? 'rgba(220,185,138,0.05)' : file ? 'rgba(74,222,128,0.04)' : 'rgba(255,255,255,0.02)',
                             transition: 'all 0.2s',
                             display: 'flex',
@@ -212,7 +213,19 @@ export default function ExerciseDetailsPage() {
                     >
                         <input ref={inputRef} type="file" accept=".gp,.gp3,.gp4,.gp5,.gpx" onChange={handleFileDrop} hidden />
 
-                        {file ? (
+                        {isSystem ? (
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                                <div style={{ fontSize: '1.8rem' }}>🔒</div>
+                                <div style={{ textAlign: 'left' }}>
+                                    <p style={{ color: 'var(--muted)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
+                                        {t('fileDrop.systemFile')}
+                                    </p>
+                                    <p style={{ color: 'rgba(106,95,82,0.6)', margin: 0, fontSize: '0.8rem' }}>
+                                        {t('fileDrop.systemFileDesc')}
+                                    </p>
+                                </div>
+                            </div>
+                        ) : file ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textAlign: 'left' }}>
                                 <div style={{ fontSize: '1.8rem' }}>🎵</div>
                                 <div>
@@ -244,7 +257,7 @@ export default function ExerciseDetailsPage() {
                     </div>
 
                     <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-                        <ExerciseForm {...{ name, setName, categories, setCategories, bpmSuggested, setBpmSuggested, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes }} />
+                        <ExerciseForm {...{ name, setName, categories, setCategories, bpmSuggested, setBpmSuggested, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes, isSystem: isSystem || false }} />
                     </div>
 
                     {error && (

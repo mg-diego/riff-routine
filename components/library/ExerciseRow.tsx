@@ -20,6 +20,7 @@ interface ExerciseRowProps {
 export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, readonly = false }: ExerciseRowProps) {
   const t = useTranslations('ExerciseRow');
 
+  const isFromSystem = !!file.forked_from;
   const cats = file.technique ? file.technique.split(', ') : [];
   const diff = file.difficulty || 1;
 
@@ -34,13 +35,13 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
 
   return (
     <div style={{
-      background: 'var(--surface)', 
-      padding: '1rem 1.5rem', 
+      background: 'var(--surface)',
+      padding: '1rem 1.5rem',
       borderRadius: '12px',
       border: `1px solid ${missingFile ? 'rgba(231,76,60,0.15)' : 'rgba(255,255,255,0.05)'}`,
       display: 'flex',
-      alignItems: 'center', 
-      gap: '1.5rem', 
+      alignItems: 'center',
+      gap: '1.5rem',
       transition: 'all 0.2s',
       flexWrap: 'wrap',
       position: 'relative',
@@ -62,7 +63,8 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
       )}
 
       <div style={{ flex: '1 1 200px', minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.4rem' }}>
+        {/* Fila 1: Icono y Título */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.6rem' }}>
           {missingFile && (
             <div title={t('noFile')} style={{ color: '#e74c3c', display: 'flex', alignItems: 'center' }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -72,62 +74,84 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
               </svg>
             </div>
           )}
-          <h3 style={{ 
-            color: 'var(--text)', 
-            margin: 0, 
-            fontSize: '1.05rem', 
-            fontWeight: 700, 
-            overflow: 'hidden', 
-            textOverflow: 'ellipsis', 
+          <h3 style={{
+            color: 'var(--text)',
+            margin: 0,
+            fontSize: '1.05rem',
+            fontWeight: 700,
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
             whiteSpace: 'nowrap',
             fontFamily: 'DM Sans, sans-serif',
             display: 'flex',
             alignItems: 'center'
           }} title={file.title}>
             {file.title}
-            {readonly && (
-              <span style={{
-                marginLeft: '0.75rem',
-                fontSize: '0.7rem',
-                background: 'rgba(255,193,7,0.1)',
-                padding: '0.2rem 0.5rem',
-                borderRadius: '4px',
-                color: 'var(--gold)',
-                fontWeight: 'bold',
-              }}>
-                {t('lockedBadge')}
-              </span>
-            )}
           </h3>
         </div>
-        
+
+        {/* Fila 2: Badges (Dificultad + Sistema/Locked) */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          {/* Chip de Nivel */}
+          <span style={{
+            background: DIFFICULTY_COLORS[diff] + '15',
+            color: DIFFICULTY_COLORS[diff],
+            border: `1px solid ${DIFFICULTY_COLORS[diff]}30`,
+            borderRadius: '6px',
+            padding: '0.2rem 0.5rem',
+            fontSize: '0.75rem',
+            fontWeight: 800,
+            whiteSpace: 'nowrap',
+          }}>{t('level', { level: diff })}</span>
+
+          {/* Chip de Sistema (Violeta) */}
+          {isFromSystem && (
+            <span style={{
+              fontSize: '0.55rem',
+              letterSpacing: '0.05em',
+              background: 'rgba(167, 139, 250, 0.15)',
+              padding: '0.15rem 0.4rem',
+              borderRadius: '4px',
+              color: '#a78bfa',
+              border: '1px solid rgba(167, 139, 250, 0.2)',
+              fontWeight: 800,
+              textTransform: 'uppercase'
+            }}>
+              {t('systemBadge')}
+            </span>
+          )}
+
+          {/* Chip de Locked (Solo si readonly es true) */}
+          {readonly && (
+            <span style={{
+              fontSize: '0.7rem',
+              background: 'rgba(255,193,7,0.1)',
+              padding: '0.2rem 0.5rem',
+              borderRadius: '4px',
+              color: 'var(--gold)',
+              fontWeight: 'bold',
+            }}>
+              {t('lockedBadge')}
+            </span>
+          )}
+        </div>
+
         {readonly && (
-          <p style={{ margin: '0 0 0.4rem 0', fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
+          <p style={{ margin: '0.4rem 0 0 0', fontSize: '0.75rem', color: 'var(--gold)', opacity: 0.8 }}>
             {t('lockedDescription')}
           </p>
         )}
-
-        <span style={{
-          background: DIFFICULTY_COLORS[diff] + '15',
-          color: DIFFICULTY_COLORS[diff],
-          border: `1px solid ${DIFFICULTY_COLORS[diff]}30`,
-          borderRadius: '6px', 
-          padding: '0.2rem 0.5rem', 
-          fontSize: '0.75rem',
-          fontWeight: 800, 
-          whiteSpace: 'nowrap',
-        }}>{t('level', { level: diff })}</span>
       </div>
 
       <div style={{ flex: '1 1 200px', display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
         {cats.slice(0, 3).map(cat => (
-          <span key={cat} style={{ 
+          <span key={cat} style={{
             background: 'rgba(255,255,255,0.03)',
             border: '1px solid rgba(255,255,255,0.08)',
-            color: 'var(--muted)', 
-            borderRadius: '4px', 
-            padding: '0.25rem 0.6rem', 
-            fontSize: '0.7rem', 
+            color: 'var(--muted)',
+            borderRadius: '4px',
+            padding: '0.25rem 0.6rem',
+            fontSize: '0.7rem',
             fontWeight: 600,
             textTransform: 'uppercase',
             letterSpacing: '0.05em'
@@ -161,12 +185,12 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
             </div>
             {hasProgressBpms && (
               <div style={{ height: '4px', background: 'rgba(255,255,255,0.08)', borderRadius: '4px', overflow: 'hidden' }}>
-                <div style={{ 
-                  height: '100%', 
-                  background: `linear-gradient(90deg, var(--gold), ${progressPercent >= 100 ? '#4ade80' : '#c9a676'})`, 
-                  width: `${progressPercent}%`, 
-                  borderRadius: '4px', 
-                  transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)' 
+                <div style={{
+                  height: '100%',
+                  background: `linear-gradient(90deg, var(--gold), ${progressPercent >= 100 ? '#4ade80' : '#c9a676'})`,
+                  width: `${progressPercent}%`,
+                  borderRadius: '4px',
+                  transition: 'width 0.5s cubic-bezier(0.4, 0, 0.2, 1)'
                 }} />
               </div>
             )}
@@ -175,7 +199,7 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
       </div>
 
       <div style={{ flex: '0 0 auto', display: 'flex', gap: '0.6rem', marginLeft: 'auto', alignItems: 'center' }}>
-        
+
         <button
           data-onboarding="library-10"
           title={readonly ? t('lockedTooltip') : undefined}
@@ -233,11 +257,15 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
           {missingFile ? t('freePractice') : t('play')}
         </button>
 
-        <div 
+        <div
           title={readonly ? t('lockedTooltip') : undefined}
-          style={{ 
-            opacity: readonly ? 0.5 : 1, 
-            cursor: readonly ? 'not-allowed' : 'pointer' 
+          style={{
+            opacity: readonly ? 0.3 : 1,
+            cursor: readonly ? 'not-allowed' : 'pointer',
+            filter: readonly ? 'grayscale(1)' : 'none',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center'
           }}
           onClick={(e) => {
             if (readonly) {
@@ -248,10 +276,10 @@ export function ExerciseRow({ file, currentBpm, onEdit, onHistory, onDelete, rea
           }}
         >
           <div style={{ pointerEvents: readonly ? 'none' : 'auto' }}>
-            <EditButton onClick={() => {}} />
+            <EditButton onClick={() => { }} />
           </div>
         </div>
-        
+
         <HistoryButton onClick={() => onHistory(file)} />
         <DeleteButton onClick={() => onDelete(file)} />
       </div>

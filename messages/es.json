@@ -370,7 +370,9 @@
       "readyToUpload": "Listo para subir",
       "guitarProFile": "Archivo Guitar Pro",
       "optional": "(opcional)",
-      "dragOrClick": "GP3, GP4, GP5, GPX · arrastra o haz clic"
+      "dragOrClick": "GP3, GP4, GP5, GPX · arrastra o haz clic",
+      "systemFile": "Archivo del sistema",
+      "systemFileDesc": "Este archivo no se puede reemplazar"
     },
     "form": {
       "nameRequired": "El nombre es obligatorio.",
@@ -604,7 +606,9 @@
     "exercise": {
       "start": "Inicio",
       "goal": "Meta",
-      "playButton": "▶ Tocar"
+      "playButton": "▶ Tocar",
+      "alreadyAdded": "Ya añadido",
+      "addToLibrary": "Añadir a Biblioteca"
     },
     "blocks": {
       "tools": "Lenguaje Musical",
@@ -695,6 +699,7 @@
   "ExerciseRow": {
     "level": "Nv. {level}",
     "noFile": "Sin partitura asociada",
+    "systemBadge": "Ejercicio del Sistema",
     "bpmStatus": {
       "current": "Act.",
       "suggested": "Sug.",
@@ -705,6 +710,7 @@
     "freePractice": "P. Libre",
     "lockedTooltip": "Este ejercicio requiere suscripción PRO",
     "lockedDescription": "Solo tus 10 ejercicios más recientes están disponibles en el plan gratuito.",
+    "cannotEditSystem": "Los ejercicios del sistema no se pueden editar.",
     "lockedBadge": "BLOQUEADO"
   },
   "AlphaTabContainer": {
@@ -807,6 +813,10 @@
     "errors": {
       "invalidBpm": "BPM inválido",
       "saveError": "Error al guardar"
+    },
+    "previewMode": {
+      "message": "Estás en modo previsualización.",
+      "button": "Añadir a mi biblioteca"
     }
   },
   "ScalesPanel": {
@@ -1069,6 +1079,7 @@
       "vibrato": "Vibrato"
     },
     "difficulty": {
+      "0": "",
       "1": "Principiante",
       "2": "Básico",
       "3": "Intermedio",
@@ -1644,11 +1655,17 @@
     "sys_chords_technique": "Acordes",
     "sys_chords_notes": "Domina el mástil practicando acordes e inversiones en cualquier posición.",
     "sys_3_notes_beat_title": "3 Notas por Beat",
-    "sys_3_notes_beat_technique": "Alternate Picking",
     "sys_3_notes_beat_notes": "Ejercicio rítmico basado en tresillos. Ideal para desarrollar el sentido del tiempo en compases compuestos o licks de blues y rock.",
     "sys_4_notes_beat_title": "4 Notas por Beat",
-    "sys_4_notes_beat_technique": "Alternate Picking",
-    "sys_4_notes_beat_notes": "Práctica de semicorcheas para mejorar la velocidad y la subdivisión binaria. Fundamental para pasajes rápidos y shred."
+    "sys_4_notes_beat_notes": "Práctica de semicorcheas para mejorar la velocidad y la subdivisión binaria. Fundamental para pasajes rápidos y shred.",
+    "sys_3_strings_sweep_title": "Sweep Picking de 3 Cuerdas",
+    "sys_3_strings_sweep_notes": "Enfócate en el movimiento fluido de la púa como si fuera un solo trazo. Mantén la sincronización perfecta con la mano del mástil para evitar que las notas se mezclen.",
+    "sys_5_strings_sweep_title": "Sweep Picking de 5 Cuerdas",
+    "sys_5_strings_sweep_notes": "Controla el balanceo de la mano derecha a través de las 5 cuerdas. Es vital el uso del 'palm muting' sutil y el 'fret-hand muting' para mantener la claridad de cada arpegio.",
+    "sys_tapping_ex01_title": "Tapping Básico: Tríadas y Arpegios",
+    "sys_tapping_ex01_notes": "Enfócate en la fuerza del impacto del dedo de la mano derecha. La nota debe sonar con la misma intensidad que si fuera pulsada por la mano izquierda.",
+    "sys_tapping_ex02_title": "Tapping Multicuerda: Fluidal Lineal",
+    "sys_tapping_ex02_notes": "Ejercicio avanzado que recorre todas las cuerdas. Mantén la mano derecha relajada y asegúrate de mutear las cuerdas adyacentes para evitar ruidos indeseados."
   },
   "CompositionPanel": {
     "title": "Centro de Composición",

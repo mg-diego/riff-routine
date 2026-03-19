@@ -15,11 +15,18 @@ const SYS_KEYS = new Set([
   'sys_chords_technique',
   'sys_chords_notes',
   'sys_3_notes_beat_title',
-  'sys_3_notes_beat_technique',
   'sys_3_notes_beat_notes',
   'sys_4_notes_beat_title',
   'sys_4_notes_beat_technique',
-  'sys_4_notes_beat_notes'
+  'sys_4_notes_beat_notes',
+  'sys_3_strings_sweep_title',
+  'sys_3_strings_sweep_notes',
+  'sys_5_strings_sweep_title',
+  'sys_5_strings_sweep_notes',
+  'sys_tapping_ex01_title',
+  'sys_tapping_ex01_notes',
+  'sys_tapping_ex02_title',
+  'sys_tapping_ex02_notes'
 ]);
 
 const safeTranslate = (st: (key: string) => string, key: string): string => {
@@ -35,8 +42,6 @@ export function useTranslatedExercise() {
   const st = useTranslations('SystemExercises');
 
   const formatExercise = (exercise: Exercise): Exercise => {
-    // Only translate if it's a system exercise with a known sys key
-    if (exercise.user_id !== null) return exercise;
     if (!exercise.title?.startsWith('sys_')) return exercise;
 
     return {

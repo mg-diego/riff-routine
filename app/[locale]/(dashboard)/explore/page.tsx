@@ -6,15 +6,30 @@ import { supabase } from '../../../../lib/supabase';
 import { Exercise } from '../../../../lib/types';
 import { useTranslations } from 'next-intl';
 import { HistoryButton } from '@/components/ui/HistoryButton';
+import { BecomeProModal } from '@/components/ui/BecomeProModal';
+import { useExerciseActions } from '@/hooks/useExerciseActions';
 
 export default function ExplorePage() {
     const router = useRouter();
     const t = useTranslations('ExplorePage');
     const st = useTranslations('SystemExercises');
+    const p = useTranslations('BecomeProModal');
+
+    const { checkLimitAndFork, saving, error: hookError, setError: setHookError } = useExerciseActions();
 
     const [systemExercises, setSystemExercises] = useState<Exercise[]>([]);
+    const [addedExercises, setAddedExercises] = useState<Set<string>>(new Set());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [showProModal, setShowProModal] = useState(false);
+
+    const [addedToast, setAddedToast] = useState<string | null>(null);
+
+    useEffect(() => {
+        const handleShowProModal = () => setShowProModal(true);
+        window.addEventListener('app:show-pro-modal', handleShowProModal);
+        return () => window.removeEventListener('app:show-pro-modal', handleShowProModal);
+    }, []);
 
     const handleHistoryNavigation = (exercise: Exercise) => router.push(`/library/${exercise.id}/history`);
 
@@ -24,17 +39,37 @@ export default function ExplorePage() {
 
     const fetchSystemExercises = async () => {
         setLoading(true);
-        const { data, error } = await supabase
+
+        const { data: sysData, error: sysError } = await supabase
             .from('exercises')
             .select('*')
             .is('is_system', true)
             .order('title', { ascending: true });
 
-        if (error) {
-            setError(error.message);
-        } else if (data) {
-            setSystemExercises(data);
+        if (sysError) {
+            setError(sysError.message);
+            setLoading(false);
+            return;
         }
+
+        if (sysData) {
+            setSystemExercises(sysData);
+        }
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: userData } = await supabase
+                .from('exercises')
+                .select('forked_from')
+                .eq('user_id', user.id)
+                .not('forked_from', 'is', null);
+
+            if (userData) {
+                const addedIds = new Set(userData.map(ex => ex.forked_from as string));
+                setAddedExercises(addedIds);
+            }
+        }
+
         setLoading(false);
     };
 
@@ -54,24 +89,34 @@ export default function ExplorePage() {
         }
     };
 
-    // --- Lógica de Agrupación ---
+    const handleAddToLibrary = async (exercise: Exercise) => {
+        const newId = await checkLimitAndFork(exercise);
+
+        if (newId) {
+            setAddedExercises(prev => new Set(prev).add(exercise.id));
+            setAddedToast(st(exercise.title));
+            setTimeout(() => setAddedToast(null), 3000);
+        }
+    };
+
     const toolsExercises = systemExercises.filter(ex => !ex.file_url);
     const tabsExercises = systemExercises.filter(ex => ex.file_url);
 
-    // Agrupamos los ejercicios con file_url usando su primera técnica como clave
     const groupedTabs = tabsExercises.reduce((acc, exercise) => {
         const mainTech = exercise.technique ? exercise.technique.split(',')[0].trim() : 'General';
-        if (!acc[st(mainTech)]) acc[st(mainTech)] = [];
-        acc[st(mainTech)].push(exercise);
+        if (!acc[(mainTech)]) acc[(mainTech)] = [];
+        acc[(mainTech)].push(exercise);
         return acc;
     }, {} as Record<string, Exercise[]>);
 
-    // --- Helper para renderizar las tarjetas y no repetir código ---
     const renderExerciseCard = (exercise: Exercise) => {
         const displayTitle = st(exercise.title);
-        const displayTechnique = exercise.technique ? st(exercise.technique) : '';
+        const displayTechnique = exercise.technique && !!exercise.file_url? exercise.technique : st(exercise?.technique || "") ;
         const displayNotes = exercise.notes ? st(exercise.notes) : '';
         const cats = displayTechnique ? displayTechnique.split(', ') : [];
+
+        const showAddButton = exercise.is_system && exercise.file_url != null;
+        const isAlreadyAdded = addedExercises.has(exercise.id);
 
         return (
             <div key={exercise.id} style={{
@@ -87,7 +132,7 @@ export default function ExplorePage() {
                         <h3 style={{ color: 'var(--text)', margin: 0, fontSize: '1.1rem', fontWeight: 600, paddingRight: '2.5rem' }}>
                             {displayTitle}
                         </h3>
-                        <HistoryButton onClick={() => handleHistoryNavigation(exercise)} />
+                        {!exercise.file_url && (<HistoryButton onClick={() => handleHistoryNavigation(exercise)} />)}
                     </div>
 
                     {cats.length > 0 && (
@@ -111,11 +156,11 @@ export default function ExplorePage() {
                     </div>
                 </div>
 
-                <div style={{ marginTop: 'auto', paddingTop: '1rem' }}>
+                <div style={{ marginTop: 'auto', paddingTop: '1rem', display: 'flex', gap: '0.5rem' }}>
                     <button
                         onClick={() => handlePlay(exercise)}
                         style={{
-                            width: '100%', background: 'var(--gold)', color: '#111', border: 'none',
+                            flex: 1, background: 'var(--gold)', color: '#111', border: 'none',
                             padding: '0.6rem', borderRadius: '6px', cursor: 'pointer',
                             fontSize: '0.88rem', fontWeight: 700, fontFamily: 'DM Sans, sans-serif', transition: 'all 0.2s'
                         }}
@@ -124,13 +169,83 @@ export default function ExplorePage() {
                     >
                         {t('exercise.playButton')}
                     </button>
+
+                    {showAddButton && (
+                        <button
+                            onClick={() => !isAlreadyAdded && handleAddToLibrary(exercise)}
+                            disabled={saving || isAlreadyAdded}
+                            style={{
+                                flex: 1,
+                                background: isAlreadyAdded ? 'rgba(74,222,128,0.05)' : 'rgba(255,255,255,0.03)',
+                                color: isAlreadyAdded ? '#4ade80' : 'var(--text)',
+                                border: `1px solid ${isAlreadyAdded ? 'rgba(74,222,128,0.2)' : 'rgba(255,255,255,0.1)'}`,
+                                padding: '0.6rem', borderRadius: '6px',
+                                cursor: (saving || isAlreadyAdded) ? 'not-allowed' : 'pointer',
+                                fontSize: '0.88rem', fontWeight: 600, fontFamily: 'DM Sans, sans-serif',
+                                transition: 'all 0.2s', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem',
+                                opacity: saving ? 0.5 : 1
+                            }}
+                            onMouseEnter={e => {
+                                if (!saving && !isAlreadyAdded) {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.08)';
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.2)';
+                                }
+                            }}
+                            onMouseLeave={e => {
+                                if (!saving && !isAlreadyAdded) {
+                                    e.currentTarget.style.background = 'rgba(255,255,255,0.03)';
+                                    e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)';
+                                }
+                            }}
+                        >
+                            {isAlreadyAdded ? (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <polyline points="20 6 9 17 4 12"></polyline>
+                                    </svg>
+                                    <span style={{ fontSize: '0.8rem' }}>{t('exercise.alreadyAdded')}</span>
+                                </>
+                            ) : (
+                                <>
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                                        <line x1="12" y1="5" x2="12" y2="19"></line>
+                                        <line x1="5" y1="12" x2="19" y2="12"></line>
+                                    </svg>
+                                    <span style={{ fontSize: '0.8rem' }}>{t('exercise.addToLibrary')}</span>
+                                </>
+                            )}
+                        </button>
+                    )}
                 </div>
             </div>
         );
     };
 
+    const displayError = error || hookError;
+
     return (
-        <div style={{ paddingBottom: '4rem' }}>
+        <div style={{ paddingBottom: '4rem', position: 'relative' }}>
+            {addedToast && (
+                <div style={{
+                    position: 'fixed', bottom: '2rem', left: '50%', transform: 'translateX(-50%)',
+                    background: '#4ade80', color: '#111', padding: '0.8rem 1.5rem', borderRadius: '100px',
+                    fontWeight: 700, fontSize: '0.9rem', boxShadow: '0 10px 25px rgba(74,222,128,0.3)',
+                    zIndex: 50, animation: 'toast-in-out 3s forwards', display: 'flex', alignItems: 'center', gap: '0.5rem'
+                }}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                    Añadido: {addedToast}
+                </div>
+            )}
+
+            <style>{`
+                @keyframes toast-in-out {
+                    0% { opacity: 0; transform: translate(-50%, 20px); }
+                    15% { opacity: 1; transform: translate(-50%, 0); }
+                    85% { opacity: 1; transform: translate(-50%, 0); }
+                    100% { opacity: 0; transform: translate(-50%, -20px); }
+                }
+            `}</style>
+
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '3rem', gap: '1rem', flexWrap: 'wrap' }}>
                 <div>
                     <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>{t('title')}</h1>
@@ -140,10 +255,10 @@ export default function ExplorePage() {
                 </div>
             </div>
 
-            {error && (
+            {displayError && (
                 <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
-                    <span>⚠ {error}</span>
-                    <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}>✕</button>
+                    <span>⚠ {displayError}</span>
+                    <button onClick={() => { setError(null); setHookError(null); }} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}>✕</button>
                 </div>
             )}
 
@@ -157,8 +272,7 @@ export default function ExplorePage() {
                 </div>
             ) : (
                 <div data-onboarding="explore-01" style={{ display: 'flex', flexDirection: 'column', gap: '4rem' }}>
-                    
-                    {/* BLOQUE 1: Herramientas sin archivo (Escalas, Acordes, etc.) */}
+
                     {toolsExercises.length > 0 && (
                         <section>
                             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.02em' }}>
@@ -170,13 +284,12 @@ export default function ExplorePage() {
                         </section>
                     )}
 
-                    {/* BLOQUE 2: Ejercicios con GP5, agrupados por técnica */}
                     {tabsExercises.length > 0 && (
                         <section>
                             <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', color: 'var(--text)', margin: '0 0 2rem 0', letterSpacing: '0.02em', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>
                                 {t('blocks.exercises')}
                             </h2>
-                            
+
                             <div style={{ display: 'flex', flexDirection: 'column', gap: '3rem' }}>
                                 {Object.entries(groupedTabs).map(([technique, exercises]) => (
                                     <div key={technique}>
@@ -193,6 +306,13 @@ export default function ExplorePage() {
                         </section>
                     )}
                 </div>
+            )}
+
+            {showProModal && (
+                <BecomeProModal
+                    onClose={() => setShowProModal(false)}
+                    description={p('libraryLimit')}
+                />
             )}
         </div>
     );

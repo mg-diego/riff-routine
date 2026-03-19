@@ -22,6 +22,7 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
   
   const cats = file.technique ? file.technique.split(', ') : [];
   const diff = file.difficulty || 1;
+  const isFromSystem = !!file.forked_from;
 
   const activeBpm = currentBpm || file.bpm_suggested;
   const isCurrent = !!currentBpm;
@@ -29,7 +30,6 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
 
   const hasProgressBpms = activeBpm && file.bpm_goal;
   const progressPercent = hasProgressBpms ? Math.min(100, (activeBpm! / file.bpm_goal!) * 100) : 0;
-  const [showTooltip, setShowTooltip] = useState<string | null>(null);
 
   const missingFile = !file.file_url;
 
@@ -61,10 +61,11 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
         }} />
       )}
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flex: 1, minWidth: 0 }}>
+      {/* Título y Header */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
           {missingFile && (
-            <div title={t('noFile')} style={{ color: '#e74c3c', display: 'flex', alignItems: 'center' }}>
+            <div title={t('noFile')} style={{ color: '#e74c3c', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" />
                 <path d="M14 2v6h6" />
@@ -85,17 +86,42 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
             {file.title}
           </h3>
         </div>
-        <span style={{
-          background: DIFFICULTY_COLORS[diff] + '15',
-          color: DIFFICULTY_COLORS[diff],
-          border: `1px solid ${DIFFICULTY_COLORS[diff]}30`,
-          borderRadius: '6px',
-          padding: '0.2rem 0.5rem',
-          fontSize: '0.75rem',
-          fontWeight: 800,
-          whiteSpace: 'nowrap',
-          flexShrink: 0,
-        }}>{t('level', { level: diff })}</span>
+
+        {/* Badges de Metadatos */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <span style={{
+            background: DIFFICULTY_COLORS[diff] + '15',
+            color: DIFFICULTY_COLORS[diff],
+            border: `1px solid ${DIFFICULTY_COLORS[diff]}30`,
+            borderRadius: '6px',
+            padding: '0.2rem 0.5rem',
+            fontSize: '0.72rem',
+            fontWeight: 800,
+            whiteSpace: 'nowrap',
+          }}>{t('level', { level: diff })}</span>
+
+          {isFromSystem && (
+            <span style={{
+              fontSize: '0.55rem',
+              letterSpacing: '0.05em',
+              background: 'rgba(167, 139, 250, 0.15)',
+              padding: '0.15rem 0.4rem',
+              borderRadius: '4px',
+              color: '#a78bfa',
+              border: '1px solid rgba(167, 139, 250, 0.2)',
+              fontWeight: 800,
+              textTransform: 'uppercase',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.2rem'
+            }}>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12"></polyline>
+              </svg>
+              {t('systemBadge')}
+            </span>
+          )}
+        </div>
       </div>
 
       {readonly && (
@@ -103,9 +129,7 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
           background: 'rgba(255,193,7,0.1)',
           border: '1px solid rgba(255,193,7,0.2)',
           padding: '0.5rem',
-          borderRadius: '6px',
-          marginTop: '-0.5rem',
-          marginBottom: '0.2rem'
+          borderRadius: '6px'
         }}>
           <span style={{
             display: 'block',
@@ -122,6 +146,7 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
         </div>
       )}
 
+      {/* Categorías */}
       {cats.length > 0 && (
         <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
           {cats.slice(0, 3).map(cat => (
@@ -143,8 +168,9 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
         </div>
       )}
 
+      {/* Progress & BPM Section */}
       {(activeBpm || file.bpm_goal) && (
-        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)', marginTop: '0.2rem' }}>
+        <div style={{ background: 'rgba(0,0,0,0.2)', padding: '0.8rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.03)' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.75rem', color: 'var(--muted)', marginBottom: hasProgressBpms ? '0.6rem' : 0, fontWeight: 500 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
               <span style={{ color: 'var(--gold)' }}>▶</span>
@@ -191,7 +217,8 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
         </p>
       )}
 
-      <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', paddingTop: '0.5rem', width: '100%' }}>
+      {/* Action Buttons */}
+      <div style={{ display: 'flex', gap: '0.5rem', marginTop: 'auto', paddingTop: '0.5rem', width: '100%', alignItems: 'center' }}>
         
         <div style={{ flex: 1, position: 'relative' }}>
           <button
@@ -251,11 +278,16 @@ export function ExerciseCard({ file, currentBpm, onEdit, onHistory, onDelete, re
           </button>
         </div>
 
+        {/* Lógica de Deshabilitado para EditButton */}
         <div 
           title={readonly ? t('lockedTooltip') : undefined}
           style={{ 
-            opacity: readonly ? 0.5 : 1, 
-            cursor: readonly ? 'not-allowed' : 'pointer' 
+            opacity: readonly ? 0.3 : 1, 
+            cursor: readonly ? 'not-allowed' : 'pointer',
+            filter: readonly ? 'grayscale(1)' : 'none',
+            transition: 'all 0.2s',
+            display: 'flex',
+            alignItems: 'center'
           }}
           onClick={(e) => {
             if (readonly) {

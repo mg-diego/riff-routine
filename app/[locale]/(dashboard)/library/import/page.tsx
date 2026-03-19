@@ -2,12 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../../../lib/supabase';
-import { TECHNIQUES, SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../../lib/constants';
+import { TECHNIQUES } from '../../../../../lib/constants';
 import { useTranslations } from 'next-intl';
-import { Exercise } from '@/lib/types';
-import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 import { BecomeProModal } from '@/components/ui/BecomeProModal';
+import { useExerciseActions } from '@/hooks/useExerciseActions';
 
 interface ParsedExercise {
     id: string;
@@ -17,68 +15,40 @@ interface ParsedExercise {
     error?: string;
 }
 
-const MAX_FREE_EXERCISES = 10;
-
 export default function ImportExercisesPage() {
     const router = useRouter();
     const t = useTranslations('ImportExercisesPage');
     const p = useTranslations('BecomeProModal');
+    
+    // --- Integramos el Hook ---
+    const { saving, error: hookError, setError: setHookError, validateLimit, importBulkExercises } = useExerciseActions();
 
     const [inputText, setInputText] = useState('');
     const [parsedData, setParsedData] = useState<ParsedExercise[]>([]);
-    const [isImporting, setIsImporting] = useState(false);
     const [globalError, setGlobalError] = useState<string | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-
-    const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
-    const [currentExerciseCount, setCurrentExerciseCount] = useState(0);
     const [showProModal, setShowProModal] = useState(false);
 
+    // Escuchamos el evento de límite superado
     useEffect(() => {
-        const fetchUserData = async () => {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('subscription_tier')
-                .eq('id', user.id)
-                .single();
-
-            if (profile) {
-                setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
-            }
-
-            const { count } = await supabase
-                .from('exercises')
-                .select('*', { count: 'exact', head: true })
-                .eq('user_id', user.id);
-
-            if (count !== null) {
-                setCurrentExerciseCount(count);
-            }
-        };
-
-        fetchUserData();
+        const handleShowProModal = () => setShowProModal(true);
+        window.addEventListener('app:show-pro-modal', handleShowProModal);
+        return () => window.removeEventListener('app:show-pro-modal', handleShowProModal);
     }, []);
 
     const validateTechnique = (techString: string): string | undefined => {
-        if (!techString || techString.trim() === '') {
-            return t('errors.techniqueRequired');
-        }
+        if (!techString || techString.trim() === '') return t('errors.techniqueRequired');
         const inputTechs = techString.split(',').map(t => t.trim()).filter(Boolean);
-        if (inputTechs.length === 0) {
-            return t('errors.techniqueRequired');
-        }
+        if (inputTechs.length === 0) return t('errors.techniqueRequired');
+        
         const invalidTechs = inputTechs.filter(tech => !TECHNIQUES.includes(tech));
-        if (invalidTechs.length > 0) {
-            return t('errors.invalidTechnique', { techs: invalidTechs.join(', ') });
-        }
+        if (invalidTechs.length > 0) return t('errors.invalidTechnique', { techs: invalidTechs.join(', ') });
         return undefined;
     };
 
-    const parseText = () => {
+    const parseText = async () => {
         setGlobalError(null);
+        setHookError(null);
         const lines = inputText.split('\n');
         const extracted: ParsedExercise[] = [];
 
@@ -91,7 +61,6 @@ export default function ImportExercisesPage() {
                 const title = parts[0];
                 const techInput = parts[1] || '';
                 const bpmInput = parts[2] || '';
-
                 const error = validateTechnique(techInput);
 
                 extracted.push({
@@ -110,10 +79,9 @@ export default function ImportExercisesPage() {
             return;
         }
 
-        if (userTier === SUBSCRIPTION_TIERS.FREE && (currentExerciseCount + extracted.length) > MAX_FREE_EXERCISES) {
-            setShowProModal(true);
-            return;
-        }
+        // --- Validación limpia a través del hook ---
+        const canProceed = await validateLimit(extracted.length);
+        if (!canProceed) return; // El modal se dispara automáticamente desde el hook
 
         setParsedData(extracted);
     };
@@ -122,11 +90,9 @@ export default function ImportExercisesPage() {
         setParsedData(prev => prev.map(row => {
             if (row.id !== id) return row;
             const updatedRow = { ...row, [field]: value };
-
             if (field === 'technique') {
                 updatedRow.error = validateTechnique(value);
             }
-
             return updatedRow;
         }));
     };
@@ -149,8 +115,6 @@ export default function ImportExercisesPage() {
         setParsedData(prev => prev.filter(row => row.id !== id));
     };
 
-    const { formatExerciseList } = useTranslatedExercise();
-
     const handleImport = async () => {
         const hasErrors = parsedData.some(row => row.error || !row.title.trim());
         if (hasErrors) {
@@ -160,40 +124,15 @@ export default function ImportExercisesPage() {
 
         if (parsedData.length === 0) return;
 
-        setIsImporting(true);
-        setGlobalError(null);
-
-        try {
-            const { data: { user }, error: authError } = await supabase.auth.getUser();
-            if (authError || !user) throw new Error(t('errors.auth'));
-
-            const payload = parsedData.map(ex => ({
-                user_id: user.id,
-                title: ex.title.trim(),
-                technique: ex.technique.trim() || null,
-                bpm_goal: ex.bpm_goal ? parseInt(ex.bpm_goal, 10) : null
-            }));
-
-            const { data: rawData, error: insertError } = await supabase
-                .from('exercises')
-                .insert(payload)
-                .select();
-
-            if (insertError) throw insertError;
-
-            let data: Exercise[] = [];
-            if (rawData) {
-                data = formatExerciseList(rawData as Exercise[]);
-            }
-
+        // --- Ejecución limpia a través del hook ---
+        const success = await importBulkExercises(parsedData);
+        if (success) {
             router.push('/library');
-        } catch (err) {
-            setGlobalError(err instanceof Error ? err.message : String(err));
-            setIsImporting(false);
         }
     };
 
     const hasInvalidRows = parsedData.some(row => row.error || !row.title.trim() || !row.technique.trim());
+    const displayError = globalError || hookError;
 
     return (
         <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '4rem' }}>
@@ -221,9 +160,7 @@ export default function ImportExercisesPage() {
                 {parsedData.length === 0 ? (
                     <>
                         <div style={{ marginBottom: '1.5rem' }}>
-                            <p style={{ color: 'var(--muted)', margin: '0 0 0.5rem', fontSize: '0.9rem' }}>
-                                {t('instructions.text')}
-                            </p>
+                            <p style={{ color: 'var(--muted)', margin: '0 0 0.5rem', fontSize: '0.9rem' }}>{t('instructions.text')}</p>
                             <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
                                 <p style={{ margin: '0 0 0.5rem', color: 'var(--gold)', fontWeight: 600, fontSize: '0.9rem' }}>{t('instructions.formatRequired')}</p>
                                 <code style={{ color: 'var(--text)', background: '#111', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.85rem' }}>{t('instructions.formatExample')}</code><br /><br />
@@ -231,23 +168,10 @@ export default function ImportExercisesPage() {
                                 <code style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('instructions.example2')}</code>
                             </div>
                             <div style={{ margin: '0.8rem 0 0' }}>
-                                <p style={{ color: 'var(--gold)', margin: '0 0 0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>
-                                    {t('instructions.allowedTechniques')}
-                                </p>
+                                <p style={{ color: 'var(--gold)', margin: '0 0 0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('instructions.allowedTechniques')}</p>
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
                                     {TECHNIQUES.map(tech => (
-                                        <span
-                                            key={tech}
-                                            style={{
-                                                background: 'rgba(255,255,255,0.05)',
-                                                border: '1px solid rgba(255,255,255,0.1)',
-                                                color: 'var(--muted)',
-                                                padding: '0.2rem 0.6rem',
-                                                borderRadius: '12px',
-                                                fontSize: '0.75rem',
-                                                whiteSpace: 'nowrap'
-                                            }}
-                                        >
+                                        <span key={tech} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--muted)', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
                                             {tech}
                                         </span>
                                     ))}
@@ -263,16 +187,14 @@ export default function ImportExercisesPage() {
                             }}
                             placeholder={t('input.placeholder')}
                             style={{
-                                width: '100%', height: '200px', background: 'rgba(0,0,0,0.2)',
-                                border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1rem',
-                                color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem',
-                                resize: 'vertical', marginBottom: '1rem', outline: 'none'
+                                width: '100%', height: '200px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1rem',
+                                color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem', resize: 'vertical', marginBottom: '1rem', outline: 'none'
                             }}
                         />
 
-                        {globalError && (
+                        {displayError && (
                             <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1rem' }}>
-                                ⚠ {globalError}
+                                ⚠ {displayError}
                             </div>
                         )}
 
@@ -280,8 +202,7 @@ export default function ImportExercisesPage() {
                             onClick={parseText}
                             disabled={inputText.trim() === ''}
                             style={{
-                                width: '100%', background: 'var(--surface2)', color: 'var(--text)', padding: '1rem',
-                                borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
+                                width: '100%', background: 'var(--surface2)', color: 'var(--text)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
                                 cursor: inputText.trim() === '' ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'background 0.2s'
                             }}
                             onMouseEnter={e => { if (inputText.trim() !== '') e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
@@ -294,10 +215,7 @@ export default function ImportExercisesPage() {
                     <>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
                             <h3 style={{ color: 'var(--text)', margin: 0 }}>{t('review.title', { count: parsedData.length })}</h3>
-                            <button
-                                onClick={() => { setParsedData([]); setOpenDropdownId(null); }}
-                                style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}
-                            >
+                            <button onClick={() => { setParsedData([]); setOpenDropdownId(null); }} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}>
                                 {t('review.backToText')}
                             </button>
                         </div>
@@ -308,109 +226,46 @@ export default function ImportExercisesPage() {
                                 const isOpen = openDropdownId === ex.id;
 
                                 return (
-                                    <div key={ex.id} style={{
-                                        display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.8rem', alignItems: 'start',
-                                        background: ex.error ? 'rgba(231,76,60,0.05)' : 'rgba(0,0,0,0.2)',
-                                        border: `1px solid ${ex.error ? 'rgba(231,76,60,0.3)' : 'rgba(255,255,255,0.05)'}`,
-                                        padding: '1rem', borderRadius: '8px'
-                                    }}>
+                                    <div key={ex.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.8rem', alignItems: 'start', background: ex.error ? 'rgba(231,76,60,0.05)' : 'rgba(0,0,0,0.2)', border: `1px solid ${ex.error ? 'rgba(231,76,60,0.3)' : 'rgba(255,255,255,0.05)'}`, padding: '1rem', borderRadius: '8px' }}>
+                                        
+                                        {/* Título */}
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                                             <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('review.labels.title')}</label>
-                                            <input
-                                                type="text"
-                                                value={ex.title}
-                                                onChange={(e) => handleUpdateRow(ex.id, 'title', e.target.value)}
-                                                style={{
-                                                    width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)',
-                                                    border: `1px solid ${!ex.title.trim() ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`,
-                                                    color: 'var(--text)', outline: 'none'
-                                                }}
-                                            />
+                                            <input type="text" value={ex.title} onChange={(e) => handleUpdateRow(ex.id, 'title', e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)', border: `1px solid ${!ex.title.trim() ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`, color: 'var(--text)', outline: 'none' }} />
                                         </div>
 
+                                        {/* Técnica */}
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', position: 'relative' }}>
                                             <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('review.labels.technique')}</label>
-
-                                            {isOpen && (
-                                                <div
-                                                    style={{ position: 'fixed', inset: 0, zIndex: 9 }}
-                                                    onClick={() => setOpenDropdownId(null)}
-                                                />
-                                            )}
-
-                                            <button
-                                                onClick={() => setOpenDropdownId(isOpen ? null : ex.id)}
-                                                style={{
-                                                    width: '100%', padding: '0.5rem', borderRadius: '4px',
-                                                    background: 'var(--surface)',
-                                                    border: `1px solid ${ex.error ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`,
-                                                    color: ex.technique ? 'var(--text)' : 'var(--muted)',
-                                                    outline: 'none', cursor: 'pointer', textAlign: 'left',
-                                                    display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                                    minHeight: '34px'
-                                                }}
-                                            >
-                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                                                    {ex.technique || t('review.labels.select')}
-                                                </span>
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}>
-                                                    <polyline points="6 9 12 15 18 9"></polyline>
-                                                </svg>
+                                            {isOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setOpenDropdownId(null)} />}
+                                            <button onClick={() => setOpenDropdownId(isOpen ? null : ex.id)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)', border: `1px solid ${ex.error ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`, color: ex.technique ? 'var(--text)' : 'var(--muted)', outline: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '34px' }}>
+                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.technique || t('review.labels.select')}</span>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}><polyline points="6 9 12 15 18 9"></polyline></svg>
                                             </button>
 
                                             {isOpen && (
-                                                <div style={{
-                                                    position: 'absolute', top: 'calc(100% + 4px)', left: 0, width: '100%',
-                                                    background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)',
-                                                    borderRadius: '8px', padding: '0.5rem', zIndex: 10,
-                                                    maxHeight: '200px', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)'
-                                                }}>
+                                                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, width: '100%', background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '0.5rem', zIndex: 10, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
                                                     {TECHNIQUES.map(tech => (
-                                                        <label key={tech} style={{
-                                                            display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem',
-                                                            cursor: 'pointer', borderRadius: '4px', color: 'var(--text)', fontSize: '0.85rem'
-                                                        }}
-                                                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
-                                                            onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
-                                                        >
-                                                            <input
-                                                                type="checkbox"
-                                                                checked={currentTechs.includes(tech)}
-                                                                onChange={() => handleToggleTechnique(ex.id, ex.technique, tech)}
-                                                                style={{ accentColor: 'var(--gold)' }}
-                                                            />
+                                                        <label key={tech} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem', cursor: 'pointer', borderRadius: '4px', color: 'var(--text)', fontSize: '0.85rem' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                                                            <input type="checkbox" checked={currentTechs.includes(tech)} onChange={() => handleToggleTechnique(ex.id, ex.technique, tech)} style={{ accentColor: 'var(--gold)' }} />
                                                             {tech}
                                                         </label>
                                                     ))}
                                                 </div>
                                             )}
-
                                             {ex.error && <span style={{ color: '#e74c3c', fontSize: '0.7rem' }}>{ex.error}</span>}
                                         </div>
 
+                                        {/* BPM */}
                                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                                             <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('review.labels.bpm')}</label>
-                                            <input
-                                                type="number"
-                                                value={ex.bpm_goal}
-                                                onChange={(e) => handleUpdateRow(ex.id, 'bpm_goal', e.target.value)}
-                                                placeholder={t('review.labels.optional')}
-                                                style={{
-                                                    width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)',
-                                                    border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none'
-                                                }}
-                                            />
+                                            <input type="number" value={ex.bpm_goal} onChange={(e) => handleUpdateRow(ex.id, 'bpm_goal', e.target.value)} placeholder={t('review.labels.optional')} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none' }} />
                                         </div>
 
+                                        {/* Borrar Fila */}
                                         <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingTop: '1.2rem' }}>
-                                            <button
-                                                onClick={() => handleRemoveRow(ex.id)}
-                                                style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '0.5rem' }}
-                                                title={t('review.actions.deleteRow')}
-                                            >
-                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path>
-                                                </svg>
+                                            <button onClick={() => handleRemoveRow(ex.id)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '0.5rem' }} title={t('review.actions.deleteRow')}>
+                                                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg>
                                             </button>
                                         </div>
                                     </div>
@@ -418,23 +273,18 @@ export default function ImportExercisesPage() {
                             })}
                         </div>
 
-                        {globalError && (
+                        {displayError && (
                             <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
-                                ⚠ {globalError}
+                                ⚠ {displayError}
                             </div>
                         )}
 
                         <button
                             onClick={handleImport}
-                            disabled={isImporting || hasInvalidRows}
-                            style={{
-                                width: '100%', background: 'var(--gold)', color: '#111', padding: '1rem',
-                                borderRadius: '8px', border: 'none', cursor: isImporting || hasInvalidRows ? 'not-allowed' : 'pointer',
-                                fontWeight: 700, fontSize: '1rem', transition: 'all 0.2s',
-                                opacity: isImporting || hasInvalidRows ? 0.5 : 1
-                            }}
+                            disabled={saving || hasInvalidRows}
+                            style={{ width: '100%', background: 'var(--gold)', color: '#111', padding: '1rem', borderRadius: '8px', border: 'none', cursor: saving || hasInvalidRows ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '1rem', transition: 'all 0.2s', opacity: saving || hasInvalidRows ? 0.5 : 1 }}
                         >
-                            {isImporting ? t('review.actions.saving') : t('review.actions.confirmSave')}
+                            {saving ? t('review.actions.saving') : t('review.actions.confirmSave')}
                         </button>
                     </>
                 )}

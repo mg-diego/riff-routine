@@ -2,13 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../../../lib/supabase';
 import { ExerciseForm } from '../../../../../components/library/ExerciseForm';
 import { BecomeProModal } from '../../../../../components/ui/BecomeProModal';
-import { SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../../lib/constants';
 import { useTranslations } from 'next-intl';
-
-const MAX_FREE_EXERCISES = 10;
+import { useExerciseActions } from '../../../../../hooks/useExerciseActions';
 
 export default function NewExercisePage() {
   const router = useRouter();
@@ -16,8 +13,7 @@ export default function NewExercisePage() {
   const p = useTranslations('BecomeProModal');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const [saving, setSaving] = useState(false);
-  const [error, setError] = useState<string | null>(null);
+  const { saving, error, createCustomExercise, setError } = useExerciseActions();  
 
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -29,36 +25,13 @@ export default function NewExercisePage() {
   const [difficulty, setDifficulty] = useState(0);
   const [notes, setNotes] = useState('');
 
-  const [userTier, setUserTier] = useState<SubscriptionTier>(SUBSCRIPTION_TIERS.FREE);
-  const [currentExerciseCount, setCurrentExerciseCount] = useState(0);
   const [showProModal, setShowProModal] = useState(false);
 
+  // Escuchar el evento del hook para mostrar el modal de pago
   useEffect(() => {
-    const fetchUserData = async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: profile } = await supabase
-        .from('profiles')
-        .select('subscription_tier')
-        .eq('id', user.id)
-        .single();
-
-      if (profile) {
-        setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
-      }
-
-      const { count } = await supabase
-        .from('exercises')
-        .select('*', { count: 'exact', head: true })
-        .eq('user_id', user.id);
-
-      if (count !== null) {
-        setCurrentExerciseCount(count);
-      }
-    };
-
-    fetchUserData();
+    const handleShowProModal = () => setShowProModal(true);
+    window.addEventListener('app:show-pro-modal', handleShowProModal);
+    return () => window.removeEventListener('app:show-pro-modal', handleShowProModal);
   }, []);
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement> | React.ChangeEvent<HTMLInputElement>) => {
@@ -90,54 +63,24 @@ export default function NewExercisePage() {
   };
 
   const handleSubmit = async () => {
+    // Validaciones locales de UI rápidas
     if (!name.trim()) return setError(t('form.nameRequired'));
     if (categories.length === 0) return setError(t('form.categoryRequired'));
     if (difficulty < 1 || difficulty > 5) return setError(t('form.difficultyRequired'));
 
-    if (userTier === SUBSCRIPTION_TIERS.FREE && currentExerciseCount >= MAX_FREE_EXERCISES) {
-      setShowProModal(true);
-      return;
-    }
+    // Delegamos la creación al hook
+    const newExerciseId = await createCustomExercise({
+      name,
+      categories,
+      difficulty,
+      bpmSuggested,
+      bpmGoal,
+      notes,
+      file
+    });
 
-    try {
-      setSaving(true);
-      setError(null);
-
-      const { data: { user }, error: authError } = await supabase.auth.getUser();
-      if (authError || !user) throw new Error(t('form.authRequired'));
-
-      let currentFileUrl = null;
-
-      if (file) {
-        const fileExt = file.name.split('.').pop();
-        const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
-        const { error: uploadError } = await supabase.storage.from('guitar_tabs').upload(filePath, file);
-
-        if (uploadError) throw uploadError;
-
-        const { data: { publicUrl } } = supabase.storage.from('guitar_tabs').getPublicUrl(filePath);
-        currentFileUrl = publicUrl;
-      }
-
-      const { error: dbError } = await supabase.from('exercises').insert({
-        user_id: user.id,
-        title: name.trim(),
-        file_url: currentFileUrl,
-        technique: categories.join(', '),
-        bpm_suggested: bpmSuggested ? parseInt(String(bpmSuggested)) : null,
-        bpm_goal: bpmGoal ? parseInt(String(bpmGoal)) : null,
-        difficulty,
-        notes: notes.trim() || null,
-      });
-
-      if (dbError) throw dbError;
-
-      window.dispatchEvent(new CustomEvent('app:exercise-created'));
+    if (newExerciseId) {
       router.push('/library');
-    } catch (err) {
-      setError(err instanceof Error ? err.message : String(err));
-    } finally {
-      setSaving(false);
     }
   };
 
@@ -172,18 +115,10 @@ export default function NewExercisePage() {
           onClick={() => inputRef.current?.click()}
           style={{
             border: `2px dashed ${dragOver ? 'var(--gold)' : file ? 'rgba(74,222,128,0.5)' : 'rgba(220,185,138,0.3)'}`,
-            borderRadius: '10px',
-            padding: '1.5rem',
-            textAlign: 'center',
-            cursor: 'pointer',
+            borderRadius: '10px', padding: '1.5rem', textAlign: 'center', cursor: 'pointer',
             background: dragOver ? 'rgba(220,185,138,0.05)' : file ? 'rgba(74,222,128,0.04)' : 'rgba(255,255,255,0.02)',
-            transition: 'all 0.2s',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            minHeight: '100px',
-            marginBottom: '1.5rem'
+            transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center',
+            justifyContent: 'center', minHeight: '100px', marginBottom: '1.5rem'
           }}
         >
           <input ref={inputRef} type="file" accept=".gp,.gp3,.gp4,.gp5,.gpx" onChange={handleFileDrop} hidden />
@@ -212,7 +147,7 @@ export default function NewExercisePage() {
         </div>
 
         <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-          <ExerciseForm {...{ name, setName, categories, setCategories, bpmSuggested, setBpmSuggested, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes }} />
+          <ExerciseForm {...{ name, setName, categories, setCategories, bpmSuggested, setBpmSuggested, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes, isSystem: false }} />
         </div>
 
         {error && (

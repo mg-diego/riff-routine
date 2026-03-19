@@ -433,7 +433,9 @@
       "dragNew": "Drag a new GP or click",
       "guitarProFile": "Guitar Pro File",
       "optional": "(optional)",
-      "dragOrClick": "GP3, GP4, GP5, GPX · drag or click"
+      "dragOrClick": "GP3, GP4, GP5, GPX · drag or click",
+      "systemFile": "System file",
+      "systemFileDesc": "This file cannot be replaced"
     },
     "form": {
       "nameRequired": "Name is required.",
@@ -604,7 +606,9 @@
     "exercise": {
       "start": "Start",
       "goal": "Goal",
-      "playButton": "▶ Play"
+      "playButton": "▶ Play",
+      "alreadyAdded": "Already added",
+      "addToLibrary": "Add to Library"
     },
     "blocks": {
       "tools": "Musical Language",
@@ -695,6 +699,7 @@
   "ExerciseRow": {
     "level": "Lv. {level}",
     "noFile": "No associated sheet music",
+    "systemBadge": "System Exercise",
     "bpmStatus": {
       "current": "Cur.",
       "suggested": "Sug.",
@@ -705,6 +710,7 @@
     "freePractice": "Free P.",
     "lockedTooltip": "This exercise requires a PRO subscription",
     "lockedDescription": "Only your 10 most recent exercises are available on the free plan.",
+    "cannotEditSystem": "System Exercises cannot be edited.",
     "lockedBadge": "LOCKED"
   },
   "AlphaTabContainer": {
@@ -807,6 +813,10 @@
     "errors": {
       "invalidBpm": "Invalid BPM",
       "saveError": "Error saving"
+    },
+    "previewMode": {
+      "message": "You are in preview mode.",
+      "button": "Add to my library"
     }
   },
   "ScalesPanel": {
@@ -1069,6 +1079,7 @@
       "vibrato": "Vibrato"
     },
     "difficulty": {
+      "0": "",
       "1": "Beginner",
       "2": "Basic",
       "3": "Intermediate",
@@ -1644,11 +1655,17 @@
     "sys_chords_technique": "Chords",
     "sys_chords_notes": "Master the fretboard by practicing chords and inversions in any position.",
     "sys_3_notes_beat_title": "3 Notes per Beat",
-    "sys_3_notes_beat_technique": "Alternate Picking",
     "sys_3_notes_beat_notes": "Rhythmic exercise based on triplets. Perfect for developing timing in compound meters or blues and rock licks.",
     "sys_4_notes_beat_title": "4 Notes per Beat",
-    "sys_4_notes_beat_technique": "Alternate Picking",
-    "sys_4_notes_beat_notes": "Sixteenth note practice to improve speed and binary subdivision. Essential for fast passages and shredding."
+    "sys_4_notes_beat_notes": "Sixteenth note practice to improve speed and binary subdivision. Essential for fast passages and shredding.",
+    "sys_3_strings_sweep_title": "3-String Sweep Picking",
+    "sys_3_strings_sweep_notes": "Focus on a fluid, single-stroke picking motion. Ensure perfect synchronization with your fretting hand to prevent notes from bleeding into each other.",
+    "sys_5_strings_sweep_title": "5-String Sweep Picking",
+    "sys_5_strings_sweep_notes": "Control the pick hand's follow-through across all 5 strings. Subtle palm muting and fret-hand muting are vital to maintain clarity in each arpeggio shape.",
+    "sys_tapping_ex01_title": "Basic Tapping: Triads and Arpeggios",
+    "sys_tapping_ex01_notes": "Focus on the impact strength of your tapping finger. The note should sound with the same intensity as a hammer-on from the fretting hand.",
+    "sys_tapping_ex02_title": "Multi-String Tapping: Linear Flow",
+    "sys_tapping_ex02_notes": "Advanced exercise traversing all strings. Keep your tapping hand relaxed and ensure adjacent strings are muted to avoid unwanted noise."
   },
   "CompositionPanel": {
     "title": "Composition Center",
