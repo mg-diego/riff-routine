@@ -201,19 +201,6 @@ export function usePlayerHeader({
         };
     }, [t]);
 
-    // ── Autosave on unmount ───────────────────────────────────────────────────
-    useEffect(() => {
-        return () => {
-            const { displaySeconds, bpmCurrent, bpmGoal, exercise, saved, isPreviewMode } = latestRef.current;
-            if (displaySeconds >= 60 && !saved && exercise && !isPreviewMode) {
-                const parsedCur = parseInt(bpmCurrent);
-                const cur  = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
-                const goal = bpmGoal ? parseInt(bpmGoal) : null;
-                onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds).catch(() => {});
-            }
-        };
-    }, [onSaveExerciseLog, originalBpm]);
-
     // ── Handlers ─────────────────────────────────────────────────────────────
     const _autoSave = async (secs: number, cur: string, goal: string) => {
         if (!exercise || secs < 60 || isPreviewMode) return;
