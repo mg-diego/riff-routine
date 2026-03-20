@@ -11,10 +11,11 @@ const getYoutubeId = (url: string) => {
     const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
     return (m && m[2].length === 11) ? m[2] : null;
 };
+
 const formatMusicKey = (note?: string | null, type?: string | null) =>
     note ? `${note} ${type || ''}`.trim() : '';
 
-// ── TrackCard (unchanged) ─────────────────────────────────────────────────────
+// ── TrackCard ─────────────────────────────────────────────────────
 function TrackCard({ track, onPlay, onDeleteRequest, t }: { track: BackingTrack; onPlay: (t: BackingTrack) => void; onDeleteRequest: (t: BackingTrack) => void; t: any }) {
     const ytId = getYoutubeId(track.youtube_url);
     const tonalityDisplay = formatMusicKey(track.tonality_note, track.tonality_type);
@@ -34,9 +35,9 @@ function TrackCard({ track, onPlay, onDeleteRequest, t }: { track: BackingTrack;
 
                 <div style={{ position: 'absolute', top: '0.5rem', right: '0.5rem', zIndex: 10, display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
                     {isSystem && (
-                        <div style={{ background: 'var(--gold)', color: '#111', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                        <div title={t('officialDisclaimer') || "Pista oficial del sistema (No editable)"} style={{ background: 'var(--gold)', color: '#111', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                             <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" /></svg>
-                            {t('verifiedBadge')}
+                            {t('officialBadge')}
                         </div>
                     )}
                     {!isSystem && <DeleteButton onClick={(e: React.MouseEvent<HTMLButtonElement>) => { e.stopPropagation(); onDeleteRequest(track); }} />}
@@ -59,7 +60,7 @@ function TrackCard({ track, onPlay, onDeleteRequest, t }: { track: BackingTrack;
 
             <div style={{ padding: '1.2rem', flex: 1, display: 'flex', flexDirection: 'column' }}>
                 <h4 title={track.title} style={{ margin: '0 0 1rem 0', color: 'var(--text)', fontSize: '1.05rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 700, lineHeight: 1.3, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden', minHeight: '2.6em' }}>
-                    {track.title}
+                    {track.title || t('untitledTrack')}
                 </h4>
                 <div style={{ marginTop: 'auto', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                     {tonalityDisplay && (
@@ -99,12 +100,11 @@ function FilterPill({ label, onRemove }: { label: string; onRemove: () => void }
 // ── Main component ────────────────────────────────────────────────────────────
 interface BackingTracksLibraryProps {
     onPlayTrack: (track: BackingTrack) => void;
-    onCreateNew?: () => void;
     isMiniMode?: boolean;
     refreshTrigger?: number;
 }
 
-export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = false, refreshTrigger = 0 }: BackingTracksLibraryProps) {
+export function BackingTracksLibrary({ onPlayTrack, isMiniMode = false, refreshTrigger = 0 }: BackingTracksLibraryProps) {
     const t = useTranslations('ImprovPanel');
 
     const [savedTracks, setSavedTracks] = useState<BackingTrack[]>([]);
@@ -117,8 +117,8 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
     const [filtersOpen, setFiltersOpen] = useState(false);
     const [filterTonality, setFilterTonality] = useState('');
     const [filterChords, setFilterChords] = useState<string[]>([]);
-    const [bpmMin, setBpmMin] = useState(0);
-    const [bpmMax, setBpmMax] = useState(300);
+    const [bpmMin, setBpmMin] = useState<number | ''>('');
+    const [bpmMax, setBpmMax] = useState<number | ''>('');
 
     const filterPanelRef = useRef<HTMLDivElement>(null);
     const filterBtnRef = useRef<HTMLButtonElement>(null);
@@ -175,23 +175,28 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
         return max > 0 ? max : 300;
     }, [savedTracks]);
 
+    // Slider safe values
+    const safeGlobalMax = globalBpmMax || 300;
+    const safeMin = Math.max(0, Math.min(Number(bpmMin) || 0, safeGlobalMax));
+    const safeMax = Math.max(safeMin, Math.min(bpmMax === '' ? safeGlobalMax : Number(bpmMax), safeGlobalMax));
+
     // ── Active filter count ───────────────────────────────────────────────────
     const activeFilterCount =
         (filterTonality ? 1 : 0) +
         filterChords.length +
-        (bpmMin > 0 || bpmMax < globalBpmMax ? 1 : 0);
+        (safeMin > 0 || safeMax < safeGlobalMax ? 1 : 0);
 
     const clearAllFilters = () => {
-        setFilterTonality(''); setFilterChords([]); setBpmMin(0); setBpmMax(globalBpmMax);
+        setFilterTonality(''); setFilterChords([]); setBpmMin(''); setBpmMax('');
     };
 
     // ── Filtering ─────────────────────────────────────────────────────────────
     const filterTrack = (track: BackingTrack) => {
         const q = search.toLowerCase();
         if (q) {
-            const inTitle = track.title.toLowerCase().includes(q);
+            const inTitle = track.title?.toLowerCase().includes(q) || false;
             const inTonality = formatMusicKey(track.tonality_note, track.tonality_type).toLowerCase().includes(q);
-            const inChords = track.chords?.some(c => formatMusicKey(c.note, c.type).toLowerCase().includes(q));
+            const inChords = track.chords?.some(c => formatMusicKey(c.note, c.type).toLowerCase().includes(q)) || false;
             if (!inTitle && !inTonality && !inChords) return false;
         }
         if (filterTonality) {
@@ -202,9 +207,9 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
             const trackChordLabels = track.chords?.map(c => formatMusicKey(c.note, c.type)) || [];
             if (!filterChords.every(fc => trackChordLabels.includes(fc))) return false;
         }
-        if (bpmMin > 0 || bpmMax < globalBpmMax) {
-            const bpm = track.bpm || 0;
-            if (bpm < bpmMin || bpm > bpmMax) return false;
+        if (safeMin > 0 || safeMax < safeGlobalMax) {
+            const trackBpm = track.bpm || 0;
+            if (trackBpm < safeMin || trackBpm > safeMax) return false;
         }
         return true;
     };
@@ -279,23 +284,84 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
                                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.6rem' }}>
                                     <p style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.09em', textTransform: 'uppercase', color: 'var(--muted)', margin: 0 }}>BPM</p>
                                     <span style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--gold)', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.04em' }}>
-                                        {bpmMin} – {bpmMax}
+                                        {safeMin} – {safeMax}
                                     </span>
                                 </div>
-                                <style>{`
-                                    .bpm-slider { width: 100%; height: 4px; border-radius: 2px; outline: none; cursor: pointer; accent-color: var(--gold); }
-                                `}</style>
-                                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                    <input type="range" className="bpm-slider" min={0} max={globalBpmMax} value={bpmMin}
-                                        onChange={e => setBpmMin(Math.min(Number(e.target.value), bpmMax - 1))}
+                                <div style={{ position: 'relative', height: '24px', display: 'flex', alignItems: 'center', width: '100%' }}>
+                                    <style>{`
+                                        .dual-slider {
+                                            position: absolute;
+                                            width: 100%;
+                                            pointer-events: none;
+                                            -webkit-appearance: none;
+                                            appearance: none;
+                                            background: transparent;
+                                            z-index: 2;
+                                            margin: 0;
+                                        }
+                                        .dual-slider::-webkit-slider-thumb {
+                                            pointer-events: all;
+                                            -webkit-appearance: none;
+                                            appearance: none;
+                                            width: 16px;
+                                            height: 16px;
+                                            background: var(--gold);
+                                            border-radius: 50%;
+                                            cursor: pointer;
+                                        }
+                                        .dual-slider::-moz-range-thumb {
+                                            pointer-events: all;
+                                            width: 16px;
+                                            height: 16px;
+                                            background: var(--gold);
+                                            border-radius: 50%;
+                                            cursor: pointer;
+                                            border: none;
+                                        }
+                                    `}</style>
+
+                                    <div style={{
+                                        position: 'absolute',
+                                        width: '100%',
+                                        height: '4px',
+                                        background: 'rgba(255, 255, 255, 0.1)',
+                                        borderRadius: '2px',
+                                        zIndex: 0
+                                    }} />
+
+                                    <div style={{
+                                        position: 'absolute',
+                                        height: '4px',
+                                        background: 'var(--gold)',
+                                        borderRadius: '2px',
+                                        zIndex: 1,
+                                        left: `${(safeMin / safeGlobalMax) * 100}%`,
+                                        right: `${100 - (safeMax / safeGlobalMax) * 100}%`
+                                    }} />
+
+                                    <input 
+                                        type="range" 
+                                        className="dual-slider" 
+                                        min={0} 
+                                        max={safeGlobalMax} 
+                                        value={safeMin}
+                                        onChange={e => setBpmMin(Math.min(Number(e.target.value), safeMax - 1))}
+                                        style={{ zIndex: safeMin > safeGlobalMax - 10 ? 3 : 4 }}
                                     />
-                                    <input type="range" className="bpm-slider" min={0} max={globalBpmMax} value={bpmMax}
-                                        onChange={e => setBpmMax(Math.max(Number(e.target.value), bpmMin + 1))}
+                                    
+                                    <input 
+                                        type="range" 
+                                        className="dual-slider" 
+                                        min={0} 
+                                        max={safeGlobalMax} 
+                                        value={safeMax}
+                                        onChange={e => setBpmMax(Math.max(Number(e.target.value), safeMin + 1))}
+                                        style={{ zIndex: 4 }}
                                     />
                                 </div>
                                 <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem' }}>
                                     <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>0</span>
-                                    <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{globalBpmMax}</span>
+                                    <span style={{ fontSize: '0.65rem', color: 'var(--muted)' }}>{safeGlobalMax}</span>
                                 </div>
                             </div>
 
@@ -309,18 +375,6 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
                     )}
                 </div>
             </div>
-
-            {/* ── Active pills ── */}
-            {(filterTonality || filterChords.length > 0 || bpmMin > 0 || bpmMax < globalBpmMax) && (
-                <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center', marginTop: '-0.75rem' }}>
-                    {filterTonality && <FilterPill label={filterTonality} onRemove={() => setFilterTonality('')} />}
-                    {filterChords.map(c => <FilterPill key={c} label={c} onRemove={() => setFilterChords(filterChords.filter(fc => fc !== c))} />)}
-                    {(bpmMin > 0 || bpmMax < globalBpmMax) && <FilterPill label={`${bpmMin}–${bpmMax} BPM`} onRemove={() => { setBpmMin(0); setBpmMax(globalBpmMax); }} />}
-                    <button onClick={clearAllFilters} style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.72rem', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', padding: '0 0.25rem' }}>
-                        {t('clearFilters')}
-                    </button>
-                </div>
-            )}
 
             {/* ── Results count ── */}
             {(search || activeFilterCount > 0) && !isLoadingTracks && (
@@ -346,29 +400,14 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
                             <div style={{ textAlign: 'center', padding: '3rem 1rem', background: 'rgba(255,255,255,0.02)', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.1)', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
                                 <span style={{ color: 'var(--muted)', fontSize: '0.95rem' }}>
                                     {t('noUserTracks') || "Aún no tienes backing tracks guardados."}
-                                </span>
-                                {onCreateNew && (
-                                    <button
-                                        onClick={onCreateNew}
-                                        style={{
-                                            background: 'transparent', color: 'var(--gold)', border: '1px solid var(--gold)',
-                                            padding: '0.4rem 1rem', borderRadius: '6px', cursor: 'pointer',
-                                            fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem', fontWeight: 600,
-                                            transition: 'all 0.2s ease'
-                                        }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold)'; e.currentTarget.style.color = '#111'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--gold)'; }}
-                                    >
-                                        + {t('newTrack')}
-                                    </button>
-                                )}
+                                </span>                                
                             </div>
                         )}
                     </div>
                     
                     {systemTracks.length > 0 && (
                         <div>
-                            <h3 style={{ color: 'var(--text)', fontSize: isMiniMode ? '1rem' : '1.2rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>{t('verifiedTracksTitle')}</h3>
+                            <h3 style={{ color: 'var(--text)', fontSize: isMiniMode ? '1rem' : '1.2rem', marginBottom: '1.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '0.5rem' }}>{t('officialTracksTitle')}</h3>
                             <div style={{ display: 'grid', gridTemplateColumns: isMiniMode ? 'repeat(auto-fill, minmax(220px, 1fr))' : 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem' }}>
                                 {systemTracks.map(track => <TrackCard key={track.id} track={track} onPlay={onPlayTrack} onDeleteRequest={setTrackToDelete} t={t} />)}
                             </div>
@@ -377,7 +416,7 @@ export function BackingTracksLibrary({ onPlayTrack, onCreateNew, isMiniMode = fa
 
                     {totalVisible === 0 && (
                         <div style={{ textAlign: 'center', padding: '3rem 0', color: 'var(--muted)', fontSize: isMiniMode ? '0.85rem' : '1rem' }}>
-                            {search || activeFilterCount > 0 ? t('noMatchState') : t('emptyState')}
+                            {search || activeFilterCount > 0 ? (t('noMatchState') || "No se han encontrado resultados.") : (t('emptyState') || "No hay pistas.")}
                         </div>
                     )}
                 </>

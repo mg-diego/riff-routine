@@ -237,19 +237,6 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem' }}>
           ← {t('backToLibrary')}
         </button>
-
-        {!isSystemActive ? (
-          <button onClick={handleSaveCurrentTrack} disabled={isSaving} style={{ background: 'rgba(74,222,128,0.15)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.3)', padding: '0.5rem 1rem', borderRadius: '6px', fontWeight: 600, cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.6 : 1, fontFamily: 'DM Sans, sans-serif', fontSize: '0.85rem' }}>
-            {isSaving ? t('saving') : activeTrackId ? t('updateTrack') : t('saveTrack')}
-          </button>
-        ) : (
-          <div style={{ background: 'var(--gold)', color: '#111', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.75rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-            </svg>
-            {t('verifiedBadge')}
-          </div>
-        )}
       </div>
 
       {/* Main grid */}
@@ -290,6 +277,19 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
                 <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.4)' }}>BPM</span>
               </div>
             </div>
+<div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+            {!isSystemActive ? (
+              <button onClick={handleSaveCurrentTrack} disabled={isSaving} style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.2)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontWeight: 600, cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.6 : 1, fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }} onMouseEnter={e => { if (!isSaving) { e.currentTarget.style.background = 'rgba(74,222,128,0.15)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.4)'; } }} onMouseLeave={e => { if (!isSaving) { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.2)'; } }}>
+                {isSaving ? t('saving') : activeTrackId ? t('updateTrack') : t('saveTrack')}
+              </button>
+            ) : (
+              <div style={{ background: 'var(--gold)', color: '#111', padding: '0.3rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                </svg>
+                {t('officialBadge')}
+              </div>
+            )}
 
             {/* Columna derecha: botón cerrar */}
             {!isSystemActive && (
@@ -304,6 +304,7 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
                 </svg>
               </button>
             )}
+            </div>
           </div>
 
           <div style={{ position: 'relative', paddingBottom: '56.25%', height: 0, overflow: 'hidden', borderRadius: '8px' }}>
@@ -525,7 +526,7 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
                 {advancedSuggestions.perChordSuggestions.map((item, idx) => (
                   <div key={idx} style={{ background: 'rgba(0,0,0,0.2)', padding: '1.2rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.02)' }}>
                     <h4 style={{ margin: '0 0 1rem 0', color: 'var(--gold)', fontSize: '1.3rem', fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em' }}>
-                      Acorde: {item.chord}
+                      {item.chord}
                     </h4>
                     {item.scales.length > 0 ? (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>

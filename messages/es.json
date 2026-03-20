@@ -748,7 +748,7 @@
   },
   "ImprovPanel": {
     "label": "Improvisación",
-    "libraryTitle": "Mis Backing Tracks",
+    "libraryTitle": "Backing Tracks",
     "newTrack": "Nuevo track",
     "loading": "Cargando librería...",
     "noThumbnail": "Sin miniatura",
@@ -779,19 +779,25 @@
     "deleteModalTitle": "Eliminar Backing Track",
     "deleteModalWarning": "¿Estás seguro de que deseas eliminar este backing track de tu librería? Esta acción no se puede deshacer.",
     "fretboardLabel": "Diapasón",
-    "verifiedTracksTitle": "Backing Tracks Verificados",
+    "officialTracksTitle": "Backing Tracks Oficiales",
     "myTracksTitle": "Mis Backing Tracks",
-    "verifiedBadge": "Verificado",
+    "officialBadge": "oficial",
     "analyzerDescription": "Pega un enlace de YouTube para analizar la pista, añadir sus acordes y practicar con sugerencias de escalas en tiempo real.",
     "waitingVideo": "ESPERANDO VÍDEO",
     "noGlobalScales": "No se han encontrado escalas que encajen con todos los acordes a la vez.",
     "noUserTracks": "Aún no has guardado ninguna pista. ¡Añade tu primer Backing Track para empezar a practicar!",
     "filtersBtn": "Filtros",
     "searchPlaceholder": "Buscar por título, tonalidad o acordes...",
+    "filterTonality": "Tonalidad",
+    "filterChords": "Contiene acorde",
+    "clearFilters": "Limpiar filtros",    
+    "foundPlural": "{count} tracks encontrados",
+    "foundSingular": "{count} track encontrado",
     "tonalityTypes": {
       "major": "Mayor",
       "minor": "Menor"
-    }
+    },    
+    "noMatchState": "No se han encontrado resultados."
   },
   "PlayerHeader": {
     "modes": {
