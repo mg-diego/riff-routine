@@ -50,7 +50,7 @@ export function EndSessionModal({
                     grouped[re.exercise_id] = {
                         exercise_id: re.exercise_id,
                         title: translatedEx?.title || t('exerciseLabel'),
-                        hasFile: !!translatedEx?.file_url,
+                        hasBpm: exerciseData?.has_bpm !== false, // Evaluamos la propiedad real del ejercicio
                         bpm_used: '',
                         duration_seconds: 0,
                         idsToDelete: []
@@ -157,10 +157,10 @@ export function EndSessionModal({
 
                                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.8rem', alignItems: 'flex-end' }}>
                                     <div>
-                                        {showBpmInputs ? (
+                                        {log.hasBpm ? (
                                             <>
                                                 <label style={{ display: 'block', fontSize: '0.6rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem', fontWeight: 700 }}>{t('bpmFinalLabel')}</label>
-                                                <input type={log.hasFile ? 'number' : 'text'} placeholder="-" value={log.hasFile ? log.bpm_used : '---'} onChange={e => { if (log.hasFile) updateFinalLog(i, 'bpm_used', e.target.value); }} disabled={!log.hasFile} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 700, outline: 'none', opacity: log.hasFile ? 1 : 0.3, cursor: log.hasFile ? 'auto' : 'not-allowed', boxSizing: 'border-box', height: '36px' }} />
+                                                <input type={log.hasBpm ? 'number' : 'text'} placeholder="-" value={log.hasBpm ? log.bpm_used : '---'} onChange={e => { if (log.hasBpm) updateFinalLog(i, 'bpm_used', e.target.value); }} disabled={!log.hasBpm} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 700, outline: 'none', opacity: log.hasBpm ? 1 : 0.3, cursor: log.hasBpm ? 'auto' : 'not-allowed', boxSizing: 'border-box', height: '36px' }} />
                                             </>
                                         ) : (
                                             <div style={{ display: 'flex', alignItems: 'center', height: '36px' }}>

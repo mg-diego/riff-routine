@@ -792,7 +792,8 @@
     "filterChords": "Contains chord",
     "clearFilters": "Clear filters",    
     "foundPlural": "{count} tracks found",
-    "foundSingular": "{count} track found",
+    "foundSingular": "{count} track found",    
+    "officialDisclaimer": "Official System Track (Not editable)",
     "tonalityTypes": {
       "major": "Major",
       "minor": "Minor"

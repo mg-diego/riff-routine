@@ -730,7 +730,7 @@
     "bpmFinalLabel": "BPM Final",
     "noBpmLog": "Sin registro de BPM",
     "timeLabel": "Tiempo",
-    "endLog": "Borrar registro",
+    "clearLog": "Borrar registro",
     "actions": {
       "backToPractice": "Volver a la práctica",
       "saving": "Guardando...",
@@ -793,6 +793,7 @@
     "clearFilters": "Limpiar filtros",    
     "foundPlural": "{count} tracks encontrados",
     "foundSingular": "{count} track encontrado",
+    "officialDisclaimer": "Pista oficial del sistema (No editable)",
     "tonalityTypes": {
       "major": "Mayor",
       "minor": "Menor"
