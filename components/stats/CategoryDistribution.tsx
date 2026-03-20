@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { supabase } from '../../lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
 import { getStartDate } from '../../lib/utils';
@@ -42,10 +42,8 @@ export function CategoryDistribution({ dateFilter }: Props) {
 
       logs.forEach((log: any) => {
         const rawExercise = Array.isArray(log.exercises) ? log.exercises[0] : log.exercises;
-
         const translatedEx = formatExercise(rawExercise as Exercise);
         const techniqueField = translatedEx?.technique || t('generalFallback');
-
         const seconds = log.duration_seconds || 0;
         const techniqueList = techniqueField.split(',').map((t: string) => t.trim()).filter(Boolean);
 
@@ -82,6 +80,67 @@ export function CategoryDistribution({ dateFilter }: Props) {
     return parts.join(' ');
   };
 
+  const totalMinutesAllCategories = useMemo(() => {
+    return data.reduce((acc, curr) => acc + curr.value, 0);
+  }, [data]);
+
+  const renderCustomLabel = ({ cx, cy, midAngle, outerRadius, fill, percent, name }: any) => {
+    if (percent < 0.04) return null;
+
+    const RADIAN = Math.PI / 180;
+    const radius = outerRadius + 20;
+    const x = cx + radius * Math.cos(-midAngle * RADIAN);
+    const y = cy + radius * Math.sin(-midAngle * RADIAN);
+    const textAnchor = x > cx ? 'start' : 'end';
+
+    return (
+      <text 
+        x={x} 
+        y={y} 
+        fill={fill} 
+        textAnchor={textAnchor} 
+        dominantBaseline="central" 
+        fontSize="0.75rem" 
+        fontWeight="600"
+        fontFamily="DM Sans, sans-serif"
+      >
+        {`${name} ${(percent * 100).toFixed(0)}%`}
+      </text>
+    );
+  };
+
+  const CustomTooltip = ({ active, payload }: any) => {
+    if (active && payload && payload.length) {
+      const categoryData = payload[0].payload;
+      const percentage = totalMinutesAllCategories > 0 
+        ? ((categoryData.value / totalMinutesAllCategories) * 100).toFixed(1) 
+        : 0;
+
+      return (
+        <div style={{
+          background: '#111',
+          border: '1px solid rgba(255,255,255,0.1)',
+          borderRadius: '8px',
+          padding: '0.8rem 1rem',
+          boxShadow: '0 8px 16px rgba(0,0,0,0.4)'
+        }}>
+          <p style={{ margin: '0 0 0.5rem 0', color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            {categoryData.name}
+          </p>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
+            <span style={{ color: 'var(--gold)', fontSize: '1.2rem', fontWeight: 700, fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em' }}>
+              {formatTime(categoryData.value)}
+            </span>
+            <span style={{ color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600 }}>
+              ({percentage}%)
+            </span>
+          </div>
+        </div>
+      );
+    }
+    return null;
+  };
+
   if (loading) return (
     <div style={{ background: 'var(--surface)', borderRadius: '12px', height: 450, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <span className="loader" />
@@ -102,12 +161,21 @@ export function CategoryDistribution({ dateFilter }: Props) {
       </h3>
       <div style={{ flex: 1, width: '100%' }}>
         <ResponsiveContainer width="100%" height="100%">
-          <PieChart>
-            <Pie data={data} cx="50%" cy="50%" innerRadius="65%" outerRadius="90%" paddingAngle={3} dataKey="value">
+          <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
+            <Pie 
+              data={data} 
+              cx="50%" 
+              cy="50%" 
+              innerRadius="55%" 
+              outerRadius="85%" 
+              paddingAngle={3} 
+              dataKey="value"
+              label={renderCustomLabel}
+              labelLine={{ stroke: 'rgba(255,255,255,0.2)', strokeWidth: 1 }}
+            >
               {data.map((_, index) => <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="none" />)}
             </Pie>
-            <Tooltip formatter={(value: any, name: any) => [formatTime(Number(value)), name]} contentStyle={{ background: '#111', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px' }} itemStyle={{ color: 'var(--text)' }} />
-            <Legend verticalAlign="bottom" height={36} iconType="circle" />
+            <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.05)' }} />
           </PieChart>
         </ResponsiveContainer>
       </div>
