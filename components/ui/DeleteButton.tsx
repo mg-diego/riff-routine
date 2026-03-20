@@ -4,7 +4,7 @@ import React from 'react';
 import { useTranslations } from 'next-intl';
 
 interface DeleteButtonProps {
-  onClick: () => void;
+  onClick: (e: React.MouseEvent<HTMLButtonElement>) => void;
 }
 
 export function DeleteButton({ onClick }: DeleteButtonProps) {

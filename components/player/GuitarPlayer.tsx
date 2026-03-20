@@ -5,7 +5,7 @@ import Script from 'next/script';
 import { PlayerHeader } from './PlayerHeader';
 import { SidebarControls } from './SidebarControls';
 import { ScalesPanel } from './ScalesPanel';
-import { ImprovPanel } from './ImprovPanel';
+import { BackingTrack, ImprovPanel } from './ImprovPanel';
 import { AlphaTabContainer } from './AlphaTabContainer';
 import { usePlayerContext } from '../../hooks/usePlayerContext';
 import { useAlphaTab } from '../../hooks/useAlphaTab';
@@ -14,6 +14,7 @@ import { useTranslations } from 'next-intl';
 import { CompositionPanel } from './CompositionPanel';
 import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
 import { ChordsPanel } from './ChordsPanel';
+import { BackingTracksLibrary } from '../backingTracks/BackingTracksLibrary';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -63,12 +64,55 @@ export default function GuitarPlayer() {
         mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
         mode === 'chords' || activeExercise?.title === 'sys_chords_title';
 
-    const specialPanel =
-        (mode === 'scales' || activeExercise?.title === 'sys_scales_title') ? <ScalesPanel /> :
-            (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') ? <ImprovPanel /> :
-                (mode === 'composition' || activeExercise?.title === 'sys_composition_title') ? <CompositionPanel /> :                
-                    (mode === 'chords' || activeExercise?.title === 'sys_chords_title') ? <ChordsPanel /> :
-                        null;
+    const [selectedTrackForRoutine, setSelectedTrackForRoutine] = useState<BackingTrack | null>(null);
+
+    const specialPanel = (() => {
+        if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
+
+        if (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') {
+            if (selectedTrackForRoutine) {
+                return (
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
+                        <ImprovPanel
+                            initialTrack={selectedTrackForRoutine}
+                            onBack={() => setSelectedTrackForRoutine(null)}
+                            onSaved={() => { }}
+                        />
+                    </div>
+                );
+            }
+
+            return (
+                <div style={{ padding: '1.5rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
+                    <h3 style={{ color: 'var(--gold)', marginBottom: '1.5rem', fontSize: '1.2rem', fontFamily: 'Bebas Neue' }}>
+                       {t('selectTrackForRoutine')}
+                    </h3>
+
+                    <BackingTracksLibrary
+                        onPlayTrack={(track) => setSelectedTrackForRoutine(track)}
+                        isMiniMode={true}
+                    />
+
+                    <div style={{ marginTop: '2rem', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
+                        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>{t('orUseNewTrack')}</p>
+                        <button
+                            onClick={() => setSelectedTrackForRoutine({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null })}
+                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.6rem 1.2rem', borderRadius: '6px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
+                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
+                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                        >
+                            {t('newTrackButton')}
+                        </button>
+                    </div>
+                </div>
+            );
+        }
+
+        if (mode === 'composition' || activeExercise?.title === 'sys_composition_title') return <CompositionPanel />;
+        if (mode === 'chords' || activeExercise?.title === 'sys_chords_title') return <ChordsPanel />;
+
+        return null;
+    })();
 
     const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
     const isSidebarDisabled = isSpecialMode || !!hasNoScore;
@@ -109,7 +153,7 @@ export default function GuitarPlayer() {
                 minHeight: '600px', borderRadius: '12px',
                 background: 'var(--surface)', overflow: 'hidden', position: 'relative',
             }}>
-                <main  className="main-panel" style={{
+                <main className="main-panel" style={{
                     flex: 1, width: 0, minWidth: 0,
                     display: 'flex', flexDirection: 'column',
                     overflow: 'hidden', position: 'relative',

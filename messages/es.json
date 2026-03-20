@@ -620,6 +620,7 @@
     "links": {
       "home": "Inicio",
       "routines": "Mis Rutinas",
+      "backingTracks": "Backing Tracks",
       "library": "Mi Biblioteca",
       "explore": "Explorar",
       "practice": "Practicar",
@@ -740,38 +741,57 @@
     "noScore": {
       "title": "Práctica Sin Partitura",
       "description": "Este ejercicio no tiene un archivo asociado. Utiliza el metrónomo, el drone pedal y el temporizador superior para guiar tu sesión libremente."
-    }
+    },
+    "selectTrackForRoutine": "Selecciona un track para practicar:",
+    "orUseNewTrack": "O improvisa sobre un enlace nuevo:",
+    "newTrackButton": "+ Nuevo Track"
   },
   "ImprovPanel": {
-    "scaleOf": "{scale} de {root}",
-    "joinOr": " o ",
-    "ideaGenerator": "Generador de Ideas",
-    "tonality": "Tonalidad: {note} {type}",
-    "minor": "Menor",
-    "major": "Mayor",
-    "scaleSuggestionTitle": "💡 Sugerencia de Escalas",
-    "scaleSuggestionText": "Prueba a improvisar usando: ",
-    "generateButton": "🎲 Otra progresión",
-    "backingTrackTitle": "Backing Track (YouTube)",
-    "notesTitle": "Bloc de Notas de Composición",
-    "notesPlaceholder": "Anota aquí los acordes, trastes o ideas que te vayan surgiendo...",
-    "analyzerTitle": "Backing Track Analyzer",
+    "label": "Improvisación",
+    "libraryTitle": "Mis Backing Tracks",
+    "newTrack": "Nuevo track",
+    "loading": "Cargando librería...",
+    "noThumbnail": "Sin miniatura",
+    "deleteConfirm": "¿Eliminar este track?",
+    "analyzerTitle": "Analizador de Backing Tracks",
+    "analyzerSubtitle": "Pega un enlace de YouTube para obtener sugerencias de escalas",
     "backingTrackPlaceholder": "Pega aquí el enlace de YouTube de tu backing track...",
-    "changeVideo": "Cambiar vídeo ✕",
+    "emptyChordsMessage": "Añade los acordes que identifiques en el track.",
+    "trackTitlePlaceholder": "Nombra este track (opcional)",
+    "backToLibrary": "Volver a mi librería",
+    "changeVideo": "Cambiar vídeo",
+    "saving": "Guardando...",
+    "saveTrack": "Guardar track",
+    "updateTrack": "Actualizar track",
+    "defaultTrackTitle": "Mi Backing Track",
     "knowTonality": "Sé la tonalidad",
     "knowChords": "Sé los acordes",
-    "selectTonality": "Selecciona la Tonalidad",
+    "selectTonality": "Selecciona la tonalidad",
     "rootLabel": "Raíz...",
     "typeLabel": "Tipo...",
-    "progressionTitle": "Progresión de Acordes",
-    "addChord": "Añadir",
+    "progressionTitle": "Progresión de acordes",
+    "addChord": "Añadir acorde",
     "noteLabel": "Nota...",
-    "emptyChordsMessage": "Añade los acordes que identifiques en el track.",
-    "suggestedScales": "Escalas Sugeridas",
-    "globalScales": "Escalas para toda la progresión",
-    "noGlobalScales": "No se ha encontrado ninguna escala diatónica que encaje perfectamente sobre todos estos acordes. Prueba a modular usando las sugerencias por acorde.",
+    "suggestedScales": "Escalas sugeridas",
     "perChordScales": "Opciones por Acorde",
-    "noScalesFound": "Sin sugerencias directas"
+    "globalScales": "Escalas para toda la progresión",
+    "noScalesFound": "Ninguna escala diatónica encaja con todos los acordes.",
+    "deleteModalTitle": "Eliminar Backing Track",
+    "deleteModalWarning": "¿Estás seguro de que deseas eliminar este backing track de tu librería? Esta acción no se puede deshacer.",
+    "fretboardLabel": "Diapasón",
+    "verifiedTracksTitle": "Backing Tracks Verificados",
+    "myTracksTitle": "Mis Backing Tracks",
+    "verifiedBadge": "Verificado",
+    "analyzerDescription": "Pega un enlace de YouTube para analizar la pista, añadir sus acordes y practicar con sugerencias de escalas en tiempo real.",
+    "waitingVideo": "ESPERANDO VÍDEO",
+    "noGlobalScales": "No se han encontrado escalas que encajen con todos los acordes a la vez.",
+    "noUserTracks": "Aún no has guardado ninguna pista. ¡Añade tu primer Backing Track para empezar a practicar!",
+    "filtersBtn": "Filtros",
+    "searchPlaceholder": "Buscar por título, tonalidad o acordes...",
+    "tonalityTypes": {
+      "major": "Mayor",
+      "minor": "Menor"
+    }
   },
   "PlayerHeader": {
     "modes": {
@@ -1198,15 +1218,15 @@
         "desc": "El acorde menor básico tocado de forma lineal. Oscuro y triste."
       },
       "hirajoshi": {
-        "name": "Hirajōshi (6th)",
+        "name": "Hirajōshi",
         "desc": "Escala pentatónica tradicional de Japón derivada de la afinación del Koto. Sonido melancólico y épico."
       },
       "iwato": {
-        "name": "Iwato (7th)",
+        "name": "Iwato",
         "desc": "Escala pentatónica oriental extremadamente disonante y oscura, similar a un modo Locrio sin tercera."
       },
       "kumoi": {
-        "name": "Kumoi (1st)",
+        "name": "Kumoi",
         "desc": "Variante pentatónica japonesa (Sakura). Ofrece un tono ceremonial, antiguo e introspectivo."
       },
       "hon-kumoi": {
@@ -1214,7 +1234,7 @@
         "desc": "Escala tradicional basada en saltos interválicos muy dramáticos. Sonido profundo y reflexivo."
       },
       "chinese": {
-        "name": "China (4th)",
+        "name": "China",
         "desc": "Basada en afinaciones orientales tradicionales. Su estructura evita terceras y sextas menores."
       }
     }

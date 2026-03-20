@@ -30,3 +30,19 @@ export interface RoutineExercise {
   order_index: number;
   target_duration_seconds: number | null;
 }
+
+export interface ChordDefinition {
+  note: string;
+  type: string;
+}
+
+export interface DbBackingTrack {
+  id: string;
+  user_id: string;
+  title: string;
+  youtube_url: string;
+  tonality_note: string | null;
+  tonality_type: string | null;
+  chords: ChordDefinition[];
+  bpm: number | null;
+}

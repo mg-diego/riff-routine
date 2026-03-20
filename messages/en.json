@@ -534,11 +534,11 @@
         "desc": "Immersive player with tab and metronome"
       },
       "routines": {
-        "label": "My Routines",
+        "label": "Routines",
         "desc": "Plan and track your practice routines"
       },
       "library": {
-        "label": "My Library",
+        "label": "Library",
         "desc": "Your saved and favorite exercises"
       },
       "explore": {
@@ -619,8 +619,9 @@
   "Navbar": {
     "links": {
       "home": "Home",
-      "routines": "My Routines",
-      "library": "My Library",
+      "routines": "Routines",
+      "backingTracks": "Backing Tracks",
+      "library": "Library",
       "explore": "Explore",
       "practice": "Practice",
       "stats": "Stats",
@@ -740,38 +741,57 @@
     "noScore": {
       "title": "Practice Without Sheet Music",
       "description": "This exercise has no associated file. Use the metronome, the drone pedal, and the top timer to guide your session freely."
-    }
+    },
+    "selectTrackForRoutine": "Select a track to practice:",
+    "orUseNewTrack": "Or jam over a new link:",
+    "newTrackButton": "+ New Track"
   },
   "ImprovPanel": {
-    "scaleOf": "{scale} of {root}",
-    "joinOr": " or ",
-    "ideaGenerator": "Idea Generator",
-    "tonality": "Key: {note} {type}",
-    "minor": "Minor",
-    "major": "Major",
-    "scaleSuggestionTitle": "💡 Scale Suggestions",
-    "scaleSuggestionText": "Try improvising using: ",
-    "generateButton": "🎲 Another progression",
-    "backingTrackTitle": "Backing Track (YouTube)",
-    "backingTrackPlaceholder": "Paste a YouTube backing track link here...",
-    "notesTitle": "Composition Notepad",
-    "notesPlaceholder": "Jot down chords, frets, or ideas as they come to you...",
+    "label": "Improvisation",
+    "libraryTitle": "Backing Tracks",
+    "newTrack": "New track",
+    "loading": "Loading library...",
+    "noThumbnail": "No thumbnail",
+    "deleteConfirm": "Delete this track?",
     "analyzerTitle": "Backing Track Analyzer",
-    "changeVideo": "Change video ✕",
-    "knowTonality": "I know the tonality",
+    "analyzerSubtitle": "Paste a YouTube link to get scale suggestions",
+    "backingTrackPlaceholder": "Paste your YouTube backing track link here...",
+    "emptyChordsMessage": "Add the chords you identify in the track.",
+    "trackTitlePlaceholder": "Name this track (optional)",
+    "backToLibrary": "Back to my library",
+    "changeVideo": "Change video",
+    "saving": "Saving...",
+    "saveTrack": "Save track",
+    "updateTrack": "Update track",
+    "defaultTrackTitle": "My Backing Track",
+    "knowTonality": "I know the key",
     "knowChords": "I know the chords",
-    "selectTonality": "Select Tonality",
+    "selectTonality": "Select the key",
     "rootLabel": "Root...",
     "typeLabel": "Type...",
-    "progressionTitle": "Chord Progression",
-    "addChord": "Add",
+    "progressionTitle": "Chord progression",
+    "addChord": "Add chord",
     "noteLabel": "Note...",
-    "emptyChordsMessage": "Add the chords you identify in the track.",
-    "suggestedScales": "Suggested Scales",
-    "globalScales": "Scales for the entire progression",
-    "noGlobalScales": "No diatonic scale was found that fits perfectly over all these chords. Try modulating using the per-chord suggestions.",
+    "suggestedScales": "Suggested scales",
     "perChordScales": "Options per Chord",
-    "noScalesFound": "No direct suggestions"
+    "globalScales": "Scales for the full progression",
+    "noScalesFound": "No diatonic scale fits all chords.",
+    "fretboardLabel": "Fretboard",
+    "deleteModalTitle": "Delete Backing Track",
+    "deleteModalWarning": "Are you sure you want to delete this backing track from your library? This action cannot be undone.",
+    "verifiedTracksTitle": "Verified Backing Tracks",
+    "myTracksTitle": "My Backing Tracks",
+    "verifiedBadge": "Verified",
+    "analyzerDescription": "Paste a YouTube link to analyze the track, add its chords, and practice with real-time scale suggestions.",
+    "waitingVideo": "WAITING FOR VIDEO",
+    "noGlobalScales": "No scales found that fit all chords simultaneously.",
+    "noUserTracks": "You haven't saved any tracks yet. Add your first Backing Track to start practicing!",
+    "filtersBtn": "Filters",
+    "searchPlaceholder": "Search by title, key, or chords...",
+    "tonalityTypes": {
+      "major": "Major",
+      "minor": "Minor"
+    }
   },
   "PlayerHeader": {
     "modes": {
@@ -947,7 +967,7 @@
     "upgradeNow": "Go Pro to unlock back all your content!"
   },
   "RoutinesPageHeader": {
-    "title": "My Routines",
+    "title": "Routines",
     "loading": "Loading...",
     "routineCount": "{count, plural, =0 {0 routines created} one {1 routine created} other {# routines created}}",
     "newRoutine": "New Routine"
@@ -1198,15 +1218,15 @@
         "desc": "The basic minor chord played linearly. Dark and sad."
       },
       "hirajoshi": {
-        "name": "Hirajōshi (6th)",
+        "name": "Hirajōshi",
         "desc": "Traditional Japanese pentatonic scale derived from Koto tuning. Melancholic and epic sound."
       },
       "iwato": {
-        "name": "Iwato (7th)",
+        "name": "Iwato",
         "desc": "Extremely dissonant and dark oriental pentatonic scale, similar to a Locrian mode without a third."
       },
       "kumoi": {
-        "name": "Kumoi (1st)",
+        "name": "Kumoi",
         "desc": "Japanese pentatonic variant (Sakura). Offers a ceremonial, ancient, and introspective tone."
       },
       "hon-kumoi": {
@@ -1214,7 +1234,7 @@
         "desc": "Traditional scale based on dramatic intervallic leaps. Deep and reflective sound."
       },
       "chinese": {
-        "name": "Chinese (4th)",
+        "name": "Chinese",
         "desc": "Based on traditional oriental tunings. Its structure avoids minor thirds and sixths."
       }
     }
