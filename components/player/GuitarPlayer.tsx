@@ -46,16 +46,13 @@ export default function GuitarPlayer() {
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
     useEffect(() => {
-        console.log('[GuitarPlayer] load effect:', { scriptReady, initialUrlToLoad });
         if (scriptReady && initialUrlToLoad) {
             loadUrl(initialUrlToLoad);
         }
     }, [initialUrlToLoad, scriptReady]);
 
-    // ── Mode helpers ────────────────────────────────────────────────────────
     const { formatExercise } = useTranslatedExercise();
 
-    // translatedExercise is used for display only — activeExercise keeps the raw keys
     const translatedExercise = activeExercise ? formatExercise(activeExercise) : null;
 
     const isSpecialMode =
@@ -85,7 +82,7 @@ export default function GuitarPlayer() {
             return (
                 <div style={{ padding: '1.5rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
                     <h3 style={{ color: 'var(--gold)', marginBottom: '1.5rem', fontSize: '1.2rem', fontFamily: 'Bebas Neue' }}>
-                       {t('selectTrackForRoutine')}
+                        {t('selectTrackForRoutine')}
                     </h3>
 
                     <BackingTracksLibrary
@@ -118,7 +115,8 @@ export default function GuitarPlayer() {
     const isSidebarDisabled = isSpecialMode || !!hasNoScore;
     const isBpmDisabled = mode === 'free' && !isLoaded;
 
-    // ── Loading skeleton — prevents flash of wrong mode/onboarding ──────────
+    const [localSessionLogs, setLocalSessionLogs] = useState<Record<string, { bpm: number | null, seconds: number }>>({});
+
     if (!isReady) {
         return (
             <div style={{
@@ -160,6 +158,7 @@ export default function GuitarPlayer() {
                 }}>
                     <PlayerHeader
                         mode={mode}
+                        routineList={routineList}
                         routineLength={routineList.length}
                         currentIndex={currentIndex}
                         onPrev={handlePrevExercise}
@@ -176,22 +175,37 @@ export default function GuitarPlayer() {
                         routineName={routineName}
                         fileName={fileName}
                         onFileLoaded={(file) => { setFileName(file.name); loadFile(file); }}
-                        onSaveExerciseLog={async (bpmCurrent, bpmGoal) => {
-                            if (activeExercise) {
+                        sessionId={sessionId}
+                        disableBpmInputs={isBpmDisabled}
+                        localSessionLogs={localSessionLogs}
+                        onSaveExerciseLog={async (bpmCurrent, bpmGoal, secs = 0) => {
+                            if (mode === 'routine' && activeExercise) {
+                                setLocalSessionLogs(prev => {
+                                    const existing = prev[activeExercise.id] || { bpm: null, seconds: 0 };
+                                    return {
+                                        ...prev,
+                                        [activeExercise.id]: {
+                                            bpm: bpmCurrent,
+                                            seconds: existing.seconds + secs
+                                        }
+                                    };
+                                });
+                            } else if (activeExercise) {
                                 await saveExerciseLog(
-                                    activeExercise.id, bpmCurrent, bpmGoal,
+                                    activeExercise.id,
+                                    bpmCurrent,
+                                    bpmGoal,
                                     routineList[currentIndex]?.id || null,
+                                    secs
                                 );
                             }
                         }}
-                        sessionId={sessionId}
-                        disableBpmInputs={isBpmDisabled}
                     />
 
                     <div ref={mainScrollRef} style={{
                         flex: 1,
-                        overflowX: 'hidden', // Previene scrolls horizontales accidentales
-                        overflowY: 'auto',   // Scroll vertical principal
+                        overflowX: 'hidden',
+                        overflowY: 'auto',
                         display: 'flex',
                         flexDirection: 'column',
                         position: 'relative',
@@ -200,8 +214,8 @@ export default function GuitarPlayer() {
                         {isSpecialMode && (
                             <div style={{
                                 padding: '1rem 2rem',
-                                flex: '1 0 auto',           // Permite que el panel crezca sin restricciones
-                                minHeight: 'min-content',   // Evita que el contenedor recorte el contenido
+                                flex: '1 0 auto',
+                                minHeight: 'min-content',
                                 display: 'flex',
                                 flexDirection: 'column'
                             }}>
@@ -210,8 +224,6 @@ export default function GuitarPlayer() {
                         )}
 
                         <div style={{
-                            //flex: '1 0 auto',
-                            //minHeight: 'min-content',
                             position: 'relative',
                             width: '100%',
                             display: isSpecialMode ? 'none' : 'flex',

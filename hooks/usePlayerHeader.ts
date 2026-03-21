@@ -8,18 +8,19 @@ import { Exercise } from '@/lib/types';
 import { useTranslations } from 'next-intl';
 
 interface UsePlayerHeaderOptions {
-    mode:                  string;
-    exercise:              Exercise | null | undefined;
-    routineTargetBpm:      number | null;
+    mode: string;
+    exercise: Exercise | null | undefined;
+    routineTargetBpm: number | null;
     routineTargetDuration: number | null;
-    elapsedSeconds:        number;
-    isTimerRunning:        boolean;
-    onToggleTimer:         () => void;
-    onSaveExerciseLog:     (cur: number | null, goal: number | null, secs?: number) => Promise<void>;
-    onBpmChange:           (bpm: number | null) => void;
-    originalBpm:           number | null | undefined;
-    sessionId:             string | null | undefined;
-    disableBpmInputs:      boolean;
+    elapsedSeconds: number;
+    isTimerRunning: boolean;
+    onToggleTimer: () => void;
+    onSaveExerciseLog: (cur: number | null, goal: number | null, secs?: number) => Promise<void>;
+    onBpmChange: (bpm: number | null) => void;
+    originalBpm: number | null | undefined;
+    sessionId: string | null | undefined;
+    disableBpmInputs: boolean;
+    initialSessionBpm?: number | null;
 }
 
 function playTimerAlert() {
@@ -36,68 +37,61 @@ function playTimerAlert() {
             osc.start(t); osc.stop(t + 0.18);
         });
         setTimeout(() => ctx.close(), 900);
-    } catch {}
+    } catch { }
 }
 
 export function usePlayerHeader({
     mode, exercise, routineTargetBpm, routineTargetDuration,
     elapsedSeconds: propElapsedSeconds, isTimerRunning, onToggleTimer,
     onSaveExerciseLog, onBpmChange, originalBpm, sessionId, disableBpmInputs,
+    initialSessionBpm
 }: UsePlayerHeaderOptions) {
     const router = useRouter();
-    const t      = useTranslations('PlayerHeader');
+    const t = useTranslations('PlayerHeader');
 
-    const isRoutine     = mode === 'routine';
-    const isFree        = mode === 'free';
+    const isRoutine = mode === 'routine';
+    const isFree = mode === 'free';
     const isPreviewMode = exercise?.is_system === true && exercise?.file_url != null;
 
-    // ── BPM ──────────────────────────────────────────────────────────────────
     const [bpmCurrent, setBpmCurrent] = useState('');
-    const [bpmGoal,    setBpmGoal]    = useState('');
+    const [bpmGoal, setBpmGoal] = useState('');
 
-    // ── Save ─────────────────────────────────────────────────────────────────
     const [isSaving, setIsSaving] = useState(false);
-    const [saved,    setSaved]    = useState(false);
+    const [saved, setSaved] = useState(false);
     const [errorMsg, setErrorMsg] = useState('');
 
-    // ── Timer ─────────────────────────────────────────────────────────────────
-    const [timerDone,        setTimerDone]        = useState(false);
-    const [showEndModal,     setShowEndModal]     = useState(false);
-    const [exerciseTimes,    setExerciseTimes]    = useState<Record<string, number>>({});
+    const [timerDone, setTimerDone] = useState(false);
+    const [showEndModal, setShowEndModal] = useState(false);
+    const [exerciseTimes, setExerciseTimes] = useState<Record<string, number>>({});
     const [showTimerTooltip, setShowTimerTooltip] = useState(false);
 
-    const alertedRef          = useRef(false);
-    const tooltipTimerRef     = useRef<NodeJS.Timeout | null>(null);
+    const alertedRef = useRef(false);
+    const tooltipTimerRef = useRef<NodeJS.Timeout | null>(null);
     const shownForExerciseRef = useRef<string | null>(null);
-    const autoPausedRef       = useRef(false);
-    const isTimerRunningRef   = useRef(isTimerRunning);
+    const autoPausedRef = useRef(false);
+    const isTimerRunningRef = useRef(isTimerRunning);
 
-    // ── Metronome ─────────────────────────────────────────────────────────────
     const [metronomeBpm, setMetronomeBpm] = useState<number>(100);
-    const showBpmInputs  = exercise?.has_bpm !== false;
-    const showMetronome  = exercise?.has_bpm === false || (mode === 'library' && !exercise?.file_url);
+    const showBpmInputs = exercise?.has_bpm !== false;
+    const showMetronome = exercise?.has_bpm === false || (mode === 'library' && !exercise?.file_url);
     const activeMetronomeBpm = showBpmInputs
         ? (parseInt(bpmCurrent) || exercise?.bpm_goal || exercise?.bpm_suggested || 100)
         : metronomeBpm;
     const { isMetronomePlaying, setIsMetronomePlaying, handleToggleMetronome } = useMetronome(activeMetronomeBpm);
 
-    // ── Derived ───────────────────────────────────────────────────────────────
     const currentExerciseKey = exercise?.id || 'free-mode';
-    const displaySeconds     = exerciseTimes[currentExerciseKey] !== undefined
+    const displaySeconds = exerciseTimes[currentExerciseKey] !== undefined
         ? exerciseTimes[currentExerciseKey] : propElapsedSeconds;
-    const timerPct     = routineTargetDuration ? Math.min(100, (displaySeconds / routineTargetDuration) * 100) : null;
+    const timerPct = routineTargetDuration ? Math.min(100, (displaySeconds / routineTargetDuration) * 100) : null;
     const bpmSuggested = exercise?.bpm_suggested || (exercise as any)?.bpm_initial || null;
 
-    // ── Latest ref for unmount/beforeunload ───────────────────────────────────
     const latestRef = useRef({ displaySeconds, bpmCurrent, bpmGoal, exercise, saved, isPreviewMode });
     useEffect(() => {
         latestRef.current = { displaySeconds, bpmCurrent, bpmGoal, exercise, saved, isPreviewMode };
     }, [displaySeconds, bpmCurrent, bpmGoal, exercise, saved, isPreviewMode]);
 
-    // ── Sync timer running ref ────────────────────────────────────────────────
     useEffect(() => { isTimerRunningRef.current = isTimerRunning; }, [isTimerRunning]);
 
-    // ── Auto-pause on tab hide ────────────────────────────────────────────────
     useEffect(() => {
         const handle = () => {
             if (document.hidden) {
@@ -110,7 +104,6 @@ export function usePlayerHeader({
         return () => document.removeEventListener('visibilitychange', handle);
     }, [onToggleTimer]);
 
-    // ── Auto-timer tooltip ────────────────────────────────────────────────────
     useEffect(() => {
         if (!isRoutine || !isTimerRunning) return;
         const key = exercise?.id || 'unknown';
@@ -121,14 +114,12 @@ export function usePlayerHeader({
         return () => { if (tooltipTimerRef.current) clearTimeout(tooltipTimerRef.current); };
     }, [isTimerRunning, exercise?.id, isRoutine]);
 
-    // ── Reset on exercise change ──────────────────────────────────────────────
     useEffect(() => {
         alertedRef.current = false;
         setTimerDone(false);
         setIsMetronomePlaying(false);
     }, [exercise?.id, setIsMetronomePlaying]);
 
-    // ── Timer done ────────────────────────────────────────────────────────────
     useEffect(() => {
         if (routineTargetDuration && displaySeconds > 0 && displaySeconds >= routineTargetDuration && !alertedRef.current) {
             alertedRef.current = true;
@@ -138,25 +129,29 @@ export function usePlayerHeader({
         }
     }, [displaySeconds, routineTargetDuration]);
 
-    // ── Sync elapsed seconds ──────────────────────────────────────────────────
     useEffect(() => {
         if (isTimerRunning)
             setExerciseTimes(prev => ({ ...prev, [currentExerciseKey]: propElapsedSeconds }));
     }, [propElapsedSeconds, isTimerRunning, currentExerciseKey]);
 
-    // ── BPM goal sync ─────────────────────────────────────────────────────────
     useEffect(() => {
         if (disableBpmInputs || !showBpmInputs || isPreviewMode) { setBpmGoal(''); return; }
         const goal = isRoutine && routineTargetBpm != null ? routineTargetBpm : exercise?.bpm_goal;
         setBpmGoal(goal?.toString() || '');
     }, [exercise?.id, routineTargetBpm, mode, disableBpmInputs, showBpmInputs, isPreviewMode]);
 
-    // ── BPM current from last log ─────────────────────────────────────────────
     useEffect(() => {
         let mounted = true;
         if (disableBpmInputs || !exercise?.id || !showBpmInputs || isPreviewMode) {
             setBpmCurrent(''); onBpmChange(null); return;
         }
+
+        if (initialSessionBpm != null) {
+            setBpmCurrent(initialSessionBpm.toString());
+            onBpmChange(initialSessionBpm);
+            return;
+        }
+
         (async () => {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user || !mounted) return;
@@ -169,9 +164,8 @@ export function usePlayerHeader({
             else setBpmCurrent('');
         })();
         return () => { mounted = false; };
-    }, [exercise?.id, disableBpmInputs, showBpmInputs, isPreviewMode]);
+    }, [exercise?.id, disableBpmInputs, showBpmInputs, isPreviewMode, initialSessionBpm]);
 
-    // ── BPM from score ────────────────────────────────────────────────────────
     useEffect(() => {
         if (originalBpm && !bpmCurrent && !disableBpmInputs && showBpmInputs && !isPreviewMode) {
             setBpmCurrent(originalBpm.toString());
@@ -179,17 +173,16 @@ export function usePlayerHeader({
         }
     }, [originalBpm, disableBpmInputs, showBpmInputs, isPreviewMode]);
 
-    // ── beforeunload guard ────────────────────────────────────────────────────
     useEffect(() => {
         const onBeforeUnload = (e: BeforeUnloadEvent) => {
             const { displaySeconds, saved, isPreviewMode } = latestRef.current;
-            if (displaySeconds >= 60 && !saved && !isPreviewMode) { e.preventDefault(); e.returnValue = ''; }
+            if (displaySeconds >= 5 && !saved && !isPreviewMode) { e.preventDefault(); e.returnValue = ''; }
         };
         const onLinkClick = (e: MouseEvent) => {
             const anchor = (e.target as HTMLElement).closest('a');
             if (!anchor || anchor.target === '_blank' || anchor.href === window.location.href) return;
             const { displaySeconds, saved, isPreviewMode } = latestRef.current;
-            if (displaySeconds >= 60 && !saved && !isPreviewMode) {
+            if (displaySeconds >= 5 && !saved && !isPreviewMode) {
                 if (!window.confirm(t('alerts.unsavedTime'))) { e.preventDefault(); e.stopPropagation(); }
             }
         };
@@ -201,17 +194,18 @@ export function usePlayerHeader({
         };
     }, [t]);
 
-    // ── Handlers ─────────────────────────────────────────────────────────────
     const _autoSave = async (secs: number, cur: string, goal: string) => {
-        if (!exercise || secs < 60 || isPreviewMode) return;
-        const parsedCur  = parseInt(cur);
-        const bpmUsed    = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
+        console.log("[HOOK] _autoSave disparado", { secs, cur, goal, exerciseId: exercise?.id });
+        if (!exercise || secs < 5 || isPreviewMode) return;
+        const parsedCur = parseInt(cur);
+        const bpmUsed = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
         const bpmGoalVal = goal ? parseInt(goal) : null;
+        console.log("[HOOK] Llamando a onSaveExerciseLog", { bpmUsed, bpmGoalVal, secs });
         await onSaveExerciseLog(
             disableBpmInputs || !showBpmInputs ? null : bpmUsed,
             disableBpmInputs || !showBpmInputs || isNaN(bpmGoalVal as number) ? null : bpmGoalVal,
             secs,
-        ).catch(() => {});
+        ).catch(err => { console.error("[HOOK] Error", err) });
     };
 
     const handleNext = async (onNext: () => void) => {
@@ -227,7 +221,7 @@ export function usePlayerHeader({
     const handleCloseClick = async (onEndSession: (secs?: number) => void) => {
         if (isFree) { onEndSession(); return; }
         if (!isRoutine) {
-            if (displaySeconds >= 60 && !saved && !isPreviewMode)
+            if (displaySeconds >= 5 && !saved && !isPreviewMode)
                 await _autoSave(displaySeconds, bpmCurrent, bpmGoal);
             onEndSession(); return;
         }
@@ -248,7 +242,13 @@ export function usePlayerHeader({
                 if (isNaN(cur) || cur <= 0) throw new Error(t('errors.invalidBpm'));
                 goal = bpmGoal ? parseInt(bpmGoal) : null;
             }
-            await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, displaySeconds);
+
+            let secondsToSave = displaySeconds;
+            if (secondsToSave > 0 && secondsToSave < 60) {
+                secondsToSave = 60;
+            }
+
+            await onSaveExerciseLog(cur, isNaN(goal as number) ? null : goal, secondsToSave);
             setSaved(true); setTimeout(() => setSaved(false), 2500);
         } catch (err: any) {
             setErrorMsg(err.message || t('errors.saveError'));
@@ -277,18 +277,15 @@ export function usePlayerHeader({
     };
 
     return {
-        // state
         bpmCurrent, setBpmCurrent,
-        bpmGoal,    setBpmGoal,
+        bpmGoal, setBpmGoal,
         isSaving, saved, errorMsg,
         timerDone, showEndModal, setShowEndModal,
         displaySeconds, timerPct, showTimerTooltip,
         metronomeBpm, setMetronomeBpm,
-        // derived
         isPreviewMode, isRoutine, isFree,
         showBpmInputs, showMetronome, bpmSuggested,
         isMetronomePlaying, handleToggleMetronome,
-        // handlers
         handleNext, handlePrev,
         handleCloseClick, handleSave, handleSaveToLibrary,
     };

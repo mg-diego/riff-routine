@@ -257,18 +257,43 @@ export default function HomePage() {
       .not('bpm_goal', 'is', null);
 
     if (logs && exercises) {
-      const latestBpm: Record<string, number> = {};
-      logs.forEach(l => { if (!(l.exercise_id in latestBpm)) latestBpm[l.exercise_id] = l.bpm_used; });
+      const latestData: Record<string, { bpm: number; date: string }> = {};
 
-      let best: typeof closestExercise = null;
-      exercises.forEach(ex => {
-        const last = latestBpm[ex.id];
-        if (!last || !ex.bpm_goal) return;
-        const pct = Math.round((last / ex.bpm_goal) * 100);
-        if (pct >= 60 && pct < 100 && (!best || pct > best.pct)) {
-          best = { title: ex.title, pct, lastBpm: last, targetBpm: ex.bpm_goal, exerciseId: ex.id };
+      logs.forEach(l => {
+        if (!(l.exercise_id in latestData)) {
+          latestData[l.exercise_id] = { bpm: l.bpm_used, date: l.created_at };
         }
       });
+
+      let best: typeof closestExercise & { score?: number } | null = null;
+      const now = Date.now();
+
+      exercises.forEach(ex => {
+        const last = latestData[ex.id];
+        if (!last || !ex.bpm_goal) return;
+
+        const pct = Math.round((last.bpm / ex.bpm_goal) * 100);
+
+        if (pct >= 60 && pct < 100) {
+          const lastDate = new Date(last.date).getTime();
+          const daysPassed = (now - lastDate) / (1000 * 60 * 60 * 24);
+
+          const timePenalty = Math.min(daysPassed * 0.5, 30);
+          const score = pct - timePenalty;
+
+          if (!best || score > best.score!) {
+            best = {
+              title: ex.title,
+              pct,
+              lastBpm: last.bpm,
+              targetBpm: ex.bpm_goal,
+              exerciseId: ex.id,
+              score
+            };
+          }
+        }
+      });
+
       setClosestExercise(best);
     }
 
@@ -302,7 +327,7 @@ export default function HomePage() {
     <div data-onboarding="home" style={{ maxWidth: 900, margin: '0 auto', paddingBottom: '4rem' }}>
 
       {/* Header */}
-      <div  style={{ marginBottom: '2.5rem' }}>
+      <div style={{ marginBottom: '2.5rem' }}>
         <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 0.25rem' }}>{greeting},</p>
         <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3.5rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
           {loading ? '...' : userName}
@@ -455,7 +480,7 @@ export default function HomePage() {
 
         <div
           style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '1.25rem', cursor: closestExercise ? 'pointer' : 'default', transition: 'border-color 0.2s' }}
-          onClick={() => closestExercise && router.push('/library')}
+          onClick={() => closestExercise && router.push(`/library/${closestExercise.exerciseId}/history`)}
           onMouseEnter={e => closestExercise && (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.3)')}
           onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)')}
         >
@@ -487,7 +512,7 @@ export default function HomePage() {
         padding: '1.25rem 1.5rem', marginBottom: '2.5rem',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap',
       }}>
-        <div  style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
           <div style={{ background: 'rgba(220,185,138,0.08)', borderRadius: '10px', padding: '0.7rem', color: 'var(--gold)' }}>
             <Icons.Upload />
           </div>

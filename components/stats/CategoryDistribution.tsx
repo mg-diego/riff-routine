@@ -167,7 +167,7 @@ export function CategoryDistribution({ dateFilter }: Props) {
               cx="50%" 
               cy="50%" 
               innerRadius="55%" 
-              outerRadius="85%" 
+              outerRadius="80%" 
               paddingAngle={3} 
               dataKey="value"
               label={renderCustomLabel}

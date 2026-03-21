@@ -1,34 +1,35 @@
 "use client";
 
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Exercise } from '../../lib/types';
 import { DropZone } from './DropZone';
 import { EndSessionModal } from './EndSessionModal';
 import { useTranslations } from 'next-intl';
 import { usePlayerHeader } from '../../hooks/usePlayerHeader';
 
-// ── Types ─────────────────────────────────────────────────────────────────────
 interface PlayerHeaderProps {
     mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords';
-    routineLength:          number;
-    currentIndex:           number;
-    onPrev:                 () => void;
-    onNext:                 () => void;
-    onEndSession:           (overrideTotalSeconds?: number) => void;
-    exercise?:              Exercise | null;
-    routineTargetBpm?:      number | null;
+    routineList: any[];
+    routineLength: number;
+    currentIndex: number;
+    onPrev: () => void;
+    onNext: () => void;
+    onEndSession: (overrideTotalSeconds?: number) => void;
+    exercise?: Exercise | null;
+    routineTargetBpm?: number | null;
     routineTargetDuration?: number | null;
-    elapsedSeconds:         number;
-    isTimerRunning:         boolean;
-    onToggleTimer:          () => void;
-    onSaveExerciseLog:      (currentBpm: number | null, goalBpm: number | null, overrideSeconds?: number) => Promise<void>;
-    onBpmChange:            (bpm: number | null) => void;
-    originalBpm?:           number | null;
-    routineName?:           string;
-    fileName?:              string | null;
-    onFileLoaded?:          (file: File) => void;
-    sessionId?:             string | null;
-    disableBpmInputs?:      boolean;
+    elapsedSeconds: number;
+    isTimerRunning: boolean;
+    onToggleTimer: () => void;
+    onSaveExerciseLog: (currentBpm: number | null, goalBpm: number | null, overrideSeconds?: number) => Promise<void>;
+    onBpmChange: (bpm: number | null) => void;
+    originalBpm?: number | null;
+    routineName?: string;
+    fileName?: string | null;
+    onFileLoaded?: (file: File) => void;
+    sessionId?: string | null;
+    disableBpmInputs?: boolean;
+    localSessionLogs: Record<string, { bpm: number | null, seconds: number }>;
 }
 
 const DIFF_COLORS: Record<number, string> = {
@@ -40,7 +41,6 @@ function formatTime(s: number) {
     return `${m}:${(s % 60).toString().padStart(2, '0')}`;
 }
 
-// ── Sub-components (pure visual, no logic) ────────────────────────────────────
 function ModeBadge({ cfg }: { cfg: { icon: string; label: string; color: string } }) {
     return (
         <div className="ph-badge" style={{ color: cfg.color }}>
@@ -53,7 +53,7 @@ function ModeBadge({ cfg }: { cfg: { icon: string; label: string; color: string 
 function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFileLoaded, t }: any) {
     if (isFree) return (
         <div style={{ flex: 1 }}>
-            <DropZone onFileLoaded={onFileLoaded ?? (() => {})} fileName={fileName ?? null} />
+            <DropZone onFileLoaded={onFileLoaded ?? (() => { })} fileName={fileName ?? null} />
         </div>
     );
     return (
@@ -134,24 +134,23 @@ function BpmInputs({ isPreviewMode, disableBpmInputs, bpmCurrent, bpmGoal, setBp
     );
 }
 
-// ── Main component ────────────────────────────────────────────────────────────
 export function PlayerHeader({
-    mode, routineLength, currentIndex, onPrev, onNext, onEndSession,
+    mode, routineList, routineLength, currentIndex, onPrev, onNext, onEndSession,
     exercise, routineTargetBpm = null, routineTargetDuration = null,
     elapsedSeconds, isTimerRunning, onToggleTimer,
     onSaveExerciseLog, onBpmChange, originalBpm, routineName,
-    fileName, onFileLoaded, sessionId, disableBpmInputs = false,
+    fileName, onFileLoaded, sessionId, disableBpmInputs = false, localSessionLogs
 }: PlayerHeaderProps) {
     const t = useTranslations('PlayerHeader');
 
     const MODE_CONFIG = useMemo(() => ({
-        free:          { label: t('modes.free'),          icon: '🎸', color: '#7dd3fc' },
-        library:       { label: t('modes.library'),       icon: '📚', color: 'var(--gold)' },
-        routine:       { label: t('modes.routine'),       icon: '🔁', color: '#a78bfa' },
-        scales:        { label: t('modes.scales'),        icon: '🎹', color: 'var(--gold)' },
+        free: { label: t('modes.free'), icon: '🎸', color: '#7dd3fc' },
+        library: { label: t('modes.library'), icon: '📚', color: 'var(--gold)' },
+        routine: { label: t('modes.routine'), icon: '🔁', color: '#a78bfa' },
+        scales: { label: t('modes.scales'), icon: '🎹', color: 'var(--gold)' },
         improvisation: { label: t('modes.improvisation'), icon: '🎷', color: 'var(--gold)' },
-        composition:   { label: t('modes.composition'),   icon: '🧠', color: 'var(--gold)' },
-        chords:        { label: t('modes.chords'),        icon: '🎵', color: 'var(--gold)' },
+        composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },
+        chords: { label: t('modes.chords'), icon: '🎵', color: 'var(--gold)' },
     }), [t]);
 
     const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
@@ -169,7 +168,7 @@ export function PlayerHeader({
     } = usePlayerHeader({
         mode, exercise, routineTargetBpm, routineTargetDuration,
         elapsedSeconds, isTimerRunning, onToggleTimer,
-        onSaveExerciseLog, onBpmChange, originalBpm, sessionId, disableBpmInputs,
+        onSaveExerciseLog, onBpmChange, originalBpm, sessionId, disableBpmInputs, initialSessionBpm: localSessionLogs[exercise?.id || '']?.bpm
     });
 
     return (
@@ -230,8 +229,6 @@ export function PlayerHeader({
             `}</style>
 
             <div data-onboarding="practice-01" className="ph-root">
-
-                {/* ── Row 1: title bar ── */}
                 <div className="ph-row1">
                     <ModeBadge cfg={cfg} />
                     <div className="ph-divider" />
@@ -249,11 +246,8 @@ export function PlayerHeader({
                     </button>
                 </div>
 
-                {/* ── Row 2: controls ── */}
                 {!isFree && (
                     <div className="ph-row2">
-
-                        {/* BPM inputs */}
                         {showBpmInputs && (
                             <BpmInputs
                                 isPreviewMode={isPreviewMode} disableBpmInputs={disableBpmInputs}
@@ -265,7 +259,6 @@ export function PlayerHeader({
                             />
                         )}
 
-                        {/* Metronome */}
                         {showMetronome && (
                             <div className="ph-bpm-section" style={{ borderRight: 'none', paddingLeft: showBpmInputs ? 0 : '1.75rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
@@ -291,11 +284,11 @@ export function PlayerHeader({
                                         >
                                             {isMetronomePlaying ? (
                                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M8.5 3h7l3 18h-13z"/><path d="M12 21l4.5-16"/><circle cx="14.25" cy="13" r="2.5" fill="currentColor" stroke="none"/><path d="M4.5 12.5A8.5 8.5 0 0 1 9 9" opacity="0.7"/>
+                                                    <path d="M8.5 3h7l3 18h-13z" /><path d="M12 21l4.5-16" /><circle cx="14.25" cy="13" r="2.5" fill="currentColor" stroke="none" /><path d="M4.5 12.5A8.5 8.5 0 0 1 9 9" opacity="0.7" />
                                                 </svg>
                                             ) : (
                                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-                                                    <path d="M8.5 3h7l3 18h-13z"/><path d="M12 21V4"/><circle cx="12" cy="13" r="2.5" fill="currentColor" stroke="none"/>
+                                                    <path d="M8.5 3h7l3 18h-13z" /><path d="M12 21V4" /><circle cx="12" cy="13" r="2.5" fill="currentColor" stroke="none" />
                                                 </svg>
                                             )}
                                         </button>
@@ -304,13 +297,12 @@ export function PlayerHeader({
                             </div>
                         )}
 
-                        {/* Timer */}
                         <div className="ph-timer-section" style={{ borderLeft: '1px solid rgba(255,255,255,0.04)' }}>
                             <div style={{ position: 'relative', flexShrink: 0 }}>
                                 {showTimerTooltip && (
                                     <div className="ph-timer-tooltip entering leaving">
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                            <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
+                                            <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                                         </svg>
                                         {t('labels.timerAutoStarted')}
                                     </div>
@@ -319,18 +311,18 @@ export function PlayerHeader({
                                     className={`ph-timer-btn${timerDone ? ' done' : ''}`}
                                     onClick={onToggleTimer}
                                     style={{
-                                        color:      timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80',
+                                        color: timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80',
                                         background: timerDone ? 'rgba(74,222,128,0.12)' : isTimerRunning ? 'rgba(231,76,60,0.1)' : 'rgba(255,255,255,0.05)',
-                                        border:     `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
+                                        border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
                                         display: 'flex', alignItems: 'center', justifyContent: 'center',
                                     }}
                                 >
                                     {timerDone ? (
-                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                                     ) : isTimerRunning ? (
-                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="6" height="18" rx="1"/><rect x="14" y="3" width="6" height="18" rx="1"/></svg>
+                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="6" height="18" rx="1" /><rect x="14" y="3" width="6" height="18" rx="1" /></svg>
                                     ) : (
-                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}><path d="M5 3L19 12L5 21V3Z"/></svg>
+                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}><path d="M5 3L19 12L5 21V3Z" /></svg>
                                     )}
                                 </button>
                             </div>
@@ -350,7 +342,6 @@ export function PlayerHeader({
                             </div>
                         </div>
 
-                        {/* Right section: progress or save */}
                         <div className="ph-right-section">
                             {isRoutine ? (
                                 <div data-onboarding="practice-03" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
@@ -385,10 +376,13 @@ export function PlayerHeader({
 
             {showEndModal && sessionId && (
                 <EndSessionModal
-                    sessionId={sessionId} showBpmInputs={showBpmInputs}
-                    isTimerRunning={isTimerRunning} onToggleTimer={onToggleTimer}
+                    sessionId={sessionId}
+                    isTimerRunning={isTimerRunning}
+                    onToggleTimer={onToggleTimer}
                     onClose={() => setShowEndModal(false)}
                     onEndSession={secs => { setShowEndModal(false); onEndSession(secs); }}
+                    localSessionLogs={localSessionLogs}
+                    routineList={routineList}
                 />
             )}
         </>

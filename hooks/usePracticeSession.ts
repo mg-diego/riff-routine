@@ -13,12 +13,10 @@ export function usePracticeSession(mode: string, routineId: string | null, activ
   const currentKey = activeExerciseId || 'free-mode';
   const elapsedSeconds = exerciseTimes[currentKey] || 0;
 
-  // Start timer automatically for non-free modes on mount
   useEffect(() => {
     setIsTimerRunning(mode !== 'free');
   }, [mode]);
 
-  // In routine mode: auto-start timer when exercise changes
   useEffect(() => {
     if (mode === 'routine') {
       setIsTimerRunning(true);
@@ -90,33 +88,76 @@ export function usePracticeSession(mode: string, routineId: string | null, activ
     setIsTimerRunning(mode !== 'free');
   };
 
-  const saveExerciseLog = async (exerciseId: string, bpmUsed: number | null, bpmGoal: number | null, routineExerciseId: string | null) => {
-    const timeToSave = exerciseTimes[exerciseId] || 0;
+  const saveExerciseLog = async (
+    providedExerciseId: string | undefined,
+    bpmUsed: number | null,
+    bpmGoal: number | null,
+    routineExerciseId: string | null,
+    overrideSeconds?: number
+  ) => {
+    let finalExerciseId = providedExerciseId;
+
+    if (!finalExerciseId) {
+      const sysTitles: Record<string, string> = {
+        scales: 'sys_scales_title',
+        chords: 'sys_chords_title',
+        improvisation: 'sys_improvisation_title',
+        composition: 'sys_composition_title'
+      };
+
+      const targetTitle = sysTitles[mode];
+
+      if (targetTitle) {
+        const { data } = await supabase
+          .from('exercises')
+          .select('id')
+          .eq('is_system', true)
+          .eq('title', targetTitle)
+          .maybeSingle();
+
+        if (data) finalExerciseId = data.id;
+      }
+    }
+
+    if (!finalExerciseId) throw new Error("Error BD: Ejercicio de sistema no encontrado");
+
+    let timeToSave = overrideSeconds !== undefined ? overrideSeconds : (exerciseTimes[finalExerciseId] || 0);
+
+    if (timeToSave > 0 && timeToSave < 60) {
+      timeToSave = 60;
+    }
+
     if (mode === 'free' || timeToSave === 0) return;
 
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
+    if (!user) throw new Error("Error BD: Usuario no autenticado");
 
-    const { data: existingLog } = await supabase
+    const { data: existingLog, error: fetchError } = await supabase
       .from('practice_logs')
       .select('id')
       .eq('session_id', sessionId)
-      .eq('exercise_id', exerciseId)
+      .eq('exercise_id', finalExerciseId)
       .maybeSingle();
 
+    if (fetchError) throw new Error(`Error BD: ${fetchError.message}`);
+
     if (existingLog) {
-      await supabase.from('practice_logs')
+      const { error: updateError } = await supabase.from('practice_logs')
         .update({ duration_seconds: timeToSave, bpm_used: bpmUsed })
         .eq('id', existingLog.id);
+
+      if (updateError) throw new Error(`Error BD: ${updateError.message}`);
     } else {
-      await supabase.from('practice_logs').insert({
+      const { error: insertError } = await supabase.from('practice_logs').insert({
         user_id: user.id,
-        exercise_id: exerciseId,
+        exercise_id: finalExerciseId,
         session_id: sessionId,
         duration_seconds: timeToSave,
         bpm_used: bpmUsed,
         created_at: new Date().toISOString()
       });
+
+      if (insertError) throw new Error(`Error BD: ${insertError.message}`);
     }
 
     if (bpmGoal !== null) {
@@ -127,7 +168,7 @@ export function usePracticeSession(mode: string, routineId: string | null, activ
       } else {
         await supabase.from('exercises')
           .update({ bpm_goal: bpmGoal })
-          .eq('id', exerciseId)
+          .eq('id', finalExerciseId)
           .eq('user_id', user.id);
       }
     }

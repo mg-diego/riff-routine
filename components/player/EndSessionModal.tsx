@@ -7,20 +7,22 @@ import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
 
 interface EndSessionModalProps {
     sessionId: string;
-    showBpmInputs: boolean;
     isTimerRunning: boolean;
     onToggleTimer: () => void;
     onClose: () => void;
     onEndSession: (overrideTotalSeconds?: number) => void;
+    localSessionLogs: Record<string, { bpm: number | null, seconds: number }>;
+    routineList: any[];
 }
 
 export function EndSessionModal({
     sessionId,
-    showBpmInputs,
     isTimerRunning,
     onToggleTimer,
     onClose,
-    onEndSession
+    onEndSession,
+    localSessionLogs,
+    routineList
 }: EndSessionModalProps) {
     const t = useTranslations('EndSessionModal');
     const { formatExercise } = useTranslatedExercise();
@@ -32,52 +34,47 @@ export function EndSessionModal({
     useEffect(() => {
         if (initialLoadDone) return;
 
-        const fetchLogs = async () => {
-            try {
-                const { data: sessionData } = await supabase.from('practice_sessions').select('routine_id').eq('id', sessionId).single();
-                if (!sessionData?.routine_id) { onEndSession(); return; }
+        const grouped: Record<string, any> = {};
 
-                const { data: routineExercises } = await supabase.from('routine_exercises').select('exercise_id, exercises(*)').eq('routine_id', sessionData.routine_id).order('order_index', { ascending: true });
-                const { data: existingLogs } = await supabase.from('practice_logs').select('id, exercise_id, bpm_used, duration_seconds').eq('session_id', sessionId);
+        routineList.forEach(re => {
+            const ed = re.exercises as any;
+            const exerciseData = Array.isArray(ed) ? ed[0] : (ed || re);
+            const translatedEx = exerciseData ? formatExercise(exerciseData) : null;
+            const exerciseId = re.exercise_id || exerciseData?.id;
 
-                const grouped: Record<string, any> = {};
+            if (!exerciseId) return;
 
-                routineExercises?.forEach(re => {
-                    const ed = re.exercises as any;
-                    const exerciseData = Array.isArray(ed) ? ed[0] : ed;
-                    const translatedEx = exerciseData ? formatExercise(exerciseData) : null;
-
-                    grouped[re.exercise_id] = {
-                        exercise_id: re.exercise_id,
-                        title: translatedEx?.title || t('exerciseLabel'),
-                        hasBpm: exerciseData?.has_bpm !== false, // Evaluamos la propiedad real del ejercicio
-                        bpm_used: '',
-                        duration_seconds: 0,
-                        idsToDelete: []
-                    };
-                });
-
-                existingLogs?.forEach(log => {
-                    if (grouped[log.exercise_id]) {
-                        grouped[log.exercise_id].duration_seconds += log.duration_seconds;
-                        grouped[log.exercise_id].bpm_used = log.bpm_used?.toString() || '';
-                        grouped[log.exercise_id].idsToDelete.push(log.id);
-                    }
-                });
-
-                setFinalLogs(Object.values(grouped).map(g => ({
-                    ...g,
-                    minutes: g.duration_seconds > 0 ? Math.floor(g.duration_seconds / 60).toString() : '',
-                    seconds: g.duration_seconds > 0 ? (g.duration_seconds % 60).toString() : ''
-                })));
-            } catch (err) { } finally {
-                setLoadingLogs(false);
-                setInitialLoadDone(true);
+            const localLog = localSessionLogs[exerciseId];
+            const localBpm = localLog?.bpm;
+            
+            let localSecs = localLog?.seconds || 0;
+            if (localSecs > 0 && localSecs < 60) {
+                localSecs = 60;
             }
-        };
 
-        fetchLogs();
-    }, [sessionId, onEndSession, t, formatExercise, initialLoadDone]);
+            let bpmUsed = '';
+            if (localBpm != null) {
+                bpmUsed = localBpm.toString();
+            }
+
+            grouped[exerciseId] = {
+                exercise_id: exerciseId,
+                title: translatedEx?.title || t('exerciseLabel'),
+                hasBpm: exerciseData?.has_bpm !== false,
+                bpm_used: bpmUsed,
+                duration_seconds: localSecs
+            };
+        });
+
+        setFinalLogs(Object.values(grouped).map(g => ({
+            ...g,
+            minutes: g.duration_seconds > 0 ? Math.floor(g.duration_seconds / 60).toString() : '',
+            seconds: g.duration_seconds > 0 ? (g.duration_seconds % 60).toString() : ''
+        })));
+        
+        setLoadingLogs(false);
+        setInitialLoadDone(true);
+    }, [routineList, localSessionLogs, t, formatExercise, initialLoadDone]);
 
     const updateFinalLog = (index: number, field: string, value: string) => {
         const updated = [...finalLogs];
@@ -102,38 +99,32 @@ export function EndSessionModal({
             let totalRoutineSeconds = 0;
 
             for (const log of finalLogs) {
-                const totalSecs = (parseInt(log.minutes) || 0) * 60 + (parseInt(log.seconds) || 0);
+                let totalSecs = (parseInt(log.minutes) || 0) * 60 + (parseInt(log.seconds) || 0);
+                
+                if (totalSecs > 0 && totalSecs < 60) {
+                    totalSecs = 60;
+                }
+                
                 let bpmVal: number | null = parseInt(log.bpm_used);
                 if (isNaN(bpmVal)) bpmVal = null;
 
-                if (totalSecs === 0) {
-                    if (log.idsToDelete.length > 0) {
-                        await supabase.from('practice_logs').delete().in('id', log.idsToDelete);
-                    }
-                    continue;
-                }
+                if (totalSecs === 0) continue;
 
                 totalRoutineSeconds += totalSecs;
 
-                if (log.idsToDelete.length > 0) {
-                    const mainId = log.idsToDelete[0];
-                    const dups = log.idsToDelete.slice(1);
-                    if (dups.length > 0) await supabase.from('practice_logs').delete().in('id', dups);
-                    await supabase.from('practice_logs').update({ bpm_used: bpmVal, duration_seconds: totalSecs }).eq('id', mainId);
-                } else {
-                    await supabase.from('practice_logs').insert({
-                        user_id: user.id,
-                        session_id: sessionId,
-                        exercise_id: log.exercise_id,
-                        bpm_used: bpmVal,
-                        duration_seconds: totalSecs,
-                        created_at: new Date().toISOString()
-                    });
-                }
+                await supabase.from('practice_logs').insert({
+                    user_id: user.id,
+                    session_id: sessionId,
+                    exercise_id: log.exercise_id,
+                    bpm_used: bpmVal,
+                    duration_seconds: totalSecs,
+                    created_at: new Date().toISOString()
+                });
             }
             window.dispatchEvent(new CustomEvent('app:end-routine-practice'));
             onEndSession(totalRoutineSeconds);
-        } catch (e) { } finally {
+        } catch (e) { 
+        } finally {
             setIsSaving(false);
         }
     };
@@ -148,6 +139,8 @@ export function EndSessionModal({
                 <div className="logs-scroll" style={{ overflowY: 'auto', paddingRight: '0.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                     {loadingLogs ? (
                         <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>{t('loading')}</div>
+                    ) : finalLogs.length === 0 ? (
+                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>{t('noData')}</div>
                     ) : (
                         finalLogs.map((log, i) => (
                             <div data-onboarding="practice-05" key={log.exercise_id} style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
@@ -160,10 +153,10 @@ export function EndSessionModal({
                                         {log.hasBpm ? (
                                             <>
                                                 <label style={{ display: 'block', fontSize: '0.6rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem', fontWeight: 700 }}>{t('bpmFinalLabel')}</label>
-                                                <input type={log.hasBpm ? 'number' : 'text'} placeholder="-" value={log.hasBpm ? log.bpm_used : '---'} onChange={e => { if (log.hasBpm) updateFinalLog(i, 'bpm_used', e.target.value); }} disabled={!log.hasBpm} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 700, outline: 'none', opacity: log.hasBpm ? 1 : 0.3, cursor: log.hasBpm ? 'auto' : 'not-allowed', boxSizing: 'border-box', height: '36px' }} />
+                                                <input type="number" placeholder="-" value={log.bpm_used} onChange={e => updateFinalLog(i, 'bpm_used', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 700, outline: 'none', boxSizing: 'border-box', height: '36px' }} />
                                             </>
                                         ) : (
-                                            <div style={{ display: 'flex', alignItems: 'center', height: '36px' }}>
+                                            <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', paddingBottom: '0.5rem' }}>
                                                 <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontStyle: 'italic' }}>{t('noBpmLog')}</span>
                                             </div>
                                         )}
