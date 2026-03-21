@@ -138,6 +138,8 @@ export default function GuitarPlayer() {
         );
     }
 
+    // ... todo tu código superior (hooks, specialPanel, etc) se mantiene igual ...
+
     return (
         <>
             <Script
@@ -146,10 +148,18 @@ export default function GuitarPlayer() {
                 onReady={() => setScriptReady(true)}
             />
 
+            {/* CAJA PRINCIPAL UNIFICADA Y EXPANDIDA */}
             <div style={{
-                display: 'flex', width: '100%', height: '100%',
-                minHeight: '600px', borderRadius: '12px',
-                background: 'var(--surface)', overflow: 'hidden', position: 'relative',
+                display: 'flex', 
+                width: '100%', 
+                // Hacemos que ocupe casi toda la pantalla, restando el espacio del título y nav
+                minHeight: 'calc(100vh - 180px)', 
+                borderRadius: '12px',
+                background: 'var(--surface)', 
+                border: '1px solid rgba(255,255,255,0.06)',
+                boxShadow: '0 10px 40px rgba(0,0,0,0.2)', // Le da volumen
+                overflow: 'hidden', 
+                position: 'relative',
             }}>
                 <main className="main-panel" style={{
                     flex: 1, width: 0, minWidth: 0,
@@ -213,7 +223,8 @@ export default function GuitarPlayer() {
                     }}>
                         {isSpecialMode && (
                             <div style={{
-                                padding: '1rem 2rem',
+                                // Reducimos un poco el padding vertical para ganar espacio
+                                padding: '1.5rem 2rem',
                                 flex: '1 0 auto',
                                 minHeight: 'min-content',
                                 display: 'flex',
@@ -228,6 +239,8 @@ export default function GuitarPlayer() {
                             width: '100%',
                             display: isSpecialMode ? 'none' : 'flex',
                             flexDirection: 'column',
+                            flex: 1,
+                            padding: '1.5rem 1.75rem',
                         }}>
                             <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} isLoaded={isLoaded} />
 

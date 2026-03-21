@@ -230,7 +230,10 @@ export function SidebarControls({
     <>
       <style>{`
         .sidebar-root {
-          position: relative; height: 100%; flex-shrink: 0;
+          position: relative; 
+          /* ELIMINAMOS height: 100% Y AÑADIMOS align-self: stretch */
+          align-self: stretch; 
+          flex-shrink: 0;
           display: flex; flex-direction: column;
           background: #141414; border-left: 1px solid rgba(220,185,138,0.1);
           transition: width 0.35s cubic-bezier(.4,0,.2,1);
