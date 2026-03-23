@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
-import { useSearchParams, useRouter } from 'next/navigation'; // <-- NUEVOS IMPORTS
+import { useSearchParams, useRouter } from 'next/navigation';
 import { PlayerHeader } from './PlayerHeader';
 import { SidebarControls } from './SidebarControls';
 import { ScalesPanel } from './ScalesPanel';
@@ -15,14 +15,15 @@ import { useTranslations } from 'next-intl';
 import { CompositionPanel } from './CompositionPanel';
 import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
 import { ChordsPanel } from './ChordsPanel';
-import { supabase } from '@/lib/supabase'; // <-- ASEGÚRATE DE IMPORTAR SUPABASE
-import { BackingTracksLibrary } from '../backingTracks/BackingTracksLibrary';
+import { supabase } from '@/lib/supabase';
+import { BackingTracksLibrary } from '../backing-tracks/BackingTracksLibrary';
 
 export default function GuitarPlayer() {
-    const t = useTranslations('GuitarPlayer');
+    const t = useTranslations('GuitarPlayer');    
+    const im = useTranslations('ImprovPanel');
     const searchParams = useSearchParams();
     const router = useRouter();
-    const trackIdFromUrl = searchParams.get('trackId'); // <-- CAPTURAMOS EL ID DE LA URL
+    const trackIdFromUrl = searchParams.get('trackId');
 
     const wrapperRef = useRef<HTMLDivElement>(null);
     const mainScrollRef = useRef<HTMLDivElement>(null);
@@ -30,7 +31,6 @@ export default function GuitarPlayer() {
     const [currentPlaybackBpm, setCurrentPlaybackBpm] = useState<number | null>(null);
     const [originalPlaybackBpm, setOriginalPlaybackBpm] = useState<number | null>(null);
 
-    // NUEVOS ESTADOS PARA MANEJAR LA PISTA ÚNICA
     const [improvTrack, setImprovTrack] = useState<BackingTrack | null>(null);
     const [isLoadingTrack, setIsLoadingTrack] = useState(false);
 
@@ -55,7 +55,6 @@ export default function GuitarPlayer() {
         toggleTimer, saveExerciseLog, handleEndSession,
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
-    // FETCH DE LA PISTA SI ESTAMOS EN MODO IMPROVISACIÓN
     useEffect(() => {
         const fetchTrack = async () => {
             if (mode !== 'improvisation' && activeExercise?.title !== 'sys_improvisation_title') return;
@@ -66,7 +65,6 @@ export default function GuitarPlayer() {
                 if (data) setImprovTrack(data);
                 setIsLoadingTrack(false);
             } else if (trackIdFromUrl === 'new') {
-                // Genera la pista en blanco si el usuario le dio a "Nueva pista"
                 setImprovTrack({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null });
             }
         };
@@ -88,7 +86,6 @@ export default function GuitarPlayer() {
         mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
         mode === 'chords' || activeExercise?.title === 'sys_chords_title';
 
-    // RENDERIZADO DEL PANEL ESPECIAL (Limpio y sin librería)
     const specialPanel = (() => {
         if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
 
@@ -128,7 +125,7 @@ export default function GuitarPlayer() {
                             onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.01)'}
                             onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
-                            + Crear Nueva Pista
+                            {im('newTrack')}
                         </button>
                     </div>
 
@@ -175,8 +172,6 @@ export default function GuitarPlayer() {
         );
     }
 
-    // ... todo tu código superior (hooks, specialPanel, etc) se mantiene igual ...
-
     return (
         <>
             <Script
@@ -189,12 +184,11 @@ export default function GuitarPlayer() {
             <div style={{
                 display: 'flex',
                 width: '100%',
-                // Hacemos que ocupe casi toda la pantalla, restando el espacio del título y nav
                 minHeight: 'calc(100vh - 180px)',
                 borderRadius: '12px',
                 background: 'var(--surface)',
                 border: '1px solid rgba(255,255,255,0.06)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.2)', // Le da volumen
+                boxShadow: '0 10px 40px rgba(0,0,0,0.2)', 
                 overflow: 'hidden',
                 position: 'relative',
             }}>

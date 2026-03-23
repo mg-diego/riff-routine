@@ -89,21 +89,28 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
       if (!user) return;
       const ytId = getYoutubeId(ytLink);
       if (!ytId) return;
+
       const payload = {
-        user_id: user.id, title: trackTitle.trim() || t('defaultTrackTitle'),
-        youtube_url: ytLink, tonality_note: tonalityRoot || null,
+        user_id: user.id,
+        title: trackTitle.trim() || t('defaultTrackTitle'),
+        youtube_url: ytLink,
+        tonality_note: tonalityRoot || null,
         tonality_type: tonalityType || null,
         chords: chords.filter(c => c.note && c.type),
         bpm: bpm || null,
       };
-      if (activeTrackId) {
+
+      if (activeTrackId && activeTrackId !== 'new') {
         await supabase.from('backing_tracks').update(payload).eq('id', activeTrackId);
       } else {
         const { data } = await supabase.from('backing_tracks').insert(payload).select().single();
         if (data) setActiveTrackId(data.id);
       }
-      onSaved(); // Refresca la librería en el padre si es necesario
-    } finally { setIsSaving(false); }
+
+      onSaved();
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   const ytVideoId = useMemo(() => getYoutubeId(ytLink), [ytLink]);

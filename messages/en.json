@@ -741,15 +741,13 @@
     "noScore": {
       "title": "Practice Without Sheet Music",
       "description": "This exercise has no associated file. Use the metronome, the drone pedal, and the top timer to guide your session freely."
-    },
-    "selectTrackForRoutine": "Select a track to practice:",
-    "orUseNewTrack": "Or jam over a new link:",
-    "newTrackButton": "+ New Track"
+    }
   },
   "ImprovPanel": {
     "label": "Improvisation",
     "libraryTitle": "Backing Tracks",
-    "newTrack": "New track",
+    "newTrack": "New track",    
+    "newTrackButton": "+ New Track",
     "loading": "Loading library...",
     "noThumbnail": "No thumbnail",
     "deleteConfirm": "Delete this track?",

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { BackingTracksLibrary } from '@/components/backingTracks/BackingTracksLibrary';
+import { BackingTracksLibrary } from '@/components/backing-tracks/BackingTracksLibrary';
 import { useTranslations } from 'next-intl';
 import { useRouter } from 'next/navigation';
 
@@ -23,7 +23,7 @@ export default function BackingTracksPage() {
                     onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
                     onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                 >
-                    {t('newTrack')}
+                    {t('newTrackButton')}
                 </button>
             </div>
             

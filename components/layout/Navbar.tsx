@@ -157,7 +157,7 @@ export default function Navbar() {
         { name: t('links.home'), path: '/home', onboarding: 'navbarHome' },
         { name: t('links.library'), path: '/library', onboarding: 'navbarLibrary' },
         { name: t('links.routines'), path: '/routines', onboarding: 'navbarRoutines' },        
-        { name: t('links.backingTracks'), path: '/backingTracks', onboarding: 'navbarBackingTracks' },
+        { name: t('links.backingTracks'), path: '/backing-tracks', onboarding: 'navbarBackingTracks' },
         { name: t('links.explore'), path: '/explore', onboarding: 'navbarExplore' },
         { name: t('links.practice'), path: '/practice', onboarding: 'navbarPractice' },
         { name: t('links.stats'), path: '/stats', onboarding: 'navbarStats' },

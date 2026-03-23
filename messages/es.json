@@ -741,15 +741,13 @@
     "noScore": {
       "title": "Práctica Sin Partitura",
       "description": "Este ejercicio no tiene un archivo asociado. Utiliza el metrónomo, el drone pedal y el temporizador superior para guiar tu sesión libremente."
-    },
-    "selectTrackForRoutine": "Selecciona un track para practicar:",
-    "orUseNewTrack": "O improvisa sobre un enlace nuevo:",
-    "newTrackButton": "+ Nuevo Track"
+    }
   },
   "ImprovPanel": {
     "label": "Improvisación",
     "libraryTitle": "Backing Tracks",
     "newTrack": "Nuevo track",
+    "newTrackButton": "+ Nuevo Track",
     "loading": "Cargando librería...",
     "noThumbnail": "Sin miniatura",
     "deleteConfirm": "¿Eliminar este track?",
