@@ -74,20 +74,24 @@ export default function ExplorePage() {
     };
 
     const handlePlay = (exercise: Exercise) => {
-        if (exercise.file_url) {
-            router.push(`/practice?file=${encodeURIComponent(exercise.file_url)}`);
-        } else {
-            const routes: Record<string, string> = {
-                'sys_scales_title': 'scales',
-                'sys_improvisation_title': 'improvisation',
-                'sys_composition_title': 'composition',
-                'sys_chords_title': 'chords'
-            };
-
-            const targetTitle = routes[exercise.title] || exercise.title;
-            router.push(`/practice?mode=${encodeURIComponent(targetTitle)}`);
+    if (exercise.file_url) {
+        router.push(`/practice?file=${encodeURIComponent(exercise.file_url)}`);
+    } else {
+        if (exercise.title === 'sys_improvisation_title') {
+            router.push('/backing-tracks');
+            return;
         }
-    };
+
+        const routes: Record<string, string> = {
+            'sys_scales_title': 'scales',
+            'sys_composition_title': 'composition',
+            'sys_chords_title': 'chords'
+        };
+
+        const targetTitle = routes[exercise.title] || exercise.title;
+        router.push(`/practice?mode=${encodeURIComponent(targetTitle)}`);
+    }
+};
 
     const handleAddToLibrary = async (exercise: Exercise) => {
         const newId = await checkLimitAndFork(exercise);

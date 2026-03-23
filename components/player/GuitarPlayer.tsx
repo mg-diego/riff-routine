@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import Script from 'next/script';
+import { useSearchParams, useRouter } from 'next/navigation'; // <-- NUEVOS IMPORTS
 import { PlayerHeader } from './PlayerHeader';
 import { SidebarControls } from './SidebarControls';
 import { ScalesPanel } from './ScalesPanel';
@@ -14,15 +15,24 @@ import { useTranslations } from 'next-intl';
 import { CompositionPanel } from './CompositionPanel';
 import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
 import { ChordsPanel } from './ChordsPanel';
+import { supabase } from '@/lib/supabase'; // <-- ASEGÚRATE DE IMPORTAR SUPABASE
 import { BackingTracksLibrary } from '../backingTracks/BackingTracksLibrary';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
+    const searchParams = useSearchParams();
+    const router = useRouter();
+    const trackIdFromUrl = searchParams.get('trackId'); // <-- CAPTURAMOS EL ID DE LA URL
+
     const wrapperRef = useRef<HTMLDivElement>(null);
     const mainScrollRef = useRef<HTMLDivElement>(null);
     const [scriptReady, setScriptReady] = useState(false);
     const [currentPlaybackBpm, setCurrentPlaybackBpm] = useState<number | null>(null);
     const [originalPlaybackBpm, setOriginalPlaybackBpm] = useState<number | null>(null);
+
+    // NUEVOS ESTADOS PARA MANEJAR LA PISTA ÚNICA
+    const [improvTrack, setImprovTrack] = useState<BackingTrack | null>(null);
+    const [isLoadingTrack, setIsLoadingTrack] = useState(false);
 
     useEffect(() => {
         return () => console.log('[GuitarPlayer] UNMOUNTED');
@@ -45,6 +55,24 @@ export default function GuitarPlayer() {
         toggleTimer, saveExerciseLog, handleEndSession,
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
+    // FETCH DE LA PISTA SI ESTAMOS EN MODO IMPROVISACIÓN
+    useEffect(() => {
+        const fetchTrack = async () => {
+            if (mode !== 'improvisation' && activeExercise?.title !== 'sys_improvisation_title') return;
+
+            if (trackIdFromUrl && trackIdFromUrl !== 'new') {
+                setIsLoadingTrack(true);
+                const { data } = await supabase.from('backing_tracks').select('*').eq('id', trackIdFromUrl).single();
+                if (data) setImprovTrack(data);
+                setIsLoadingTrack(false);
+            } else if (trackIdFromUrl === 'new') {
+                // Genera la pista en blanco si el usuario le dio a "Nueva pista"
+                setImprovTrack({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null });
+            }
+        };
+        fetchTrack();
+    }, [mode, trackIdFromUrl, activeExercise]);
+
     useEffect(() => {
         if (scriptReady && initialUrlToLoad) {
             loadUrl(initialUrlToLoad);
@@ -52,7 +80,6 @@ export default function GuitarPlayer() {
     }, [initialUrlToLoad, scriptReady]);
 
     const { formatExercise } = useTranslatedExercise();
-
     const translatedExercise = activeExercise ? formatExercise(activeExercise) : null;
 
     const isSpecialMode =
@@ -61,18 +88,27 @@ export default function GuitarPlayer() {
         mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
         mode === 'chords' || activeExercise?.title === 'sys_chords_title';
 
-    const [selectedTrackForRoutine, setSelectedTrackForRoutine] = useState<BackingTrack | null>(null);
-
+    // RENDERIZADO DEL PANEL ESPECIAL (Limpio y sin librería)
     const specialPanel = (() => {
         if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
 
         if (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') {
-            if (selectedTrackForRoutine) {
+            if (isLoadingTrack) {
+                return <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}><span className="loader" /></div>;
+            }
+
+            if (improvTrack) {
                 return (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
                         <ImprovPanel
-                            initialTrack={selectedTrackForRoutine}
-                            onBack={() => setSelectedTrackForRoutine(null)}
+                            initialTrack={improvTrack}
+                            onBack={() => {
+                                if (mode === 'routine') {
+                                    setImprovTrack(null);
+                                } else {
+                                    router.push('/backing-tracks');
+                                }
+                            }}
                             onSaved={() => { }}
                         />
                     </div>
@@ -81,26 +117,27 @@ export default function GuitarPlayer() {
 
             return (
                 <div style={{ padding: '1.5rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
-                    <h3 style={{ color: 'var(--gold)', marginBottom: '1.5rem', fontSize: '1.2rem', fontFamily: 'Bebas Neue' }}>
-                        {t('selectTrackForRoutine')}
-                    </h3>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                        <h3 style={{ color: 'var(--gold)', margin: 0, fontSize: '1.2rem', fontFamily: 'Bebas Neue' }}>
+                            {mode === 'routine' ? 'Selecciona una pista para este paso de la rutina' : 'Selecciona una pista para improvisar'}
+                        </h3>
 
-                    <BackingTracksLibrary
-                        onPlayTrack={(track) => setSelectedTrackForRoutine(track)}
-                        isMiniMode={true}
-                    />
-
-                    <div style={{ marginTop: '2rem', textAlign: 'center', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.5rem' }}>
-                        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', marginBottom: '1rem' }}>{t('orUseNewTrack')}</p>
                         <button
-                            onClick={() => setSelectedTrackForRoutine({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null })}
-                            style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.6rem 1.2rem', borderRadius: '6px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}
-                            onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.1)'}
-                            onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
+                            onClick={() => setImprovTrack({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null })}
+                            style={{ background: 'var(--gold)', border: 'none', color: '#111', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 700, fontSize: '0.85rem', transition: 'transform 0.15s ease' }}
+                            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.01)'}
+                            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
                         >
-                            {t('newTrackButton')}
+                            + Crear Nueva Pista
                         </button>
                     </div>
+
+                    <BackingTracksLibrary
+                        isMiniMode={true}
+                        onPlayTrack={(track) => {
+                            setImprovTrack(track);
+                        }}
+                    />
                 </div>
             );
         }
@@ -150,15 +187,15 @@ export default function GuitarPlayer() {
 
             {/* CAJA PRINCIPAL UNIFICADA Y EXPANDIDA */}
             <div style={{
-                display: 'flex', 
-                width: '100%', 
+                display: 'flex',
+                width: '100%',
                 // Hacemos que ocupe casi toda la pantalla, restando el espacio del título y nav
-                minHeight: 'calc(100vh - 180px)', 
+                minHeight: 'calc(100vh - 180px)',
                 borderRadius: '12px',
-                background: 'var(--surface)', 
+                background: 'var(--surface)',
                 border: '1px solid rgba(255,255,255,0.06)',
                 boxShadow: '0 10px 40px rgba(0,0,0,0.2)', // Le da volumen
-                overflow: 'hidden', 
+                overflow: 'hidden',
                 position: 'relative',
             }}>
                 <main className="main-panel" style={{

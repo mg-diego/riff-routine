@@ -277,33 +277,33 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
                 <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.4)' }}>BPM</span>
               </div>
             </div>
-<div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
-            {!isSystemActive ? (
-              <button onClick={handleSaveCurrentTrack} disabled={isSaving} style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.2)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontWeight: 600, cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.6 : 1, fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }} onMouseEnter={e => { if (!isSaving) { e.currentTarget.style.background = 'rgba(74,222,128,0.15)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.4)'; } }} onMouseLeave={e => { if (!isSaving) { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.2)'; } }}>
-                {isSaving ? t('saving') : activeTrackId ? t('updateTrack') : t('saveTrack')}
-              </button>
-            ) : (
-              <div style={{ background: 'var(--gold)', color: '#111', padding: '0.3rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
-                  <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
-                </svg>
-                {t('officialBadge')}
-              </div>
-            )}
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+              {!isSystemActive ? (
+                <button onClick={handleSaveCurrentTrack} disabled={isSaving} style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.2)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontWeight: 600, cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.6 : 1, fontFamily: 'DM Sans, sans-serif', fontSize: '0.8rem', whiteSpace: 'nowrap', transition: 'all 0.2s' }} onMouseEnter={e => { if (!isSaving) { e.currentTarget.style.background = 'rgba(74,222,128,0.15)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.4)'; } }} onMouseLeave={e => { if (!isSaving) { e.currentTarget.style.background = 'rgba(74,222,128,0.1)'; e.currentTarget.style.borderColor = 'rgba(74,222,128,0.2)'; } }}>
+                  {isSaving ? t('saving') : (activeTrackId && activeTrackId !== 'new') ? t('updateTrack') : t('saveTrack')}
+                </button>
+              ) : (
+                <div style={{ background: 'var(--gold)', color: '#111', padding: '0.3rem 0.6rem', borderRadius: '6px', fontSize: '0.7rem', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z" />
+                  </svg>
+                  {t('officialBadge')}
+                </div>
+              )}
 
-            {/* Columna derecha: botón cerrar */}
-            {!isSystemActive && (
-              <button
-                onClick={() => { setYtLink(''); setActiveScale(null); }}
-                style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: '4px', lineHeight: 1, transition: 'color 0.15s', display: 'flex', alignItems: 'center', alignSelf: 'start' }}
-                onMouseEnter={e => e.currentTarget.style.color = '#e74c3c'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
-              >
-                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-              </button>
-            )}
+              {/* Columna derecha: botón cerrar */}
+              {!isSystemActive && (
+                <button
+                  onClick={() => { setYtLink(''); setActiveScale(null); }}
+                  style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: '4px', lineHeight: 1, transition: 'color 0.15s', display: 'flex', alignItems: 'center', alignSelf: 'start' }}
+                  onMouseEnter={e => e.currentTarget.style.color = '#e74c3c'}
+                  onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+                >
+                  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                    <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
+                  </svg>
+                </button>
+              )}
             </div>
           </div>
 
