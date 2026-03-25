@@ -2,38 +2,11 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { CHROMATIC_NOTES, DEFAULT_INTERVAL_COLORS } from '@/lib/constants';
+import { DEFAULT_INTERVAL_COLORS } from '@/lib/constants';
 import { Fretboard } from './Fretboard';
 import { useScaleLogic } from '@/hooks/useScaleLogic';
 import { supabase } from '@/lib/supabase';
-
-let audioCtx: AudioContext | null = null;
-
-function initAudio() {
-  if (!audioCtx) audioCtx = new (window.AudioContext || (window as any).webkitAudioContext)();
-  if (audioCtx.state === 'suspended') audioCtx.resume();
-}
-
-function playFreq(freq: number, startTime: number, duration: number, vol = 0.2) {
-  if (!audioCtx) return;
-  const osc = audioCtx.createOscillator();
-  const gainNode = audioCtx.createGain();
-  osc.type = 'triangle';
-  osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
-  gainNode.gain.setValueAtTime(0, startTime);
-  gainNode.gain.linearRampToValueAtTime(vol, startTime + 0.05);
-  gainNode.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
-  osc.connect(gainNode);
-  gainNode.connect(audioCtx.destination);
-  osc.start(startTime);
-  osc.stop(startTime + duration);
-}
-
-function getNoteFrequency(noteName: string, octave: number) {
-  const noteIndex = CHROMATIC_NOTES.indexOf(noteName);
-  const midiNote = (octave + 1) * 12 + noteIndex;
-  return 440 * Math.pow(2, (midiNote - 69) / 12);
-}
+import { useAudioSynth } from '@/hooks/useAudioSynth';
 
 interface SmartFretboardProps {
   rootNote: string;
@@ -46,11 +19,11 @@ export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }
 
   const [labelMode, setLabelMode] = useState<'notes' | 'intervals'>('notes');
   const [leftyMode, setLeftyMode] = useState(false);
-  
   const [viewMode, setViewMode] = useState<'full' | 'positions'>('full');
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { scaleData, scaleNotes, positionsData } = useScaleLogic(rootNote, scaleKey, viewMode, t);
+  const { playRealSound } = useAudioSynth();
 
   useEffect(() => {
     const fetchPreferences = async () => {
@@ -99,10 +72,7 @@ export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }
     labelMode,
     leftyMode,
     getIntervalColor,
-    initAudio,
-    audioCtx,
-    playFreq,
-    getNoteFrequency,
+    playRealSound,
     t,
     isEditingPos: null,
     draftPosNotes: [],

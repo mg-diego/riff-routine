@@ -28,6 +28,7 @@ export interface FretboardProps {
   initAudio?: () => void;
   audioCtx?: AudioContext | null;
   playFreq?: (freq: number, startTime: number, duration: number, vol?: number) => void;
+  playRealSound?: (notesToPlay: { note: string; octave: number; string: number }[], isChord: boolean) => void;
   getNoteFrequency?: (noteName: string, octave: number) => number;
 
   isEditingPos?: number | string | null;
@@ -51,6 +52,7 @@ export function Fretboard({
   initAudio,
   audioCtx,
   playFreq,
+  playRealSound,
   getNoteFrequency,
   leftyMode = false,
   labelMode = 'notes',
@@ -70,7 +72,27 @@ export function Fretboard({
   const displayedNotes = isCurrentlyEditing ? draftPosNotes : activeNotesList;
 
   const handlePlayPos = () => {
-    if (!initAudio || !playFreq || !audioCtx || !displayedNotes) return;
+    if (!displayedNotes || displayedNotes.length === 0) return;
+
+    if (playRealSound) {
+      const mappedNotes = displayedNotes.map(n => {
+        const stringRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[n.string]);
+        const baseOctave = Math.floor(STANDARD_BASES[n.string] / 12) - 1;
+        const noteName = CHROMATIC_NOTES[(stringRootIndex + n.fret) % 12];
+        const octave = baseOctave + Math.floor((stringRootIndex + n.fret) / 12);
+        
+        return { note: noteName, octave, string: n.string, fret: n.fret };
+      }).sort((a, b) => {
+        const pitchA = STANDARD_BASES[a.string] + a.fret;
+        const pitchB = STANDARD_BASES[b.string] + b.fret;
+        return pitchA - pitchB;
+      });
+
+      playRealSound(mappedNotes, isChordMode);
+      return;
+    }
+
+    if (!initAudio || !playFreq || !audioCtx) return;
     initAudio();
 
     const sortedNotes = [...displayedNotes].sort((a: any, b: any) => {
@@ -80,10 +102,12 @@ export function Fretboard({
     });
 
     let currentTime = audioCtx.currentTime;
+    const strumDelay = isChordMode ? 0.04 : 0.3;
+
     sortedNotes.forEach((n: any, i: number) => {
       const pitch = STANDARD_BASES[n.string] + n.fret;
       const freq = 440 * Math.pow(2, (pitch - 69) / 12);
-      playFreq(freq, currentTime + i * 0.3, 0.5, 0.2);
+      playFreq(freq, currentTime + i * strumDelay, 0.8, 0.2);
     });
   };
 
@@ -94,10 +118,17 @@ export function Fretboard({
         if (exists) return prev.filter((n: any) => !(n.string === stringIndex && n.fret === fret));
         return [...prev, { string: stringIndex, fret }];
       });
-    } else if (initAudio && getNoteFrequency && playFreq && audioCtx) {
-      initAudio();
-      const freq = getNoteFrequency(currentNote, currentOctave);
-      playFreq(freq, audioCtx.currentTime, 0.8, 0.2);
+    } else {
+      if (playRealSound) {
+        playRealSound([{ note: currentNote, octave: currentOctave, string: stringIndex }], false);
+        return;
+      }
+      
+      if (initAudio && getNoteFrequency && playFreq && audioCtx) {
+        initAudio();
+        const freq = getNoteFrequency(currentNote, currentOctave);
+        playFreq(freq, audioCtx.currentTime, 0.8, 0.2);
+      }
     }
   };
 
@@ -108,42 +139,71 @@ export function Fretboard({
     return `${width}fr`;
   }).join(' ');
 
+  const showHeader = title || (displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && (playRealSound || initAudio));
+
   return (
     <div style={{ width: '100%', marginBottom: '3rem' }}>
-      {title && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '1rem', padding: '0 1rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <h3 style={{ color: 'var(--gold)', margin: 0 }}>{title}</h3>
-            {isDevMode && positionIndex !== undefined && setIsEditingPos && setDraftPosNotes && (
-              isCurrentlyEditing ? (
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
-                  <button onClick={() => setDraftPosNotes([])} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                    Limpiar
+      {showHeader ? (
+        <div style={{ display: 'flex', justifyContent: title ? 'space-between' : 'flex-end', marginBottom: '1rem', padding: '0 1rem', alignItems: 'center' }}>
+          {title && (
+            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+              <h3 style={{ color: 'var(--gold)', margin: 0 }}>{title}</h3>
+              {isDevMode && positionIndex !== undefined && setIsEditingPos && setDraftPosNotes && (
+                isCurrentlyEditing ? (
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button onClick={() => setDraftPosNotes([])} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                      Limpiar
+                    </button>
+                    <button onClick={handleExportCustomPosition} style={{ background: '#34d399', color: '#111', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                      Exportar a TS
+                    </button>
+                    <button onClick={() => setIsEditingPos(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--muted)', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>
+                      Cancelar
+                    </button>
+                  </div>
+                ) : (
+                  <button onClick={() => {
+                    setIsEditingPos(positionIndex);
+                    setDraftPosNotes(activeNotesList ? [...activeNotesList] : []);
+                  }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px dashed rgba(255,255,255,0.2)', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                    ✎ Editar Posición
                   </button>
-                  <button onClick={handleExportCustomPosition} style={{ background: '#34d399', color: '#111', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
-                    Exportar a TS
-                  </button>
-                  <button onClick={() => setIsEditingPos(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--muted)', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>
-                    Cancelar
-                  </button>
-                </div>
-              ) : (
-                <button onClick={() => {
-                  setIsEditingPos(positionIndex);
-                  setDraftPosNotes(activeNotesList ? [...activeNotesList] : []);
-                }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px dashed rgba(255,255,255,0.2)', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', textTransform: 'uppercase' }}>
-                  ✎ Editar Posición
-                </button>
-              )
-            )}
-          </div>
-          {displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && initAudio && (
-            <button onClick={handlePlayPos} style={{ background: 'var(--surface2)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '0.4rem 0.8rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.8rem' }}>
-              {t('fretboard.playPosition')}
+                )
+              )}
+            </div>
+          )}
+          
+          {displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && (playRealSound || initAudio) && (
+            <button 
+              onClick={handlePlayPos} 
+              style={{ 
+                background: 'rgba(220,185,138,0.1)', 
+                color: 'var(--gold)', 
+                border: '1px solid var(--gold)', 
+                padding: '0.4rem 1rem', 
+                borderRadius: '8px', 
+                cursor: 'pointer', 
+                fontSize: '0.85rem',
+                fontWeight: 600,
+                display: 'flex',
+                alignItems: 'center',
+                gap: '0.4rem',
+                transition: 'all 0.2s'
+              }}
+              onMouseEnter={e => {
+                e.currentTarget.style.background = 'var(--gold)';
+                e.currentTarget.style.color = '#111';
+              }}
+              onMouseLeave={e => {
+                e.currentTarget.style.background = 'rgba(220,185,138,0.1)';
+                e.currentTarget.style.color = 'var(--gold)';
+              }}
+            >
+              <span>▶</span> {isChordMode ? 'Escuchar Acorde' : 'Tocar Escala'}
             </button>
           )}
         </div>
-      )}
+      ) : null}
       <div style={{ width: '100%', paddingBottom: '1rem' }}>
         <div style={{
           position: 'relative',
@@ -267,7 +327,7 @@ export function Fretboard({
                         position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
                         borderRight: 'clamp(1px, 0.2vw, 3px) solid silver', height: 'clamp(20px, 3.5vw, 42px)',
                         backgroundColor: isMarked ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
-                        cursor: isCurrentlyEditing || initAudio ? 'pointer' : 'default'
+                        cursor: isCurrentlyEditing || initAudio || playRealSound ? 'pointer' : 'default'
                       }}>
 
                       {(hasSingleDot || hasDoubleDot) && (
@@ -318,10 +378,10 @@ export function Fretboard({
                             opacity: noteOpacity
                           }}
                           onMouseEnter={e => {
-                            if (!isCurrentlyEditing && initAudio) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
+                            if (!isCurrentlyEditing && (initAudio || playRealSound)) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
                           }}
                           onMouseLeave={e => {
-                            if (!isCurrentlyEditing && initAudio) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
+                            if (!isCurrentlyEditing && (initAudio || playRealSound)) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
                           }}
                         >
                           {displayText}

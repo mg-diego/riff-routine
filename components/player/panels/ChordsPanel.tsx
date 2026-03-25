@@ -4,6 +4,7 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { Fretboard } from '../Fretboard';
 import { useTranslations } from 'next-intl';
 import { getChordData, getChordOptions } from '@/app/actions/chords';
+import { useAudioSynth } from '@/hooks/useAudioSynth';
 
 const CHROMATIC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const ENHARMONICS: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
@@ -19,6 +20,8 @@ export function ChordsPanel() {
     const [options, setOptions] = useState<{ keys: string[], suffixes: string[] }>({ keys: [], suffixes: [] });
     const [rawChord, setRawChord] = useState<any>(null);
     const [loading, setLoading] = useState(true);
+
+    const { playRealSound } = useAudioSynth();
 
     useEffect(() => {
         getChordOptions().then(setOptions);
@@ -100,8 +103,6 @@ export function ChordsPanel() {
             bassNoteName
         };
     }, [rawChord, positionIndex, rootNote, suffix]);
-
-    const dummyFn = () => { };
 
     return (
         <div style={{ padding: '2rem', background: 'var(--surface)', borderRadius: '12px', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif' }}>
@@ -248,6 +249,7 @@ export function ChordsPanel() {
                                         isChordMode={true}
                                         chordDisplayMode={chordDisplayMode}
                                         absoluteBarres={chordData.absoluteBarres}
+                                        playRealSound={playRealSound} 
                                         t={t}
                                     />
                                 </div>
