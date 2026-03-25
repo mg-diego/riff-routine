@@ -806,7 +806,8 @@
       "scales": "Scales",
       "improvisation": "Improvisation",
       "composition": "Composition",
-      "chords": "Chords"
+      "chords": "Chords",
+      "rhythm": "Rhythm"
     },
     "alerts": {
       "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
@@ -1093,7 +1094,7 @@
       "legato": "Legato",
       "tapping": "Tapping",
       "sweep_picking": "Sweep Picking",
-      "rythm": "Rhythm",
+      "rhythm": "Rhythm",
       "song": "Song",
       "solo": "Solo",
       "hybrid_picking": "Hybrid Picking",
@@ -1679,6 +1680,9 @@
     "sys_chords_title": "Chords",
     "sys_chords_technique": "Chords",
     "sys_chords_notes": "Master the fretboard by practicing chords and inversions in any position.",
+    "sys_rhythm_title": "Rhythm",
+    "sys_rhythm_technique": "Rhythm",
+    "sys_rhythm_notes": "Master your internal clock with the Subdivision Pyramid.",
     "sys_3_notes_beat_title": "3 Notes per Beat",
     "sys_3_notes_beat_notes": "Rhythmic exercise based on triplets. Perfect for developing timing in compound meters or blues and rock licks.",
     "sys_4_notes_beat_title": "4 Notes per Beat",
@@ -1943,5 +1947,31 @@
     "fingerMiddle": "Middle (2)",
     "fingerRing": "Ring (3)",
     "fingerPinky": "Pinky (4)"
+  },
+  "RhythmPanel": {
+    "title": "Rhythm Sequencer",
+    "description": "Build your own exercise or generate a random routine. Focus on maintaining a steady attack and muting strings with your left hand.",
+    "sequencePreview": "Your Sequence (Timeline)",
+    "addMeasure": "Add Measure Manually",
+    "generate": "Generate",
+    "levels": {
+      "1": "Level 1 (Basic)",
+      "2": "Level 2 (Combined)",
+      "3": "Level 3 (Rests)",
+      "4": "Level 4 (Syncopation)",
+      "5": "Level 5 (Extreme)"
+    },
+    "labels": {
+      "negras": "Quarter",
+      "corcheas": "Eighth",
+      "tresillos": "Triplets",
+      "semicorcheas": "16th Notes",
+      "quincillo": "Quintuplets",
+      "seisillo": "Sextuplets",
+      "septillo": "Septuplets",
+      "nonillo": "Nonuplets",
+      "mixed": "Mix Lvl"
+    },
+    "tips": "Tip: Mute the strings with your left hand and focus purely on your picking hand attack."
   }
 }

@@ -806,7 +806,8 @@
       "scales": "Escalas",
       "improvisation": "Improvisación",
       "composition": "Composición",
-      "chords": "Acordes"
+      "chords": "Acordes",
+      "rhythm": "Rítmica"
     },
     "alerts": {
       "unsavedTime": "Tienes tiempo sin registrar. ¿Seguro que quieres salir?"
@@ -1093,7 +1094,7 @@
       "legato": "Legato",
       "tapping": "Tapping",
       "sweep_picking": "Sweep Picking",
-      "rythm": "Ritmo",
+      "rhythm": "Rítmica",
       "song": "Canción",
       "solo": "Solo",
       "hybrid_picking": "Hybrid Picking",
@@ -1679,6 +1680,9 @@
     "sys_chords_title": "Acordes",
     "sys_chords_technique": "Acordes",
     "sys_chords_notes": "Domina el mástil practicando acordes e inversiones en cualquier posición.",
+    "sys_rhythm_title": "Rítmica",
+    "sys_rhythm_technique": "Rítmica",
+    "sys_rhythm_notes": "Entrena tu reloj interno con la Pirámide de Subdivisión.",
     "sys_3_notes_beat_title": "3 Notas por Beat",
     "sys_3_notes_beat_notes": "Ejercicio rítmico basado en tresillos. Ideal para desarrollar el sentido del tiempo en compases compuestos o licks de blues y rock.",
     "sys_4_notes_beat_title": "4 Notas por Beat",
@@ -1943,5 +1947,31 @@
     "fingerMiddle": "Medio (2)",
     "fingerRing": "Anular (3)",
     "fingerPinky": "Meñique (4)"
+  },
+  "RhythmPanel": {
+    "title": "Secuenciador Rítmico",
+    "description": "Construye tu propio ejercicio o genera una rutina aleatoria. Céntrate en mantener un ataque constante y mutear las cuerdas con la mano izquierda.",
+    "sequencePreview": "Tu Secuencia (Línea de tiempo)",
+    "addMeasure": "Añadir Compás Manualmente",
+    "generate": "Generar",
+    "levels": {
+      "1": "Nivel 1 (Básico)",
+      "2": "Nivel 2 (Combinado)",
+      "3": "Nivel 3 (Silencios)",
+      "4": "Nivel 4 (Síncopas)",
+      "5": "Nivel 5 (Extremo)"
+    },
+    "labels": {
+      "negras": "Negras",
+      "corcheas": "Corcheas",
+      "tresillos": "Tresillos",
+      "semicorcheas": "Semicorch.",
+      "quincillo": "Quincillo",
+      "seisillo": "Seisillo",
+      "septillo": "Septillo",
+      "nonillo": "Nonillo",
+      "mixed": "Mix Lvl"
+    },
+    "tips": "Consejo: Mutea las cuerdas con tu mano izquierda y céntrate solo en el ataque de la púa."
   }
 }

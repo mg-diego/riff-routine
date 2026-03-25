@@ -4,7 +4,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { BASIC_SCALE_SUGGESTIONS, CHROMATIC_NOTES, SCALES } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
 import { getChordOptions } from '@/app/actions/chords';
-import { SmartFretboard } from './SmartFretboard';
+import { SmartFretboard } from '../SmartFretboard';
 import { supabase } from '@/lib/supabase';
 
 const TONALITY_TYPES = [

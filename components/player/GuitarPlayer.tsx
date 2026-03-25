@@ -5,21 +5,22 @@ import Script from 'next/script';
 import { useSearchParams, useRouter } from 'next/navigation';
 import { PlayerHeader } from './PlayerHeader';
 import { SidebarControls } from './SidebarControls';
-import { ScalesPanel } from './ScalesPanel';
-import { BackingTrack, ImprovPanel } from './ImprovPanel';
+import { ScalesPanel } from './panels/ScalesPanel';
+import { BackingTrack, ImprovPanel } from './panels/ImprovPanel';
 import { AlphaTabContainer } from './AlphaTabContainer';
 import { usePlayerContext } from '../../hooks/usePlayerContext';
 import { useAlphaTab } from '../../hooks/useAlphaTab';
 import { usePracticeSession } from '../../hooks/usePracticeSession';
 import { useTranslations } from 'next-intl';
-import { CompositionPanel } from './CompositionPanel';
+import { CompositionPanel } from './panels/CompositionPanel';
 import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
-import { ChordsPanel } from './ChordsPanel';
+import { ChordsPanel } from './panels/ChordsPanel';
 import { supabase } from '@/lib/supabase';
 import { BackingTracksLibrary } from '../backing-tracks/BackingTracksLibrary';
+import { RhythmPanel } from './panels/RhythmPanel';
 
 export default function GuitarPlayer() {
-    const t = useTranslations('GuitarPlayer');    
+    const t = useTranslations('GuitarPlayer');
     const im = useTranslations('ImprovPanel');
     const searchParams = useSearchParams();
     const router = useRouter();
@@ -84,10 +85,12 @@ export default function GuitarPlayer() {
         mode === 'scales' || activeExercise?.title === 'sys_scales_title' ||
         mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title' ||
         mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
-        mode === 'chords' || activeExercise?.title === 'sys_chords_title';
+        mode === 'chords' || activeExercise?.title === 'sys_chords_title' ||
+        mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title';
 
     const specialPanel = (() => {
         if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
+        if (mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title') return <RhythmPanel apiRef={apiRef} />;
 
         if (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') {
             if (isLoadingTrack) {
@@ -145,9 +148,9 @@ export default function GuitarPlayer() {
         return null;
     })();
 
-    const hasNoScore = mode !== 'free' && activeExercise && !activeExercise.file_url;
-    const isSidebarDisabled = isSpecialMode || !!hasNoScore;
-    const isBpmDisabled = mode === 'free' && !isLoaded;
+    const hasNoScore = mode !== 'free' && mode !== 'rhythm' && activeExercise?.title !== 'sys_rhythm_title' && activeExercise && !activeExercise.file_url;
+    const isRhythmMode = mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title';
+    const isSidebarDisabled = (isSpecialMode && !isRhythmMode) || !!hasNoScore; const isBpmDisabled = mode === 'free' && !isLoaded;
 
     const [localSessionLogs, setLocalSessionLogs] = useState<Record<string, { bpm: number | null, seconds: number }>>({});
 
@@ -188,7 +191,7 @@ export default function GuitarPlayer() {
                 borderRadius: '12px',
                 background: 'var(--surface)',
                 border: '1px solid rgba(255,255,255,0.06)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.2)', 
+                boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
                 overflow: 'hidden',
                 position: 'relative',
             }}>
@@ -268,7 +271,7 @@ export default function GuitarPlayer() {
                         <div style={{
                             position: 'relative',
                             width: '100%',
-                            display: isSpecialMode ? 'none' : 'flex',
+                            display: (isSpecialMode && mode !== 'rhythm' && activeExercise?.title !== 'sys_rhythm_title') ? 'none' : 'flex',
                             flexDirection: 'column',
                             flex: 1,
                             padding: '1.5rem 1.75rem',

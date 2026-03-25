@@ -5,7 +5,7 @@ import { useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
 import { DeleteButton } from '@/components/ui/DeleteButton';
-import { BackingTrack } from '@/components/player/ImprovPanel';
+import { BackingTrack } from '@/components/player/panels/ImprovPanel';
 
 const getYoutubeId = (url: string) => {
     const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);

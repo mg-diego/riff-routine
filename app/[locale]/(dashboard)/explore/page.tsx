@@ -85,7 +85,8 @@ export default function ExplorePage() {
         const routes: Record<string, string> = {
             'sys_scales_title': 'scales',
             'sys_composition_title': 'composition',
-            'sys_chords_title': 'chords'
+            'sys_chords_title': 'chords',
+            'sys_rhythm_title': 'rhythm'
         };
 
         const targetTitle = routes[exercise.title] || exercise.title;

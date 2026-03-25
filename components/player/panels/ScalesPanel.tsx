@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { CHROMATIC_NOTES, INTERVAL_NAMES, PREDEFINED_COLORS, SCALES, DEFAULT_INTERVAL_COLORS } from '@/lib/constants';
 import { useScaleLogic } from '@/hooks/useScaleLogic';
-import { SmartFretboard } from './SmartFretboard'; // Asumiendo que están en la misma carpeta
+import { SmartFretboard } from '../SmartFretboard'; // Asumiendo que están en la misma carpeta
 
 const COLOR_KEYS: Record<string, string> = {
   '#7f8c8d': 'grey', '#e74c3c': 'red', '#3498db': 'blue', '#2ecc71': 'green',

@@ -1,6 +1,6 @@
 export const TECHNIQUES = [
     'Alternate Picking', 'Down Picking', 'Legato', 'Tapping',
-    'Sweep Picking', 'Rythm', 'Song', 'Solo', 'Hybrid Picking',
+    'Sweep Picking', 'Rhythm', 'Song', 'Solo', 'Hybrid Picking',
     'String Skipping', 'Warm-up', 'Lick', 'Bending', 'Vibrato'
 ];
 

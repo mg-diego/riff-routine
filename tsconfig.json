@@ -29,6 +29,6 @@
     ".next/types/**/*.ts",
     ".next/dev/types/**/*.ts",
     "**/*.mts"
-, "components/player/ImprovPanel.tsx"  ],
+, "components/player/panels/ImprovPanel.tsx"  ],
   "exclude": ["node_modules"]
 }

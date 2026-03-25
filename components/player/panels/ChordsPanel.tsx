@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Fretboard } from './Fretboard';
+import { Fretboard } from '../Fretboard';
 import { useTranslations } from 'next-intl';
 import { getChordData, getChordOptions } from '@/app/actions/chords';
 

@@ -13,7 +13,7 @@ export function SkillsRadar({ dateFilter }: Props) {
   const [data, setData] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
   const [mainColor, setMainColor] = useState('var(--gold)');
-  const [showLegend, setShowLegend] = useState(false); // <--- Nuevo estado para el panel de Info
+  const [showLegend, setShowLegend] = useState(false);
 
   const PILLAR_NAMES = useMemo(() => ({
     SPEED: t('pillars.Speed'),
@@ -27,8 +27,8 @@ export function SkillsRadar({ dateFilter }: Props) {
     'Alternate Picking': PILLAR_NAMES.SPEED, 'Down Picking': PILLAR_NAMES.SPEED, 'Sweep Picking': PILLAR_NAMES.PRECISION, 'Economy Picking': PILLAR_NAMES.SPEED,
     'Legato': PILLAR_NAMES.SPEED, 'Bending': PILLAR_NAMES.EXPRESSION, 'Vibrato': PILLAR_NAMES.EXPRESSION, 'Slide': PILLAR_NAMES.EXPRESSION,
     'Fingerstyle': PILLAR_NAMES.PRECISION, 'String Skipping': PILLAR_NAMES.PRECISION, 'Tapping': PILLAR_NAMES.PRECISION,
-    'sys_chords_technique': PILLAR_NAMES.THEORY, 'Rythm': PILLAR_NAMES.RHYTHM, 'Strumming': PILLAR_NAMES.RHYTHM,
-    'sys_scales_technique': PILLAR_NAMES.THEORY, 'sys_improvisation_technique': PILLAR_NAMES.EXPRESSION
+    'sys_chords_technique': PILLAR_NAMES.THEORY, 'Rhythm': PILLAR_NAMES.RHYTHM, 'Strumming': PILLAR_NAMES.RHYTHM,
+    'sys_scales_technique': PILLAR_NAMES.THEORY, 'sys_improvisation_technique': PILLAR_NAMES.EXPRESSION, 'sys_rhythm_technique': PILLAR_NAMES.RHYTHM,
   }), [PILLAR_NAMES]);
 
   const PILLAR_COLORS: Record<string, string> = useMemo(() => ({
@@ -47,7 +47,8 @@ export function SkillsRadar({ dateFilter }: Props) {
       const cleanTech = tech
         .replace('sys_chords_technique', 'Chords')
         .replace('sys_scales_technique', 'Scales')
-        .replace('sys_improvisation_technique', 'Improvisation');
+        .replace('sys_improvisation_technique', 'Improvisation')
+        .replace('sys_rhythm_technique', 'Rhythm');
       
       if (!map[pillar]) map[pillar] = [];
       if (!map[pillar].includes(cleanTech)) map[pillar].push(cleanTech);
