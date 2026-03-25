@@ -74,8 +74,10 @@ export function Fretboard({
   const handlePlayPos = () => {
     if (!displayedNotes || displayedNotes.length === 0) return;
 
+    const playableNotes = displayedNotes.filter(n => n.fret >= 0);
+
     if (playRealSound) {
-      const mappedNotes = displayedNotes.map(n => {
+      const mappedNotes = playableNotes.map(n => {
         const stringRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[n.string]);
         const baseOctave = Math.floor(STANDARD_BASES[n.string] / 12) - 1;
         const noteName = CHROMATIC_NOTES[(stringRootIndex + n.fret) % 12];
@@ -95,7 +97,7 @@ export function Fretboard({
     if (!initAudio || !playFreq || !audioCtx) return;
     initAudio();
 
-    const sortedNotes = [...displayedNotes].sort((a: any, b: any) => {
+    const sortedNotes = [...playableNotes].sort((a: any, b: any) => {
       const pitchA = STANDARD_BASES[a.string] + a.fret;
       const pitchB = STANDARD_BASES[b.string] + b.fret;
       return pitchA - pitchB;
@@ -208,7 +210,7 @@ export function Fretboard({
         <div style={{
           position: 'relative',
           display: 'grid',
-          gridTemplateColumns: `minmax(15px, 4%) ${fretCols}`,
+          gridTemplateColumns: `minmax(40px, 6%) ${fretCols}`,
           background: '#2a1a0a',
           border: isCurrentlyEditing ? '2px dashed #34d399' : '2px solid #8b5a2b',
           borderRadius: '8px',
@@ -228,10 +230,25 @@ export function Fretboard({
             const stringRootIndex = CHROMATIC_NOTES.indexOf(openNote);
             const baseOctave = Math.floor(STANDARD_BASES[stringIndex] / 12) - 1;
 
+            let nutSymbol = null;
+            let nutColor = 'inherit';
+
+            if (isChordMode) {
+              const stringData = (displayedNotes || []).find((n: any) => n.string === stringIndex);
+              if (!stringData || stringData.fret === -1) {
+                nutSymbol = '✕';
+                nutColor = '#ef4444';
+              } else if (stringData.fret === 0) {
+                nutSymbol = '○';
+                nutColor = '#10b981';
+              }
+            }
+
             return (
               <React.Fragment key={`string-${stringIndex}`}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#fff', fontWeight: 'bold', fontSize: 'clamp(10px, 1.5vw, 16px)', paddingRight: '4px', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
-                  {openNote}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', color: '#fff', fontWeight: 'bold', fontSize: 'clamp(10px, 1.5vw, 16px)', paddingRight: '8px', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
+                  <span>{openNote}</span>
+                  <span style={{ color: nutColor, fontSize: nutSymbol === '✕' ? '1.4em' : '2.5em', width: '16px', textAlign: 'center', lineHeight: 1 }}>{nutSymbol}</span>
                 </div>
 
                 {Array.from({ length: 24 }).map((_, fretIndex) => {

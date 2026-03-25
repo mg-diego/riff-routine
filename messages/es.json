@@ -1936,17 +1936,26 @@
     }
   },
   "ChordsPanel": {
-    "title": "Diccionario de Acordes",
+    "title": "Acordes",
+    "root": "Raíz",
+    "type": "Tipo",
+    "inversionLabel": "Inversión",
+    "bass": "Bajo",
+    "advancedModeOn": "Avanzado",
+    "advancedModeOff": "Básico",
     "fingers": "Dedos",
     "notes": "Notas",
-    "loading": "Cargando acorde...",
+    "loading": "Cargando...",
     "notFound": "Acorde no encontrado",
-    "inversion": "INVERSIÓN (Bajo en {note})",
+    "inversion": "Bajo en {note}",
     "position": "Posición {current} / {total}",
-    "fingerIndex": "Índice (1)",
-    "fingerMiddle": "Medio (2)",
-    "fingerRing": "Anular (3)",
-    "fingerPinky": "Meñique (4)"
+    "fingerIndex": "Índice",
+    "fingerMiddle": "Medio",
+    "fingerRing": "Anular",
+    "fingerPinky": "Meñique",
+    "fundamental": "Fundamental",
+    "fundamentalShort": "/ Fund.",
+    "inversionOption": "Inversión {idx} ({inv})"
   },
   "RhythmPanel": {
     "title": "Secuenciador Rítmico",

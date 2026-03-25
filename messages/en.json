@@ -1936,17 +1936,26 @@
     }
   },
   "ChordsPanel": {
-    "title": "Chord Dictionary",
+    "title": "Chords",
+    "root": "Root",
+    "type": "Type",
+    "inversionLabel": "Inversion",
+    "bass": "Bass",
+    "advancedModeOn": "Advanced",
+    "advancedModeOff": "Basic",
     "fingers": "Fingers",
     "notes": "Notes",
-    "loading": "Loading chord...",
+    "loading": "Loading...",
     "notFound": "Chord not found",
-    "inversion": "INVERSION ({note} bass)",
+    "inversion": "{note} Bass",
     "position": "Position {current} / {total}",
-    "fingerIndex": "Index (1)",
-    "fingerMiddle": "Middle (2)",
-    "fingerRing": "Ring (3)",
-    "fingerPinky": "Pinky (4)"
+    "fingerIndex": "Index",
+    "fingerMiddle": "Middle",
+    "fingerRing": "Ring",
+    "fingerPinky": "Pinky",
+    "fundamental": "Fundamental",
+    "fundamentalShort": "/ Fund.",
+    "inversionOption": "Inversion {idx} ({inv})"
   },
   "RhythmPanel": {
     "title": "Rhythm Sequencer",
