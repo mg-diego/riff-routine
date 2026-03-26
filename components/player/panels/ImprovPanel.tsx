@@ -1,9 +1,9 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { BASIC_SCALE_SUGGESTIONS, CHROMATIC_NOTES, ENHARMONICS, SCALES } from '@/lib/constants';
+import { BASIC_SCALE_SUGGESTIONS, CHROMATIC_NOTES, ENHARMONICS, SCALES, BASIC_SUFFIXES } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
-import { getChordOptions } from '@/app/actions/chords';
+import { getChordDictionaries } from '@/app/actions/chords';
 import { SmartFretboard } from '../SmartFretboard';
 import { supabase } from '@/lib/supabase';
 
@@ -75,10 +75,26 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
   const isSystemActive = initialTrack ? initialTrack.user_id === null : false;
 
   useEffect(() => {
-    getChordOptions().then(data => {
-      if (data) { setChordDictKeys(data.keys); setChordDictSuffixes(data.suffixes); }
-    }).catch(() => { });
+    getChordDictionaries().then(data => {
+      if (data) {
+        setChordDictKeys(data.keys);
+        setChordDictSuffixes(data.suffixes);
+      }
+    }).catch((err) => {
+      console.error("Error cargando diccionarios:", err);
+    });
   }, []);
+
+  const filteredSuffixes = useMemo(() => {
+    if (!chordDictSuffixes.length) return [];
+    const existingChordsSuffixes = chords.map(c => c.type);
+
+    return chordDictSuffixes.filter(suffix =>
+      BASIC_SUFFIXES.includes(suffix) || existingChordsSuffixes.includes(suffix)
+    ).sort((a, b) => {
+      return BASIC_SUFFIXES.indexOf(a) - BASIC_SUFFIXES.indexOf(b);
+    });
+  }, [chordDictSuffixes, chords]);
 
   const handleSaveCurrentTrack = async () => {
     if (!ytLink) return;
@@ -374,11 +390,11 @@ export function ImprovPanel({ initialTrack, onBack, onSaved }: ImprovPanelProps)
                   <div key={idx} style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                     <select value={chord.note} onChange={e => handleUpdateChord(idx, 'note', e.target.value)} disabled={isSystemActive} style={{ flex: 1, background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem', borderRadius: '6px', outline: 'none' }}>
                       <option value="" disabled>{t('noteLabel')}</option>
-                      {chordDictKeys.map(note => <option key={note} value={note}>{note}</option>)}
+                      {chordDictKeys?.map(note => <option key={note} value={note}>{note}</option>)}
                     </select>
                     <select value={chord.type} onChange={e => handleUpdateChord(idx, 'type', e.target.value)} disabled={isSystemActive} style={{ flex: 2, background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.6rem', borderRadius: '6px', outline: 'none' }}>
                       <option value="" disabled>{t('typeLabel')}</option>
-                      {chordDictSuffixes.map(suffix => <option key={suffix} value={suffix}>{suffix}</option>)}
+                      {filteredSuffixes?.map(suffix => <option key={suffix} value={suffix}>{suffix}</option>)}
                     </select>
                     {!isSystemActive && (
                       <button onClick={() => handleRemoveChord(idx)} style={{ background: 'transparent', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: 0, width: '28px', height: '28px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, borderRadius: '4px' }}

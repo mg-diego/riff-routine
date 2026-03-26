@@ -13,6 +13,8 @@ export const STANDARD_TUNING = ['E', 'B', 'G', 'D', 'A', 'E'];
 export const ROOTS      = ["C", "D", "E", "F", "G", "A", "B"];
 export const ENHARMONICS: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
 export const MARKED_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
+export const BASIC_SUFFIXES = ['major', 'm', '7', 'm7', 'maj7', 'sus2', 'sus4', '5'];
+
 
 export const INTERVAL_NAMES: Record<number, string> = { 0: '1', 1: '♭2', 2: '2', 3: '♭3', 4: '3', 5: '4', 6: '♭5', 7: '5', 8: '♭6', 9: '6', 10: '♭7', 11: '7' };
 export const STANDARD_BASES = [64, 59, 55, 50, 45, 40];

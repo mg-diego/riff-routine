@@ -6,9 +6,7 @@ import { MiniFretboard } from '../MiniFretboard';
 import { useTranslations } from 'next-intl';
 import { getChordData, getChordOptions } from '@/app/actions/chords';
 import { useAudioSynth } from '@/hooks/useAudioSynth';
-import { CHROMATIC_NOTES, STANDARD_TUNING, ENHARMONICS } from '@/lib/constants';
-
-const BASIC_SUFFIXES = ['major', 'm', '7', 'm7', 'maj7', 'sus2', 'sus4', '5'];
+import { CHROMATIC_NOTES, STANDARD_TUNING, ENHARMONICS, BASIC_SUFFIXES } from '@/lib/constants';
 
 const getChordTones = (root: string, suffix: string) => {
     const rootIdx = CHROMATIC_NOTES.indexOf(root);

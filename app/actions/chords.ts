@@ -7,6 +7,7 @@ type ChordDb = Record<string, any[]>;
 
 let cachedChords: ChordDb | null = null;
 let cachedOptions: Record<string, string[]> | null = null;
+let cachedDictionaries: { keys: string[], suffixes: string[] } | null = null;
 
 const ROOTS = ["C#", "Db", "D#", "Eb", "F#", "Gb", "G#", "Ab", "A#", "Bb", "C", "D", "E", "F", "G", "A", "B"];
 
@@ -45,6 +46,33 @@ export async function getChordOptions() {
 
   cachedOptions = sortedMap;
   return cachedOptions;
+}
+
+// VARIANTE B: Para el analizador/ImprovPanel (Listas planas únicas)
+export async function getChordDictionaries() {
+  if (cachedDictionaries) return cachedDictionaries;
+
+  const db = await loadDb();
+  const rawKeys = Object.keys(db);
+  
+  const allKeys = new Set<string>();
+  const allSuffixes = new Set<string>();
+
+  rawKeys.forEach(key => {
+    const root = ROOTS.find(r => key.startsWith(r));
+    if (root) {
+      allKeys.add(root);
+      const suffix = key.slice(root.length) || "major";
+      allSuffixes.add(suffix);
+    }
+  });
+
+  cachedDictionaries = {
+    keys: Array.from(allKeys).sort((a, b) => ROOTS.indexOf(a) - ROOTS.indexOf(b)),
+    suffixes: Array.from(allSuffixes).sort()
+  };
+
+  return cachedDictionaries;
 }
 
 export async function getChordData(rootNote: string, suffix: string) {
