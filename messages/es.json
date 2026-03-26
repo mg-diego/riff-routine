@@ -788,14 +788,14 @@
     "searchPlaceholder": "Buscar por título, tonalidad o acordes...",
     "filterTonality": "Tonalidad",
     "filterChords": "Contiene acorde",
-    "clearFilters": "Limpiar filtros",    
+    "clearFilters": "Limpiar filtros",
     "foundPlural": "{count} tracks encontrados",
     "foundSingular": "{count} track encontrado",
     "officialDisclaimer": "Pista oficial del sistema (No editable)",
     "tonalityTypes": {
       "major": "Mayor",
       "minor": "Menor"
-    },    
+    },
     "noMatchState": "No se han encontrado resultados."
   },
   "PlayerHeader": {
@@ -807,7 +807,8 @@
       "improvisation": "Improvisación",
       "composition": "Composición",
       "chords": "Acordes",
-      "rhythm": "Rítmica"
+      "rhythm": "Rítmica",
+      "earTraining": "Entrenamiento Auditio"
     },
     "alerts": {
       "unsavedTime": "Tienes tiempo sin registrar. ¿Seguro que quieres salir?"
@@ -1683,6 +1684,9 @@
     "sys_rhythm_title": "Rítmica",
     "sys_rhythm_technique": "Rítmica",
     "sys_rhythm_notes": "Entrena tu reloj interno con la Pirámide de Subdivisión.",
+    "sys_ear_training_title": "Entramiento Auditivo",
+    "sys_ear_training_technique": "Entramiento Auditivo",
+    "sys_ear_training_notes": "TBD",
     "sys_3_notes_beat_title": "3 Notas por Beat",
     "sys_3_notes_beat_notes": "Ejercicio rítmico basado en tresillos. Ideal para desarrollar el sentido del tiempo en compases compuestos o licks de blues y rock.",
     "sys_4_notes_beat_title": "4 Notas por Beat",
@@ -1984,5 +1988,17 @@
       "mixed": "Mix Lvl"
     },
     "tips": "Consejo: Mutea las cuerdas con tu mano izquierda y céntrate solo en el ataque de la púa."
+  },
+  "EarTrainingPanel": {
+    "title": "Entrenamiento Auditivo",
+    "currentStreak": "Racha actual",
+    "record": "Récord:",
+    "level": "Nivel",
+    "tapToListen": "Pulsa para escuchar el acorde",
+    "correct": "¡Correcto! Muy bien",
+    "incorrect": "No era ese — escucha de nuevo",
+    "nextChord": "Siguiente acorde",
+    "tapAgain": "Pulsa de nuevo para repetir",
+    "listenFirst": "Escucha el acorde primero"
   }
 }

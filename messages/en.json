@@ -746,7 +746,7 @@
   "ImprovPanel": {
     "label": "Improvisation",
     "libraryTitle": "Backing Tracks",
-    "newTrack": "New track",    
+    "newTrack": "New track",
     "newTrackButton": "+ New Track",
     "loading": "Loading library...",
     "noThumbnail": "No thumbnail",
@@ -788,9 +788,9 @@
     "searchPlaceholder": "Search by title, key, or chords...",
     "filterTonality": "Key",
     "filterChords": "Contains chord",
-    "clearFilters": "Clear filters",    
+    "clearFilters": "Clear filters",
     "foundPlural": "{count} tracks found",
-    "foundSingular": "{count} track found",    
+    "foundSingular": "{count} track found",
     "officialDisclaimer": "Official System Track (Not editable)",
     "tonalityTypes": {
       "major": "Major",
@@ -807,7 +807,8 @@
       "improvisation": "Improvisation",
       "composition": "Composition",
       "chords": "Chords",
-      "rhythm": "Rhythm"
+      "rhythm": "Rhythm",
+      "earTraining": "Ear Training"
     },
     "alerts": {
       "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
@@ -1683,6 +1684,9 @@
     "sys_rhythm_title": "Rhythm",
     "sys_rhythm_technique": "Rhythm",
     "sys_rhythm_notes": "Master your internal clock with the Subdivision Pyramid.",
+    "sys_ear_training_title": "Ear Training",
+    "sys_ear_training_technique": "Ear Training",
+    "sys_ear_training_notes": "TBD",
     "sys_3_notes_beat_title": "3 Notes per Beat",
     "sys_3_notes_beat_notes": "Rhythmic exercise based on triplets. Perfect for developing timing in compound meters or blues and rock licks.",
     "sys_4_notes_beat_title": "4 Notes per Beat",
@@ -1984,5 +1988,17 @@
       "mixed": "Mix Lvl"
     },
     "tips": "Tip: Mute the strings with your left hand and focus purely on your picking hand attack."
+  },
+  "EarTrainingPanel": {
+    "title": "Ear Training",
+    "currentStreak": "Current streak",
+    "record": "Best:",
+    "level": "Level",
+    "tapToListen": "Tap to listen to the chord",
+    "correct": "Correct! Well done",
+    "incorrect": "Not quite — listen again",
+    "nextChord": "Next chord",
+    "tapAgain": "Tap again to replay",
+    "listenFirst": "Listen to the chord first"
   }
 }

@@ -18,6 +18,7 @@ import { ChordsPanel } from './panels/ChordsPanel';
 import { supabase } from '@/lib/supabase';
 import { BackingTracksLibrary } from '../backing-tracks/BackingTracksLibrary';
 import { RhythmPanel } from './panels/RhythmPanel';
+import { EarTrainingPanel } from './panels/EarTrainingPanel';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -86,11 +87,13 @@ export default function GuitarPlayer() {
         mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title' ||
         mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
         mode === 'chords' || activeExercise?.title === 'sys_chords_title' ||
-        mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title';
+        mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title' ||
+        mode === 'earTraining' || activeExercise?.title === 'sys_ear_training_title';
 
     const specialPanel = (() => {
         if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
         if (mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title') return <RhythmPanel apiRef={apiRef} />;
+        if (mode === 'earTraining' || activeExercise?.title === 'sys_ear_training_title') return <EarTrainingPanel />;
 
         if (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') {
             if (isLoadingTrack) {
