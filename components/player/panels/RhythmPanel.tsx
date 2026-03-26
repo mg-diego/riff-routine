@@ -60,7 +60,7 @@ export function RhythmPanel({ apiRef }: RhythmPanelProps) {
     }, []);
 
     const generateAlphaTex = () => {
-        let tex = `\\title "Rythm Generator"\n\\subtitle "Focus & Timing"\n\\tempo 80\n.\n`;
+        let tex = `\\title "rhythm Generator"\n\\subtitle "Focus & Timing"\n\\tempo 80\n.\n`;
 
         const measures = sequence.map(measure => {
             if (measure.customTex) return measure.customTex;

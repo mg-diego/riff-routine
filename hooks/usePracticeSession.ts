@@ -102,7 +102,9 @@ export function usePracticeSession(mode: string, routineId: string | null, activ
         scales: 'sys_scales_title',
         chords: 'sys_chords_title',
         improvisation: 'sys_improvisation_title',
-        composition: 'sys_composition_title'
+        composition: 'sys_composition_title',
+        rhythm: 'sys_rhythm_title',
+        earTraining: 'sys_ear_training_title'
       };
 
       const targetTitle = sysTitles[mode];

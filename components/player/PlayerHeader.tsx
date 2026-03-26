@@ -152,7 +152,7 @@ export function PlayerHeader({
         composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },
         chords: { label: t('modes.chords'), icon: '🎵', color: 'var(--gold)' },
         rhythm: { label: t('modes.rhythm'), icon: '🥁', color: 'var(--gold)' },        
-        earTraining: { label: t('modes.earTraining'), icon: '🥁', color: 'var(--gold)' }
+        earTraining: { label: t('modes.earTraining'), icon: '👂', color: 'var(--gold)' }
     }), [t]);
 
     const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;

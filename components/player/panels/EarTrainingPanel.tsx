@@ -6,9 +6,9 @@ import { useAudioSynth } from '@/hooks/useAudioSynth';
 import { getChordData } from '@/app/actions/chords';
 import { EAR_TRAINING_LEVELS, CHORD_LABELS } from '@/lib/audioExercises';
 import { MiniFretboard } from '../MiniFretboard';
+import { CHROMATIC_NOTES } from '@/lib/constants';
 
 const ROOTS      = ["C", "D", "E", "F", "G", "A", "B"];
-const CHROMATIC  = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 const STD_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 const STD_BASES  = [40, 45, 50, 55, 59, 64];
 
@@ -91,15 +91,15 @@ export function EarTrainingPanel() {
             const notesToPlay = rawFrets.reduce((acc: any[], fStr: string, i: number) => {
                 const fret = fStr.toLowerCase() === 'x' ? -1 : parseInt(fStr, 10);
                 if (fret >= 0) {
-                    const sri      = CHROMATIC.indexOf(STD_TUNING[i]);
+                    const sri      = CHROMATIC_NOTES.indexOf(STD_TUNING[i]);
                     const baseOct  = Math.floor(STD_BASES[i] / 12) - 1;
-                    const noteName = CHROMATIC[(sri + fret) % 12];
+                    const noteName = CHROMATIC_NOTES[(sri + fret) % 12];
                     const octave   = baseOct + Math.floor((sri + fret) / 12);
                     acc.push({ note: noteName, octave, string: i });
                 }
                 return acc;
             }, []);
-            const sorted = notesToPlay.sort((a: any, b: any) => (a.octave * 12 + CHROMATIC.indexOf(a.note)) - (b.octave * 12 + CHROMATIC.indexOf(b.note)));
+            const sorted = notesToPlay.sort((a: any, b: any) => (a.octave * 12 + CHROMATIC_NOTES.indexOf(a.note)) - (b.octave * 12 + CHROMATIC_NOTES.indexOf(b.note)));
             if (sorted.length > 0) playRealSound(sorted, true);
             const pd = buildPositionData(data);
             if (pd) { setPositionData(pd); setFretboardRoot(currentChord.root); }

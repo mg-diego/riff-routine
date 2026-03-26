@@ -6,14 +6,12 @@ import { MiniFretboard } from '../MiniFretboard';
 import { useTranslations } from 'next-intl';
 import { getChordData, getChordOptions } from '@/app/actions/chords';
 import { useAudioSynth } from '@/hooks/useAudioSynth';
+import { CHROMATIC_NOTES, STANDARD_TUNING, ENHARMONICS } from '@/lib/constants';
 
-const CHROMATIC = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
-const ENHARMONICS: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
-const STD_TUNING = ['E', 'A', 'D', 'G', 'B', 'E'];
 const BASIC_SUFFIXES = ['major', 'm', '7', 'm7', 'maj7', 'sus2', 'sus4', '5'];
 
 const getChordTones = (root: string, suffix: string) => {
-    const rootIdx = CHROMATIC.indexOf(root);
+    const rootIdx = CHROMATIC_NOTES.indexOf(root);
     if (rootIdx === -1) return [];
     
     let intervals = [0, 4, 7];
@@ -29,7 +27,7 @@ const getChordTones = (root: string, suffix: string) => {
     else if (suffix === 'm7b5') intervals = [0, 3, 6, 10];
     else if (suffix === 'dim7') intervals = [0, 3, 6, 9];
 
-    return intervals.map(i => CHROMATIC[(rootIdx + i) % 12]);
+    return intervals.map(i => CHROMATIC_NOTES[(rootIdx + i) % 12]);
 };
 
 export function ChordsPanel() {
@@ -221,8 +219,8 @@ export function ChordsPanel() {
                 const bassFretStr = String(rawFrets[bassStringIdx]).toLowerCase();
                 const bassFret = bassFretStr === 'x' ? 0 : parseInt(bassFretStr, 10);
                 
-                const openNoteIdx = CHROMATIC.indexOf(STD_TUNING[bassStringIdx]);
-                bassNoteName = CHROMATIC[(openNoteIdx + bassFret) % 12];
+                const openNoteIdx = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[bassStringIdx]);
+                bassNoteName = CHROMATIC_NOTES[(openNoteIdx + bassFret) % 12];
 
                 const normRoot = ENHARMONICS[rootNote] || rootNote;
                 const normBass = ENHARMONICS[bassNoteName] || bassNoteName;

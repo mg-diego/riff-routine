@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { BASIC_SCALE_SUGGESTIONS, CHROMATIC_NOTES, SCALES } from '@/lib/constants';
+import { BASIC_SCALE_SUGGESTIONS, CHROMATIC_NOTES, ENHARMONICS, SCALES } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
 import { getChordOptions } from '@/app/actions/chords';
 import { SmartFretboard } from '../SmartFretboard';
@@ -23,8 +23,7 @@ const getYoutubeId = (url: string) => {
   return (m && m[2].length === 11) ? m[2] : null;
 };
 const normalizeNote = (note: string) => {
-  const map: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
-  return map[note] || note;
+  return ENHARMONICS[note] || note;
 };
 const doesChordFitScale = (chordRoot: string, chordSuffix: string, scaleRoot: string, scaleName: string) => {
   const scaleDef = SCALES[scaleName];

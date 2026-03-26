@@ -29,6 +29,7 @@ export function SkillsRadar({ dateFilter }: Props) {
     'Fingerstyle': PILLAR_NAMES.PRECISION, 'String Skipping': PILLAR_NAMES.PRECISION, 'Tapping': PILLAR_NAMES.PRECISION,
     'sys_chords_technique': PILLAR_NAMES.THEORY, 'Rhythm': PILLAR_NAMES.RHYTHM, 'Strumming': PILLAR_NAMES.RHYTHM,
     'sys_scales_technique': PILLAR_NAMES.THEORY, 'sys_improvisation_technique': PILLAR_NAMES.EXPRESSION, 'sys_rhythm_technique': PILLAR_NAMES.RHYTHM,
+    'sys_ear_training_technique': PILLAR_NAMES.THEORY
   }), [PILLAR_NAMES]);
 
   const PILLAR_COLORS: Record<string, string> = useMemo(() => ({
@@ -47,7 +48,8 @@ export function SkillsRadar({ dateFilter }: Props) {
       const cleanTech = tech
         .replace('sys_chords_technique', 'Chords')
         .replace('sys_scales_technique', 'Scales')
-        .replace('sys_improvisation_technique', 'Improvisation')
+        .replace('sys_improvisation_technique', 'Improvisation')        
+        .replace('sys_ear_training_technique', 'Ear Training')
         .replace('sys_rhythm_technique', 'Rhythm');
       
       if (!map[pillar]) map[pillar] = [];
