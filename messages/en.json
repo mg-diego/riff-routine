@@ -1955,7 +1955,9 @@
     "fingerPinky": "Pinky",
     "fundamental": "Fundamental",
     "fundamentalShort": "/ Fund.",
-    "inversionOption": "Inversion {idx} ({inv})"
+    "inversionOption": "Inversion {idx} ({inv})",
+    "detail": "Detail",
+    "positions": "Positions"
   },
   "RhythmPanel": {
     "title": "Rhythm Sequencer",

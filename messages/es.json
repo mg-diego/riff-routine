@@ -1955,7 +1955,9 @@
     "fingerPinky": "Meñique",
     "fundamental": "Fundamental",
     "fundamentalShort": "/ Fund.",
-    "inversionOption": "Inversión {idx} ({inv})"
+    "inversionOption": "Inversión {idx} ({inv})",
+    "detail": "Detalle",
+    "positions": "Posiciones"
   },
   "RhythmPanel": {
     "title": "Secuenciador Rítmico",

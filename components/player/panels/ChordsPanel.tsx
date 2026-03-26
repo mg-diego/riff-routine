@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect, useMemo } from 'react';
 import { Fretboard } from '../Fretboard';
+import { MiniFretboard } from '../MiniFretboard';
 import { useTranslations } from 'next-intl';
 import { getChordData, getChordOptions } from '@/app/actions/chords';
 import { useAudioSynth } from '@/hooks/useAudioSynth';
@@ -14,7 +15,7 @@ const BASIC_SUFFIXES = ['major', 'm', '7', 'm7', 'maj7', 'sus2', 'sus4', '5'];
 const getChordTones = (root: string, suffix: string) => {
     const rootIdx = CHROMATIC.indexOf(root);
     if (rootIdx === -1) return [];
-
+    
     let intervals = [0, 4, 7];
     if (suffix === 'm') intervals = [0, 3, 7];
     else if (suffix === '7') intervals = [0, 4, 7, 10];
@@ -34,14 +35,15 @@ const getChordTones = (root: string, suffix: string) => {
 export function ChordsPanel() {
     const t = useTranslations('ChordsPanel');
     const [optionsMap, setOptionsMap] = useState<Record<string, string[]>>({});
-
+    
     const [rootNote, setRootNote] = useState('C');
     const [baseSuffix, setBaseSuffix] = useState('major');
     const [activeBass, setActiveBass] = useState<string | null>(null);
-
+    
     const [positionIndex, setPositionIndex] = useState(0);
     const [chordDisplayMode, setChordDisplayMode] = useState<'notes' | 'fingers'>('fingers');
     const [isAdvancedMode, setIsAdvancedMode] = useState(false);
+    const [isGridView, setIsGridView] = useState(false);
 
     const [rawChord, setRawChord] = useState<any>(null);
     const [loading, setLoading] = useState(true);
@@ -54,8 +56,8 @@ export function ChordsPanel() {
 
     useEffect(() => {
         setLoading(true);
-
-        const finalSuffix = activeBass
+        
+        const finalSuffix = activeBass 
             ? (baseSuffix === 'major' ? activeBass : `${baseSuffix}${activeBass}`)
             : baseSuffix;
 
@@ -96,7 +98,7 @@ export function ChordsPanel() {
     };
 
     const rootSuffixes = optionsMap[rootNote] || [];
-
+    
     const availableBaseSuffixes = useMemo(() => {
         const filtered = rootSuffixes.filter(s => !s.includes('/'));
         return isAdvancedMode ? filtered : filtered.filter(s => BASIC_SUFFIXES.includes(s));
@@ -139,8 +141,8 @@ export function ChordsPanel() {
 
     const dd1Value = activeBass === null ? 'fundamental' : (inversionOptions.some(o => o.value === activeBass) ? activeBass : 'custom');
 
-    const chordData = useMemo(() => {
-        if (!rawChord || !rawChord.positions || !rawChord.positions.length) return null;
+    const chordPositions = useMemo(() => {
+        if (!rawChord || !rawChord.positions || !rawChord.positions.length) return [];
 
         const getLowestFret = (posObj: any) => {
             const frets = posObj.positions || posObj.frets || [];
@@ -155,100 +157,98 @@ export function ChordsPanel() {
 
         const sortedPositions = [...rawChord.positions].sort((a, b) => getLowestFret(a) - getLowestFret(b));
 
-        const safeIndex = Math.min(positionIndex, sortedPositions.length - 1);
-        const position = sortedPositions[safeIndex];
+        return sortedPositions.map((position) => {
+            const rawFrets = position.positions || [];
+            const rawFingers = (position.fingerings && position.fingerings.length > 0) 
+                ? position.fingerings[0] 
+                : [];
 
-        const rawFrets = position.positions || [];
-        const rawFingers = (position.fingerings && position.fingerings.length > 0)
-            ? position.fingerings[0]
-            : [];
+            let fingersArr: number[] = [];
+            if (Array.isArray(rawFingers)) {
+                fingersArr = rawFingers.map((f: any) => {
+                    if (typeof f === 'string' && f.toLowerCase() === 'x') return 0;
+                    return parseInt(f, 10) || 0;
+                });
+            }
 
-        let fingersArr: number[] = [];
-        if (Array.isArray(rawFingers)) {
-            fingersArr = rawFingers.map((f: any) => {
-                if (typeof f === 'string' && f.toLowerCase() === 'x') return 0;
-                return parseInt(f, 10) || 0;
+            const activeNotesList = rawFrets.reduce((acc: any[], fretVal: any, stringIndex: number) => {
+                const fretStr = String(fretVal).toLowerCase();
+                const fretNum = fretStr === 'x' ? -1 : parseInt(fretStr, 10);
+                
+                if (fretNum >= -1) {
+                    const fingerNum = fingersArr[stringIndex] || 0;
+                    acc.push({ string: 5 - stringIndex, fret: fretNum, finger: isNaN(fingerNum) ? 0 : fingerNum });
+                }
+                return acc;
+            }, []);
+
+            const absoluteFretsForDisplay = rawFrets.map((f: any) => {
+                const fStr = String(f).toLowerCase();
+                if (fStr === 'x' || fStr === '-1') return 'X';
+                return parseInt(fStr, 10);
             });
-        }
 
-        const activeNotesList = rawFrets.reduce((acc: any[], fretVal: any, stringIndex: number) => {
-            const fretStr = String(fretVal).toLowerCase();
-            const fretNum = fretStr === 'x' ? -1 : parseInt(fretStr, 10);
+            const absoluteBarres: number[] = [];
+            const barreCandidates: Record<string, { fret: number, strings: number[] }> = {};
 
-            if (fretNum >= -1) {
-                const fingerNum = fingersArr[stringIndex] || 0;
-                acc.push({ string: 5 - stringIndex, fret: fretNum, finger: isNaN(fingerNum) ? 0 : fingerNum });
-            }
-            return acc;
-        }, []);
+            rawFingers.forEach((f: any, stringIndex: number) => {
+                const fingerNum = parseInt(f, 10);
+                const fretStr = String(rawFrets[stringIndex]).toLowerCase();
+                const fretNum = (fretStr === 'x' || fretStr === '0' || fretStr === '-1') ? -1 : parseInt(fretStr, 10);
 
-        const absoluteFretsForDisplay = rawFrets.map((f: any) => {
-            const fStr = String(f).toLowerCase();
-            if (fStr === 'x' || fStr === '-1') return 'X';
-            return parseInt(fStr, 10);
-        });
-
-        const absoluteBarres: number[] = [];
-        const barreCandidates: Record<string, { fret: number, strings: number[] }> = {};
-
-        rawFingers.forEach((f: any, stringIndex: number) => {
-            const fingerNum = parseInt(f, 10);
-            const fretStr = String(rawFrets[stringIndex]).toLowerCase();
-            const fretNum = (fretStr === 'x' || fretStr === '0' || fretStr === '-1') ? -1 : parseInt(fretStr, 10);
-
-            if (fingerNum > 0 && fretNum > 0) {
-                const key = `${fingerNum}_${fretNum}`;
-                if (!barreCandidates[key]) {
-                    barreCandidates[key] = { fret: fretNum, strings: [] };
+                if (fingerNum > 0 && fretNum > 0) {
+                    const key = `${fingerNum}_${fretNum}`;
+                    if (!barreCandidates[key]) {
+                        barreCandidates[key] = { fret: fretNum, strings: [] };
+                    }
+                    barreCandidates[key].strings.push(stringIndex);
                 }
-                barreCandidates[key].strings.push(stringIndex);
-            }
-        });
+            });
 
-        Object.values(barreCandidates).forEach(candidate => {
-            if (candidate.strings.length > 1) {
-                if (!absoluteBarres.includes(candidate.fret)) {
-                    absoluteBarres.push(candidate.fret);
+            Object.values(barreCandidates).forEach(candidate => {
+                if (candidate.strings.length > 1) {
+                    if (!absoluteBarres.includes(candidate.fret)) {
+                        absoluteBarres.push(candidate.fret);
+                    }
                 }
+            });
+
+            const bassStringIdx = rawFrets.findIndex((f: any) => String(f).toLowerCase() !== 'x');
+            let isInversion = false;
+            let bassNoteName = rootNote;
+
+            if (bassStringIdx !== -1) {
+                const bassFretStr = String(rawFrets[bassStringIdx]).toLowerCase();
+                const bassFret = bassFretStr === 'x' ? 0 : parseInt(bassFretStr, 10);
+                
+                const openNoteIdx = CHROMATIC.indexOf(STD_TUNING[bassStringIdx]);
+                bassNoteName = CHROMATIC[(openNoteIdx + bassFret) % 12];
+
+                const normRoot = ENHARMONICS[rootNote] || rootNote;
+                const normBass = ENHARMONICS[bassNoteName] || bassNoteName;
+
+                isInversion = normRoot !== normBass;
             }
+
+            let displayName = baseSuffix === 'major' ? rootNote : `${rootNote}${baseSuffix}`;
+            if (activeBass) {
+                displayName += activeBass;
+            }
+
+            return {
+                name: displayName,
+                activeNotesList,
+                absoluteBarres,
+                fingers: fingersArr,
+                originalFrets: absoluteFretsForDisplay,
+                isInversion,
+                bassNoteName
+            };
         });
-
-        const bassStringIdx = rawFrets.findIndex((f: any) => String(f).toLowerCase() !== 'x');
-        let isInversion = false;
-        let bassNoteName = rootNote;
-
-        if (bassStringIdx !== -1) {
-            const bassFretStr = String(rawFrets[bassStringIdx]).toLowerCase();
-            const bassFret = bassFretStr === 'x' ? 0 : parseInt(bassFretStr, 10);
-
-            const openNoteIdx = CHROMATIC.indexOf(STD_TUNING[bassStringIdx]);
-            bassNoteName = CHROMATIC[(openNoteIdx + bassFret) % 12];
-
-            const normRoot = ENHARMONICS[rootNote] || rootNote;
-            const normBass = ENHARMONICS[bassNoteName] || bassNoteName;
-
-            isInversion = normRoot !== normBass;
-        }
-
-        let displayName = baseSuffix === 'major' ? rootNote : `${rootNote}${baseSuffix}`;
-        if (activeBass) {
-            displayName += activeBass;
-        }
-
-        return {
-            name: displayName,
-            activeNotesList,
-            absoluteBarres,
-            fingers: fingersArr,
-            originalFrets: absoluteFretsForDisplay,
-            totalPositions: sortedPositions.length,
-            currentIndex: safeIndex,
-            isInversion,
-            bassNoteName
-        };
-    }, [rawChord, positionIndex, rootNote, baseSuffix, activeBass]);
+    }, [rawChord, rootNote, baseSuffix, activeBass]);
 
     const rootKeys = Object.keys(optionsMap);
+    const currentChordData = chordPositions.length > 0 ? chordPositions[Math.min(positionIndex, chordPositions.length - 1)] : null;
 
     return (
         <div style={{ padding: '2rem', background: 'var(--surface)', borderRadius: '12px', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif' }}>
@@ -258,7 +258,7 @@ export function ChordsPanel() {
                 </h2>
 
                 <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-
+                    
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                         <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('root')}</span>
                         <select
@@ -366,6 +366,29 @@ export function ChordsPanel() {
 
                     <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '0.2rem', alignSelf: 'flex-end', marginBottom: '1px' }}>
                         <button
+                            onClick={() => setIsGridView(false)}
+                            style={{
+                                background: !isGridView ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
+                                color: !isGridView ? '#34d399' : 'var(--muted)',
+                                border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '30px'
+                            }}
+                        >
+                            {t('detail')}
+                        </button>
+                        <button
+                            onClick={() => setIsGridView(true)}
+                            style={{
+                                background: isGridView ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
+                                color: isGridView ? '#34d399' : 'var(--muted)',
+                                border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '30px'
+                            }}
+                        >
+                            {t('positions')}
+                        </button>
+                    </div>
+
+                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '0.2rem', alignSelf: 'flex-end', marginBottom: '1px' }}>
+                        <button
                             onClick={() => setChordDisplayMode('fingers')}
                             style={{
                                 background: chordDisplayMode === 'fingers' ? 'rgba(167,139,250,0.2)' : 'transparent',
@@ -405,54 +428,52 @@ export function ChordsPanel() {
                                     lineHeight: 1,
                                     textTransform: 'none'
                                 }}>
-                                    {chordData ? chordData.name : t('notFound')}
+                                    {currentChordData ? currentChordData.name : t('notFound')}
                                 </h3>
 
-                                {chordData?.isInversion && (
+                                {currentChordData?.isInversion && (
                                     <span style={{
                                         fontSize: '0.8rem', background: 'rgba(245, 158, 11, 0.15)', color: '#fcd34d',
                                         padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: 700, letterSpacing: '0.05em', border: '1px solid rgba(245, 158, 11, 0.3)'
                                     }}>
-                                        {t('inversion', { note: chordData.bassNoteName })}
+                                        {t('inversion', { note: currentChordData.bassNoteName })}
                                     </span>
                                 )}
                             </div>
 
-                            {chordData && chordData.totalPositions > 1 && (
+                            {!isGridView && chordPositions.length > 1 && (
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', padding: '0.4rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
                                     <button
                                         onClick={() => setPositionIndex(p => Math.max(0, p - 1))}
-                                        disabled={chordData.currentIndex === 0}
+                                        disabled={positionIndex === 0}
                                         style={{
-                                            background: chordData.currentIndex === 0 ? 'transparent' : 'rgba(167,139,250,0.15)',
+                                            background: positionIndex === 0 ? 'transparent' : 'rgba(167,139,250,0.15)',
                                             border: 'none', borderRadius: '6px', width: '32px', height: '32px',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: chordData.currentIndex === 0 ? 'rgba(255,255,255,0.2)' : '#c4b5fd',
-                                            cursor: chordData.currentIndex === 0 ? 'not-allowed' : 'pointer',
+                                            color: positionIndex === 0 ? 'rgba(255,255,255,0.2)' : '#c4b5fd',
+                                            cursor: positionIndex === 0 ? 'not-allowed' : 'pointer',
                                             transition: 'all 0.2s',
-                                            fontSize: '1rem',
-                                            lineHeight: 1
+                                            fontSize: '1.2rem', lineHeight: 1
                                         }}
                                     >
                                         &#10094;
                                     </button>
 
                                     <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 600, minWidth: '80px', textAlign: 'center' }}>
-                                        {t('position', { current: chordData.currentIndex + 1, total: chordData.totalPositions })}
+                                        {t('position', { current: Math.min(positionIndex, chordPositions.length - 1) + 1, total: chordPositions.length })}
                                     </span>
 
                                     <button
-                                        onClick={() => setPositionIndex(p => Math.min(chordData.totalPositions - 1, p + 1))}
-                                        disabled={chordData.currentIndex === chordData.totalPositions - 1}
+                                        onClick={() => setPositionIndex(p => Math.min(chordPositions.length - 1, p + 1))}
+                                        disabled={positionIndex === chordPositions.length - 1}
                                         style={{
-                                            background: chordData.currentIndex === chordData.totalPositions - 1 ? 'transparent' : 'rgba(167,139,250,0.15)',
+                                            background: positionIndex === chordPositions.length - 1 ? 'transparent' : 'rgba(167,139,250,0.15)',
                                             border: 'none', borderRadius: '6px', width: '32px', height: '32px',
                                             display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: chordData.currentIndex === chordData.totalPositions - 1 ? 'rgba(255,255,255,0.2)' : '#c4b5fd',
-                                            cursor: chordData.currentIndex === chordData.totalPositions - 1 ? 'not-allowed' : 'pointer',
+                                            color: positionIndex === chordPositions.length - 1 ? 'rgba(255,255,255,0.2)' : '#c4b5fd',
+                                            cursor: positionIndex === chordPositions.length - 1 ? 'not-allowed' : 'pointer',
                                             transition: 'all 0.2s',
-                                            fontSize: '1rem',
-                                            lineHeight: 1
+                                            fontSize: '1.2rem', lineHeight: 1
                                         }}
                                     >
                                         &#10095;
@@ -461,21 +482,40 @@ export function ChordsPanel() {
                             )}
                         </div>
 
-                        {chordData && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'flex-start' }}>
-                                <div style={{ width: '100%', overflowX: 'auto' }}>
-                                    <Fretboard
-                                        activeNotesList={chordData.activeNotesList}
-                                        rootNote={rootNote}
-                                        scaleData={{ intervalAliases: {} }}
-                                        labelMode="notes"
-                                        isChordMode={true}
-                                        chordDisplayMode={chordDisplayMode}
-                                        absoluteBarres={chordData.absoluteBarres}
-                                        playRealSound={playRealSound}
-                                        t={t}
-                                    />
-                                </div>
+                        {chordPositions.length > 0 && (
+                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'flex-start', width: '100%' }}>
+                                
+                                {isGridView ? (
+                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', width: '100%' }}>
+                                        {chordPositions.map((pos, idx) => (
+                                            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                                <div style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                                    {t('position', { current: idx + 1, total: chordPositions.length })}
+                                                </div>
+                                                <MiniFretboard 
+                                                    positionData={pos}
+                                                    rootNote={rootNote}
+                                                    chordDisplayMode={chordDisplayMode}
+                                                    playRealSound={playRealSound}
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div style={{ width: '100%', overflowX: 'auto' }}>
+                                        <Fretboard
+                                            activeNotesList={currentChordData?.activeNotesList}
+                                            rootNote={rootNote}
+                                            scaleData={{ intervalAliases: {} }}
+                                            labelMode="notes"
+                                            isChordMode={true}
+                                            chordDisplayMode={chordDisplayMode}
+                                            absoluteBarres={currentChordData?.absoluteBarres}
+                                            playRealSound={playRealSound} 
+                                            t={t}
+                                        />
+                                    </div>
+                                )}
 
                                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', width: '100%' }}>
                                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1rem' }}>
