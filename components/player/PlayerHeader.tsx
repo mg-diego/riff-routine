@@ -50,12 +50,15 @@ function ModeBadge({ cfg }: { cfg: { icon: string; label: string; color: string 
     );
 }
 
-function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFileLoaded, t }: any) {
+function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFileLoaded, t, isPdf }: any) {
     if (isFree) return (
         <div style={{ flex: 1 }}>
             <DropZone onFileLoaded={onFileLoaded ?? (() => { })} fileName={fileName ?? null} />
         </div>
     );
+
+    const hasFile = !!(exercise?.file_url || fileName);
+
     return (
         <>
             <div className="ph-title-stack">
@@ -64,9 +67,30 @@ function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFi
                         {t('labels.routine')} <span className="ph-routine-name-val">{routineName}</span>
                     </div>
                 )}
-                <h1 className="ph-title" title={exercise?.title || fileName || t('labels.noFile')}>
-                    {exercise?.title || fileName || t('labels.loading')}
-                </h1>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <h1 className="ph-title" title={exercise?.title || fileName || t('labels.noFile')}>
+                        {exercise?.title || fileName || t('labels.loading')}
+                    </h1>
+                    
+                    {hasFile && (
+                        <span style={{
+                            background: isPdf ? 'rgba(231, 76, 60, 0.15)' : 'rgba(52, 152, 219, 0.15)',
+                            color: isPdf ? '#e74c3c' : '#3498db',
+                            padding: '0.15rem 0.4rem',
+                            borderRadius: '4px',
+                            fontSize: '0.6rem',
+                            fontWeight: 800,
+                            textTransform: 'uppercase',
+                            letterSpacing: '0.05em',
+                            lineHeight: 1,
+                            display: 'flex',
+                            alignItems: 'center',
+                            flexShrink: 0
+                        }}>
+                            {isPdf ? '📄 PDF' : '🎵 GP5'}
+                        </span>
+                    )}
+                </div>
             </div>
             {exercise?.difficulty && (
                 <div className="ph-diff" style={{ color: DIFF_COLORS[exercise.difficulty] }}>
@@ -157,6 +181,11 @@ export function PlayerHeader({
 
     const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
 
+    const hasFile = !!(exercise?.file_url || fileName);
+    const isLocalPdf = fileName?.toLowerCase().endsWith('.pdf');
+    const isDbPdf = exercise?.file_type === 'pdf' || !!(exercise?.file_url?.toLowerCase().includes('.pdf'));
+    const isPdf = isDbPdf || isLocalPdf;
+
     const {
         bpmCurrent, setBpmCurrent, bpmGoal, setBpmGoal,
         isSaving, saved, errorMsg,
@@ -172,6 +201,8 @@ export function PlayerHeader({
         elapsedSeconds, isTimerRunning, onToggleTimer,
         onSaveExerciseLog, onBpmChange, originalBpm, sessionId, disableBpmInputs, initialSessionBpm: localSessionLogs[exercise?.id || '']?.bpm
     });
+
+    const shouldShowMetronome = showMetronome || isPdf || !hasFile;
 
     return (
         <>
@@ -235,7 +266,7 @@ export function PlayerHeader({
                     <ModeBadge cfg={cfg} />
                     <div className="ph-divider" />
                     <TitleSection isFree={isFree} isRoutine={isRoutine} routineName={routineName}
-                        exercise={exercise} fileName={fileName} onFileLoaded={onFileLoaded} t={t} />
+                        exercise={exercise} fileName={fileName} onFileLoaded={onFileLoaded} t={t} isPdf={isPdf} />
 
                     {!isFree && isRoutine && routineLength > 1 && (
                         <RoutineNavigation currentIndex={currentIndex} routineLength={routineLength}
@@ -261,7 +292,7 @@ export function PlayerHeader({
                             />
                         )}
 
-                        {showMetronome && (
+                        {shouldShowMetronome && (
                             <div className="ph-bpm-section" style={{ borderRight: 'none', paddingLeft: showBpmInputs ? 0 : '1.75rem' }}>
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                                     {!showBpmInputs && (

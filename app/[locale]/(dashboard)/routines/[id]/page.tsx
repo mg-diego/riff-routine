@@ -35,17 +35,15 @@ export default function RoutineDetailsPage() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [saveSuccess, setSaveSuccess] = useState(false);
-
-  const hasUnsavedChanges = savedSnapshot !== JSON.stringify(
-    routineExercises.map(({ id, order_index, target_bpm, target_duration_seconds }) =>
-      ({ id, order_index, target_bpm, target_duration_seconds })
-    )
-  );
+  
+  const [deletedIds, setDeletedIds] = useState<string[]>([]);
 
   const snapshotFrom = (list: RoutineExerciseDetail[]) =>
     JSON.stringify(list.map(({ id, order_index, target_bpm, target_duration_seconds }) =>
       ({ id, order_index, target_bpm, target_duration_seconds })
     ));
+
+  const hasUnsavedChanges = savedSnapshot !== snapshotFrom(routineExercises) || deletedIds.length > 0;
 
   const { formatExercise, formatExerciseList } = useTranslatedExercise();
 
@@ -104,9 +102,9 @@ export default function RoutineDetailsPage() {
 
       setRoutineExercises(enriched);
       setSavedSnapshot(snapshotFrom(enriched));
+      setDeletedIds([]); 
     }
     setLoading(false);
-    // Quitamos formatExercise y formatExerciseList de aquí para evitar el loop
   }, [params.id, router, t]);
 
   useEffect(() => { fetchData(); }, [fetchData]);
@@ -122,6 +120,23 @@ export default function RoutineDetailsPage() {
     setSaving(true);
     setError(null);
     try {
+      
+      // FIX: Filter out any invalid IDs before calling supabase
+      const validDeletedIds = deletedIds.filter(id => id && id.trim() !== '');
+
+      if (validDeletedIds.length > 0) {
+          // Alternative to .in(): Deleting them one by one ensures no silent failures if the array is malformed
+          const deletePromises = validDeletedIds.map(id => 
+              supabase.from('routine_exercises').delete().eq('id', id)
+          );
+          
+          const results = await Promise.all(deletePromises);
+          
+          // Check if any of the deletes failed
+          const deleteError = results.find(r => r.error)?.error;
+          if (deleteError) throw deleteError;
+      }
+
       const upsertData = routineExercises.map(re => ({
         id: re.id,
         routine_id: re.routine_id,
@@ -130,9 +145,14 @@ export default function RoutineDetailsPage() {
         target_bpm: re.target_bpm,
         target_duration_seconds: re.target_duration_seconds,
       }));
-      const { error: upsertError } = await supabase.from('routine_exercises').upsert(upsertData);
-      if (upsertError) throw upsertError;
+
+      if (upsertData.length > 0) {
+        const { error: upsertError } = await supabase.from('routine_exercises').upsert(upsertData);
+        if (upsertError) throw upsertError;
+      }
+
       setSavedSnapshot(snapshotFrom(routineExercises));
+      setDeletedIds([]);
       setSaveSuccess(true);
       setTimeout(() => setSaveSuccess(false), 2500);
     } catch (e: any) {
@@ -145,19 +165,46 @@ export default function RoutineDetailsPage() {
   const handleAddExercise = async (exerciseId: string) => {
     const nextOrder = routineExercises.length > 0
       ? Math.max(...routineExercises.map(e => e.order_index)) + 1 : 0;
-    const { error: insertError } = await supabase
-      .from('routine_exercises').insert([{ routine_id: params.id, exercise_id: exerciseId, order_index: nextOrder, target_duration_seconds: 300 }]);
-    if (insertError) { setError(insertError.message); }
-    else { fetchData(); setShowAddModal(false); }
+    
+    const { data, error: insertError } = await supabase
+      .from('routine_exercises')
+      .insert([{ routine_id: params.id, exercise_id: exerciseId, order_index: nextOrder, target_duration_seconds: 300 }])
+      .select('*, exercises (*)')
+      .single();
+
+    if (insertError) {
+      setError(insertError.message);
+    } else if (data) {
+      const rawEx = Array.isArray(data.exercises) ? data.exercises[0] : data.exercises;
+      const enriched = {
+        ...data,
+        exercises: formatExercise(rawEx as Exercise),
+        session_count: 0
+      } as RoutineExerciseDetail;
+      
+      setRoutineExercises(prev => [...prev, enriched]);
+      
+      setSavedSnapshot(prevSnap => {
+        const arr = JSON.parse(prevSnap);
+        arr.push({ id: enriched.id, order_index: enriched.order_index, target_bpm: enriched.target_bpm, target_duration_seconds: enriched.target_duration_seconds });
+        return JSON.stringify(arr);
+      });
+      setShowAddModal(false);
+    }
   };
 
   const handleRemoveExercise = async (id: string) => {
+    // Check if the user is trying to delete an item they literally just added but hasn't saved.
+    // If they just added it, it's already in the database (because Add inserts immediately), 
+    // so we MUST add it to deletedIds so handleSaveAll knows to clean it up.
+    
     setRoutineExercises(prev => prev.filter(e => e.id !== id));
-    const { error: deleteError } = await supabase.from('routine_exercises').delete().eq('id', id);
-    if (deleteError) { setError(deleteError.message); fetchData(); }
-    else setSavedSnapshot(() => {
-      const updated = routineExercises.filter(e => e.id !== id);
-      return snapshotFrom(updated);
+    setDeletedIds(prev => {
+        // Prevent duplicates
+        if (!prev.includes(id)) {
+            return [...prev, id];
+        }
+        return prev;
     });
   };
 

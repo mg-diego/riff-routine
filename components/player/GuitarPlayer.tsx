@@ -19,6 +19,7 @@ import { supabase } from '@/lib/supabase';
 import { BackingTracksLibrary } from '../backing-tracks/BackingTracksLibrary';
 import { RhythmPanel } from './panels/RhythmPanel';
 import { EarTrainingPanel } from './panels/EarTrainingPanel';
+import { PdfViewer } from './PdfViewer'; 
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -57,6 +58,9 @@ export default function GuitarPlayer() {
         toggleTimer, saveExerciseLog, handleEndSession,
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
+    // 2. CORRECCIÓN: Doble validación. Si el file_type no vino en el context, usamos la extensión de la URL
+    const isPdf = activeExercise?.file_type === 'pdf' || !!(activeExercise?.file_url?.toLowerCase().includes('.pdf'));
+
     useEffect(() => {
         const fetchTrack = async () => {
             if (mode !== 'improvisation' && activeExercise?.title !== 'sys_improvisation_title') return;
@@ -73,11 +77,18 @@ export default function GuitarPlayer() {
         fetchTrack();
     }, [mode, trackIdFromUrl, activeExercise]);
 
+    // 3. CORRECCIÓN: Evitamos estrictamente enviar PDFs a AlphaTab
     useEffect(() => {
         if (scriptReady && initialUrlToLoad) {
-            loadUrl(initialUrlToLoad);
+            const isPdfUrl = initialUrlToLoad.toLowerCase().includes('.pdf');
+            if (!isPdf && !isPdfUrl) {
+                loadUrl(initialUrlToLoad);
+            } else if (apiRef.current) {
+                // Si pasamos de un ejercicio GP5 a un PDF en la rutina, silenciamos/pausamos el GP5 anterior
+                apiRef.current.pause();
+            }
         }
-    }, [initialUrlToLoad, scriptReady]);
+    }, [initialUrlToLoad, scriptReady, isPdf, loadUrl, apiRef]);
 
     const { formatExercise } = useTranslatedExercise();
     const translatedExercise = activeExercise ? formatExercise(activeExercise) : null;
@@ -153,7 +164,10 @@ export default function GuitarPlayer() {
 
     const hasNoScore = mode !== 'free' && mode !== 'rhythm' && activeExercise?.title !== 'sys_rhythm_title' && activeExercise && !activeExercise.file_url;
     const isRhythmMode = mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title';
-    const isSidebarDisabled = (isSpecialMode && !isRhythmMode) || !!hasNoScore; const isBpmDisabled = mode === 'free' && !isLoaded;
+    
+    // 4. Deshabilitamos el Sidebar lateral si estamos mostrando un PDF
+    const isSidebarDisabled = (isSpecialMode && !isRhythmMode) || !!hasNoScore || isPdf; 
+    const isBpmDisabled = mode === 'free' && !isLoaded;
 
     const [localSessionLogs, setLocalSessionLogs] = useState<Record<string, { bpm: number | null, seconds: number }>>({});
 
@@ -260,7 +274,6 @@ export default function GuitarPlayer() {
                     }}>
                         {isSpecialMode && (
                             <div style={{
-                                // Reducimos un poco el padding vertical para ganar espacio
                                 padding: '1.5rem 2rem',
                                 flex: '1 0 auto',
                                 minHeight: 'min-content',
@@ -279,9 +292,20 @@ export default function GuitarPlayer() {
                             flex: 1,
                             padding: '1.5rem 1.75rem',
                         }}>
-                            <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} isLoaded={isLoaded} />
+                            
+                            {/* 5. Si es PDF, inyectamos el componente (y evitamos el AlphaTab) */}
+                            {isPdf && activeExercise?.file_url && (
+                                <div style={{ flex: 1, minHeight: '60vh', display: 'flex', flexDirection: 'column' }}>
+                                    <PdfViewer url={activeExercise.file_url} />
+                                </div>
+                            )}
 
-                            {hasNoScore && !isSpecialMode && (
+                            {/* 6. Mantenemos el ref en el DOM pero lo ocultamos si es un PDF para que no estorbe visualmente ni crashee */}
+                            <div style={{ display: isPdf ? 'none' : 'block', flex: 1 }}>
+                                <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} isLoaded={isLoaded} />
+                            </div>
+
+                            {hasNoScore && !isSpecialMode && !isPdf && (
                                 <div style={{
                                     position: 'absolute', inset: 0,
                                     display: 'flex', flexDirection: 'column',

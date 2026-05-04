@@ -7,6 +7,7 @@ import { Exercise } from '../../../../../lib/types';
 import { ExerciseForm } from '../../../../../components/library/ExerciseForm';
 import { useTranslations } from 'next-intl';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import { VALID_FILE_TYPES } from '@/lib/constants';
 
 export default function ExerciseDetailsPage() {
     const params = useParams();
@@ -30,6 +31,9 @@ export default function ExerciseDetailsPage() {
     const [bpmGoal, setBpmGoal] = useState<string | number>('');
     const [difficulty, setDifficulty] = useState(3);
     const [notes, setNotes] = useState('');
+    
+    // Añadimos el estado para controlar el tipo de archivo en la UI
+    const [fileType, setFileType] = useState('gp5');
 
     useEffect(() => {
         fetchExercise();
@@ -61,6 +65,9 @@ export default function ExerciseDetailsPage() {
             setBpmGoal(data.bpm_goal || '');
             setDifficulty(data.difficulty || 3);
             setNotes(data.notes || '');
+            
+            // Inicializamos el fileType con lo que venga de BD
+            setFileType(data.file_type || 'gp5');
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
         } finally {
@@ -82,12 +89,20 @@ export default function ExerciseDetailsPage() {
         if (!f) return;
 
         const ext = f.name.split('.').pop()?.toLowerCase();
-        if (!ext || !['gp', 'gp3', 'gp4', 'gp5', 'gpx'].includes(ext)) {
-            setError(t('fileDrop.invalidFormat'));
+        if (!ext || !['gp', 'gp3', 'gp4', 'gp5', 'gpx', 'pdf'].includes(ext)) {
+            setError(t('fileDrop.invalidFormat')); 
             return;
         }
 
+        const MAX_PDF_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
+        if (ext === 'pdf' && f.size > MAX_PDF_SIZE) {
+            setError(t('fileDrop.invalidSize')); // O la traducción que definiste
+            return;
+        }
+
+        // Seteamos el archivo y actualizamos el tipo de archivo
         setFile(f);
+        setFileType(ext === 'pdf' ? 'pdf' : 'gp5');
         setError(null);
     };
 
@@ -104,10 +119,14 @@ export default function ExerciseDetailsPage() {
             if (authError || !user) throw new Error(t('form.authRequired'));
 
             let currentFileUrl = exercise.file_url;
+            
+            // Usamos directamente el estado que ya controlamos en la UI
+            let currentFileType = fileType; 
 
             if (file) {
-                const fileExt = file.name.split('.').pop();
+                const fileExt = file.name.split('.').pop()?.toLowerCase() || 'gp5';
                 const filePath = `${user.id}/${crypto.randomUUID()}.${fileExt}`;
+
                 const { error: uploadError } = await supabase.storage.from('guitar_tabs').upload(filePath, file);
 
                 if (uploadError) throw uploadError;
@@ -127,6 +146,7 @@ export default function ExerciseDetailsPage() {
                 .update({
                     title: name.trim(),
                     file_url: currentFileUrl,
+                    file_type: currentFileType, // Guardamos el formato correcto en BD
                     technique: categories.join(', '),
                     bpm_suggested: bpmSuggested ? parseInt(String(bpmSuggested)) : null,
                     bpm_goal: bpmGoal ? parseInt(String(bpmGoal)) : null,
@@ -211,7 +231,7 @@ export default function ExerciseDetailsPage() {
                             marginBottom: '1.5rem'
                         }}
                     >
-                        <input ref={inputRef} type="file" accept=".gp,.gp3,.gp4,.gp5,.gpx" onChange={handleFileDrop} hidden />
+                        <input ref={inputRef} type="file" accept={VALID_FILE_TYPES} onChange={handleFileDrop} hidden />
 
                         {isSystem ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -227,7 +247,8 @@ export default function ExerciseDetailsPage() {
                             </div>
                         ) : file ? (
                             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textAlign: 'left' }}>
-                                <div style={{ fontSize: '1.8rem' }}>🎵</div>
+                                {/* Emoji condicional basado en el nuevo estado */}
+                                <div style={{ fontSize: '1.8rem' }}>{fileType === 'pdf' ? '📄' : '🎵'}</div>
                                 <div>
                                     <p style={{ color: '#4ade80', margin: 0, fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.2 }}>{file.name}</p>
                                     <p style={{ color: 'var(--muted)', margin: '0.2rem 0 0', fontSize: '0.8rem' }}>
@@ -248,7 +269,7 @@ export default function ExerciseDetailsPage() {
                                 <div style={{ fontSize: '1.8rem' }}>🎸</div>
                                 <div style={{ textAlign: 'center' }}>
                                     <p style={{ color: 'var(--muted)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
-                                        {t('fileDrop.guitarProFile')} <span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{t('fileDrop.optional')}</span>
+                                        Guitar Pro / PDF <span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{t('fileDrop.optional')}</span>
                                     </p>
                                     <p style={{ color: 'rgba(106,95,82,0.6)', margin: 0, fontSize: '0.8rem' }}>{t('fileDrop.dragOrClick')}</p>
                                 </div>

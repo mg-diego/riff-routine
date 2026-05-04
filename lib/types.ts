@@ -3,6 +3,7 @@ export interface Exercise {
   user_id: string | null;
   title: string;
   file_url: string | null;
+  file_type: string | null;
   technique: string | null;
   bpm_suggested: number | null;
   bpm_goal: number | null;

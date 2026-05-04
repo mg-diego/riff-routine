@@ -6,6 +6,7 @@ import { ExerciseForm } from '../../../../../components/library/ExerciseForm';
 import { BecomeProModal } from '../../../../../components/ui/BecomeProModal';
 import { useTranslations } from 'next-intl';
 import { useExerciseActions } from '../../../../../hooks/useExerciseActions';
+import { VALID_FILE_TYPES } from '../../../../../lib/constants';
 
 export default function NewExercisePage() {
   const router = useRouter();
@@ -13,7 +14,7 @@ export default function NewExercisePage() {
   const p = useTranslations('BecomeProModal');
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const { saving, error, createCustomExercise, setError } = useExerciseActions();  
+  const { saving, error, createCustomExercise, setError } = useExerciseActions();
 
   const [file, setFile] = useState<File | null>(null);
   const [dragOver, setDragOver] = useState(false);
@@ -24,6 +25,7 @@ export default function NewExercisePage() {
   const [bpmGoal, setBpmGoal] = useState<string | number>('');
   const [difficulty, setDifficulty] = useState(0);
   const [notes, setNotes] = useState('');
+  const [fileType, setFileType] = useState('gp5');
 
   const [showProModal, setShowProModal] = useState(false);
 
@@ -48,12 +50,20 @@ export default function NewExercisePage() {
     if (!f) return;
 
     const ext = f.name.split('.').pop()?.toLowerCase();
-    if (!ext || !['gp', 'gp3', 'gp4', 'gp5', 'gpx'].includes(ext)) {
+    if (!ext || !['gp', 'gp3', 'gp4', 'gp5', 'gpx', 'pdf'].includes(ext)) {
       setError(t('fileDrop.invalidFormat'));
       return;
     }
 
+    const MAX_PDF_SIZE = 5 * 1024 * 1024; // 5 MB en bytes
+    if (ext === 'pdf' && f.size > MAX_PDF_SIZE) {
+      setError(t('fileDrop.invalidSize')); // Asegúrate de tener esta traducción
+      return;
+    }
+
+    // ACTUALIZACIÓN DE LÓGICA: Seteamos tanto el archivo como su tipo
     setFile(f);
+    setFileType(ext === 'pdf' ? 'pdf' : 'gp5');
     setError(null);
 
     if (!name.trim()) {
@@ -76,7 +86,8 @@ export default function NewExercisePage() {
       bpmSuggested,
       bpmGoal,
       notes,
-      file
+      file,
+      fileType // Ahora sí enviará 'pdf' si el usuario subió un PDF
     });
 
     if (newExerciseId) {
@@ -121,11 +132,13 @@ export default function NewExercisePage() {
             justifyContent: 'center', minHeight: '100px', marginBottom: '1.5rem'
           }}
         >
-          <input ref={inputRef} type="file" accept=".gp,.gp3,.gp4,.gp5,.gpx" onChange={handleFileDrop} hidden />
+          {/* Se usa la constante que debería incluir .pdf */}
+          <input ref={inputRef} type="file" accept={VALID_FILE_TYPES} onChange={handleFileDrop} hidden />
 
           {file ? (
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textAlign: 'left' }}>
-              <div style={{ fontSize: '1.8rem' }}>🎵</div>
+              {/* Cambia el emoji dinámicamente si es PDF */}
+              <div style={{ fontSize: '1.8rem' }}>{fileType === 'pdf' ? '📄' : '🎵'}</div>
               <div>
                 <p style={{ color: '#4ade80', margin: 0, fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.2 }}>{file.name}</p>
                 <p style={{ color: 'var(--muted)', margin: '0.2rem 0 0', fontSize: '0.8rem' }}>
@@ -138,7 +151,8 @@ export default function NewExercisePage() {
               <div style={{ fontSize: '1.8rem' }}>🎸</div>
               <div style={{ textAlign: 'center' }}>
                 <p style={{ color: 'var(--muted)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
-                  {t('fileDrop.guitarProFile')} <span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{t('fileDrop.optional')}</span>
+                  {/* Aquí podrías añadir una clave nueva al JSON: fileDrop.guitarProOrPdfFile */}
+                  Guitar Pro / PDF <span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{t('fileDrop.optional')}</span>
                 </p>
                 <p style={{ color: 'rgba(106,95,82,0.6)', margin: 0, fontSize: '0.8rem' }}>{t('fileDrop.dragOrClick')}</p>
               </div>
@@ -173,9 +187,9 @@ export default function NewExercisePage() {
       </div>
 
       {showProModal && (
-        <BecomeProModal 
-          onClose={() => setShowProModal(false)} 
-          description={p('libraryLimit')} 
+        <BecomeProModal
+          onClose={() => setShowProModal(false)}
+          description={p('libraryLimit')}
         />
       )}
     </div>

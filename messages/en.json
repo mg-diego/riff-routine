@@ -366,11 +366,12 @@
     "back": "Back to library",
     "title": "New Exercise",
     "fileDrop": {
-      "invalidFormat": "Invalid format. Use .gp, .gp3, .gp4, .gp5 or .gpx",
+      "invalidFormat": "Invalid format. Use .gp, .gp3, .gp4, .gp5, .gpx or .pdf",
+      "invalidSize": "PDF file too large. 5MB limit exceeded.",
       "readyToUpload": "Ready to upload",
       "guitarProFile": "Guitar Pro File",
       "optional": "(optional)",
-      "dragOrClick": "GP3, GP4, GP5, GPX · drag or click"
+      "dragOrClick": "GP3, GP4, GP5, GPX, PDF · drag or click"
     },
     "form": {
       "nameRequired": "Name is required.",
@@ -427,13 +428,14 @@
     "title": "Edit Exercise",
     "notFound": "Exercise not found.",
     "fileDrop": {
-      "invalidFormat": "Invalid format. Use .gp, .gp3, .gp4, .gp5 or .gpx",
+      "invalidFormat": "Invalid format. Use .gp, .gp3, .gp4, .gp5, .gpx or .pdf",
+      "invalidSize": "PDF file too large. 5MB limit exceeded.",
       "readyToUpload": "Ready to upload",
       "replaceFile": "Replace file (Optional)",
       "dragNew": "Drag a new GP or click",
       "guitarProFile": "Guitar Pro File",
       "optional": "(optional)",
-      "dragOrClick": "GP3, GP4, GP5, GPX · drag or click",
+      "dragOrClick": "GP3, GP4, GP5, GPX, PDF · drag or click",
       "systemFile": "System file",
       "systemFileDesc": "This file cannot be replaced"
     },

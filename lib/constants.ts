@@ -4,6 +4,8 @@ export const TECHNIQUES = [
     'String Skipping', 'Warm-up', 'Lick', 'Bending', 'Vibrato'
 ];
 
+export const VALID_FILE_TYPES = ".gp,.gp3,.gp4,.gp5,.gpx,.pdf"
+
 export const DIFFICULTY_COLORS: { [key: number]: string } = {
     1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171'
 };

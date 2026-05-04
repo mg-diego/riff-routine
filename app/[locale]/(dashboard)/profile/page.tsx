@@ -30,16 +30,31 @@ function TierPill({ tier }: { tier: Tier }) {
   );
 }
 
-function Section({ title, description, isDanger, children }: { title: string; description?: string; isDanger?: boolean; children: React.ReactNode }) {
+function Section({ id, title, description, isDanger, accent, children }: {
+  id?: string; title: string; description?: string;
+  isDanger?: boolean; accent?: 'purple'; children: React.ReactNode
+}) {
+  const borderColor = isDanger
+    ? 'rgba(231,76,60,0.5)'
+    : accent === 'purple'
+      ? 'rgba(167,139,250,0.25)'
+      : 'rgba(255,255,255,0.05)';
+  const headerBorder = isDanger
+    ? '1px solid rgba(231,76,60,0.2)'
+    : accent === 'purple'
+      ? '1px solid rgba(167,139,250,0.15)'
+      : '1px solid rgba(255,255,255,0.05)';
+  const titleColor = isDanger ? '#e74c3c' : accent === 'purple' ? '#c4b5fd' : 'var(--text)';
+  const descColor = isDanger ? 'rgba(231,76,60,0.8)' : 'var(--muted)';
+
   return (
-    <section style={{
+    <section id={id} style={{
       background: 'var(--surface)', borderRadius: '12px',
-      border: isDanger ? '1px solid rgba(231,76,60,0.5)' : '1px solid rgba(255,255,255,0.05)',
-      overflow: 'hidden',
+      border: `1px solid ${borderColor}`, overflow: 'hidden',
     }}>
-      <div style={{ padding: '1.25rem 1.5rem', borderBottom: isDanger ? '1px solid rgba(231,76,60,0.2)' : '1px solid rgba(255,255,255,0.05)' }}>
-        <h2 style={{ color: isDanger ? '#e74c3c' : 'var(--text)', fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>{title}</h2>
-        {description && <p style={{ color: isDanger ? 'rgba(231,76,60,0.8)' : 'var(--muted)', fontSize: '0.8rem', margin: '0.2rem 0 0' }}>{description}</p>}
+      <div style={{ padding: '1.25rem 1.5rem', borderBottom: headerBorder }}>
+        <h2 style={{ color: titleColor, fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>{title}</h2>
+        {description && <p style={{ color: descColor, fontSize: '0.8rem', margin: '0.2rem 0 0' }}>{description}</p>}
       </div>
       <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
         {children}
@@ -97,6 +112,14 @@ const btnGhost: React.CSSProperties = {
   fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
 };
 
+const btnPurple: React.CSSProperties = {
+  padding: '0.55rem 1.1rem',
+  background: 'rgba(167,139,250,0.15)',
+  border: '1px solid rgba(167,139,250,0.35)',
+  borderRadius: '8px', color: '#c4b5fd', fontWeight: 700, fontSize: '0.82rem',
+  fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
+};
+
 export default function ProfilePage() {
   const t = useTranslations('Profile');
   const locale = useLocale();
@@ -123,7 +146,16 @@ export default function ProfilePage() {
   const [premiumUntil, setPremiumUntil] = useState<string | null>(null);
   const [portalLoading, setPortalLoading] = useState(false);
 
+  // ── Teacher mode ────────────────────────────────────────────
+  const [isTeacher, setIsTeacher] = useState(false);
+  const [teacherBio, setTeacherBio] = useState('');
+  const [teacherSave, setTeacherSave] = useState<SaveState>('idle');
+  const [activatingTeacher, setActivatingTeacher] = useState(false);
+  // ────────────────────────────────────────────────────────────
+
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+
+  const isProOrLifetime = tier === 'pro' || tier === 'lifetime';
 
   const showToast = (msg: string, type: 'success' | 'error') => {
     setToast({ msg, type });
@@ -150,37 +182,50 @@ export default function ProfilePage() {
         setTier((profile.subscription_tier as Tier) ?? 'free');
         setPremiumUntil(profile.premium_until ?? null);
       }
+
+      // Check teacher profile
+      const { data: teacherProfile } = await supabase
+        .from('teacher_profiles')
+        .select('bio')
+        .eq('id', user.id)
+        .maybeSingle();
+
+      if (teacherProfile) {
+        setIsTeacher(true);
+        setTeacherBio(teacherProfile.bio || '');
+      }
     };
     load();
+  }, []);
+
+  // Scroll to #teacher anchor on mount
+  useEffect(() => {
+    if (window.location.hash === '#teacher') {
+      setTimeout(() => {
+        document.getElementById('teacher')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 300);
+    }
   }, []);
 
   const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file || !userId) return;
-
     const validTypes = ['image/jpeg', 'image/png', 'image/webp', 'image/gif'];
     if (!validTypes.includes(file.type)) { showToast(t('avatar.invalidFormat'), 'error'); return; }
-
     try {
       const compressedFile = await compressImage(file, 400);
       if (compressedFile.size > 500 * 1024) { showToast(t('avatar.tooLarge'), 'error'); return; }
-
       const previewReader = new FileReader();
       previewReader.onload = ev => setAvatarPreview(ev.target?.result as string);
       previewReader.readAsDataURL(compressedFile);
-
       const path = `${userId}/avatar`;
       const { error: uploadError } = await supabase.storage
         .from('avatars').upload(path, compressedFile, { upsert: true, contentType: 'image/jpeg' });
-
       if (uploadError) { showToast(t('avatar.uploadError'), 'error'); return; }
-
       const { data: { publicUrl } } = supabase.storage.from('avatars').getPublicUrl(path);
       const urlWithCacheBuster = `${publicUrl}?v=${Date.now()}`;
-
       const { error: updateError } = await supabase
         .from('profiles').update({ avatar_url: urlWithCacheBuster }).eq('id', userId);
-
       if (updateError) showToast(t('avatar.uploadError'), 'error');
       else { setAvatarUrl(urlWithCacheBuster); showToast(t('avatar.uploadSuccess'), 'success'); }
     } catch { showToast(t('avatar.uploadError'), 'error'); }
@@ -221,9 +266,7 @@ export default function ProfilePage() {
       const { data: { session } } = await supabase.auth.getSession();
       const res = await fetch('/api/stripe/portal', {
         method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${session?.access_token}`,
-        },
+        headers: { 'Authorization': `Bearer ${session?.access_token}` },
       });
       const { url } = await res.json();
       if (url) window.location.href = url;
@@ -234,6 +277,52 @@ export default function ProfilePage() {
       setPortalLoading(false);
     }
   };
+
+  // ── Teacher handlers ─────────────────────────────────────────
+  const handleActivateTeacher = async () => {
+    if (!userId) return;
+    setActivatingTeacher(true);
+    try {
+      const { error } = await supabase
+        .from('teacher_profiles')
+        .upsert({ id: userId, bio: teacherBio || '', is_active: true });
+
+      if (error) { showToast(t('teacher.activateError'), 'error'); return; }
+      setIsTeacher(true);
+      showToast(t('teacher.activateSuccess'), 'success');
+      localStorage.setItem('rr_app_mode', 'student');
+    } catch {
+      showToast(t('teacher.activateError'), 'error');
+    } finally {
+      setActivatingTeacher(false);
+      window.dispatchEvent(new CustomEvent('teacher-mode-changed'));
+    }
+  };
+
+  const handleSaveTeacherBio = async () => {
+    if (!userId) return;
+    setTeacherSave('saving');
+    const { error } = await supabase
+      .from('teacher_profiles')
+      .update({ bio: teacherBio })
+      .eq('id', userId);
+    setTeacherSave(error ? 'error' : 'saved');
+    setTimeout(() => setTeacherSave('idle'), 2500);
+  };
+
+  const handleDeactivateTeacher = async () => {
+    if (!userId) return;
+    const { error } = await supabase
+      .from('teacher_profiles')
+      .update({ is_active: false })
+      .eq('id', userId);
+    if (error) { showToast(t('teacher.deactivateError'), 'error'); return; }
+    setIsTeacher(false);
+    localStorage.setItem('rr_app_mode', 'student');
+    showToast(t('teacher.deactivateSuccess'), 'success');
+    window.dispatchEvent(new CustomEvent('teacher-mode-changed'));
+  };
+  // ────────────────────────────────────────────────────────────
 
   const handleDeleteAccount = async () => {
     await supabase.rpc('delete_user');
@@ -317,8 +406,7 @@ export default function ProfilePage() {
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
             <input type="text" value={username} onChange={e => setUsername(e.target.value)}
-              placeholder={t('account.usernamePlaceholder')}
-              style={{ ...inputStyle, width: '100%' }}
+              placeholder={t('account.usernamePlaceholder')} style={{ ...inputStyle, width: '100%' }}
               onFocus={e => e.target.style.borderColor = 'rgba(220,185,138,0.4)'}
               onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
             />
@@ -330,24 +418,17 @@ export default function ProfilePage() {
         </div>
       </div>
 
-      {/* ── Subscription ── */}
+      {/* Subscription */}
       <Section title={t('subscription.title')} description={t('subscription.description')}>
         <Row label={t('subscription.currentPlan')}>
           <TierPill tier={tier} />
         </Row>
-
         {tier === 'pro' && renewalDate && (
-          <Row label={t('subscription.renewsOn')} description={renewalDate}>
-            <div />
-          </Row>
+          <Row label={t('subscription.renewsOn')} description={renewalDate}><div /></Row>
         )}
-
         {tier === 'lifetime' && (
-          <Row label={t('subscription.lifetime')} description={t('subscription.lifetimeDesc')}>
-            <div />
-          </Row>
+          <Row label={t('subscription.lifetime')} description={t('subscription.lifetimeDesc')}><div /></Row>
         )}
-
         <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', paddingTop: '0.25rem' }}>
           {tier === 'free' && (
             <button onClick={() => router.push(`/${locale}/pro`)} style={btnPrimary}>
@@ -372,6 +453,107 @@ export default function ProfilePage() {
           )}
         </div>
       </Section>
+
+      {/* ── Teacher mode ── */}
+      {isProOrLifetime && (
+        <Section
+          id="teacher"
+          title={t('teacher.title')}
+          description={t('teacher.description')}
+          accent="purple"
+        >
+          {!isTeacher ? (
+            /* Not yet activated */
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                {[
+                  t('teacher.feature1'),
+                  t('teacher.feature2'),
+                  t('teacher.feature3'),
+                ].map((f, i) => (
+                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                    <div style={{
+                      width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
+                      background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="20 6 9 17 4 12" />
+                      </svg>
+                    </div>
+                    <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{f}</span>
+                  </div>
+                ))}
+              </div>
+              <div style={{ display: 'flex', justifyContent: 'flex-start', paddingTop: '0.25rem' }}>
+                <button
+                  onClick={handleActivateTeacher}
+                  disabled={activatingTeacher}
+                  style={{ ...btnPurple, opacity: activatingTeacher ? 0.6 : 1 }}
+                >
+                  {activatingTeacher ? t('teacher.activating') : t('teacher.activate')}
+                </button>
+              </div>
+            </div>
+          ) : (
+            /* Already a teacher */
+            <>
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: '0.6rem',
+                background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)',
+                borderRadius: '8px', padding: '0.65rem 0.85rem',
+              }}>
+                <div style={{
+                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
+                  background: 'rgba(167,139,250,0.2)',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                </div>
+                <span style={{ fontSize: '0.82rem', color: '#c4b5fd', fontWeight: 600 }}>
+                  {t('teacher.active')}
+                </span>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <label style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+                  {t('teacher.bioLabel')}
+                </label>
+                <textarea
+                  value={teacherBio}
+                  onChange={e => setTeacherBio(e.target.value)}
+                  placeholder={t('teacher.bioPlaceholder')}
+                  rows={3}
+                  style={{
+                    ...inputStyle, resize: 'vertical', lineHeight: 1.6,
+                    fontFamily: 'DM Sans, sans-serif',
+                  }}
+                  onFocus={e => e.target.style.borderColor = 'rgba(167,139,250,0.4)'}
+                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                />
+              </div>
+
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                <button
+                  onClick={handleDeactivateTeacher}
+                  style={{ ...btnGhost, fontSize: '0.78rem', color: 'rgba(167,139,250,0.5)', borderColor: 'rgba(167,139,250,0.15)' }}
+                >
+                  {t('teacher.deactivate')}
+                </button>
+                <button
+                  onClick={handleSaveTeacherBio}
+                  disabled={teacherSave === 'saving'}
+                  style={{ ...btnPurple, opacity: teacherSave === 'saving' ? 0.6 : 1 }}
+                >
+                  {saveLabel(teacherSave)}
+                </button>
+              </div>
+            </>
+          )}
+        </Section>
+      )}
 
       {/* Security */}
       <Section title={t('security.title')} description={t('security.description')}>
@@ -459,7 +641,7 @@ export default function ProfilePage() {
           background: toast.type === 'success' ? '#2ecc71' : '#e74c3c',
           color: '#fff', padding: '12px 20px', borderRadius: '8px',
           fontWeight: 600, fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)', zIndex: 9999,
+          boxShadow: '0 4px 12px rgba(0,0,0,0.2)', zIndex: 9998,
         }}>
           {toast.msg}
         </div>

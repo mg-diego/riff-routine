@@ -13,6 +13,7 @@ interface CreateExerciseParams {
     bpmGoal: string | number;
     notes: string;
     file: File | null;
+    fileType: string | null;
 }
 
 export function useExerciseActions() {
@@ -115,6 +116,7 @@ export function useExerciseActions() {
                 bpm_goal: params.bpmGoal ? parseInt(String(params.bpmGoal)) : null,
                 difficulty: params.difficulty,
                 notes: params.notes.trim() || null,
+                file_type: params.fileType,
                 is_system: false,
             }).select().single();
 
@@ -169,7 +171,8 @@ export function useExerciseActions() {
                     difficulty: systemExercise.difficulty,
                     notes: null,
                     forked_from: systemExercise.id,
-                    has_bpm: systemExercise.has_bpm
+                    has_bpm: systemExercise.has_bpm,
+                    file_type: systemExercise.file_type
                 })
                 .select()
                 .single();
