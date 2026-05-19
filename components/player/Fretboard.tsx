@@ -25,6 +25,12 @@ export interface FretboardProps {
   getIntervalColor?: (interval: number) => string;
   t?: any;
 
+  // Compare mode
+  compareMode?: boolean;
+  scaleNotesB?: string[];
+  colorA?: string;
+  colorB?: string;
+
   initAudio?: () => void;
   audioCtx?: AudioContext | null;
   playFreq?: (freq: number, startTime: number, duration: number, vol?: number) => void;
@@ -62,6 +68,10 @@ export function Fretboard({
   isChordMode = false,
   chordDisplayMode = 'notes',
   absoluteBarres = [],
+  compareMode = false,
+  scaleNotesB = [],
+  colorA = '#3b82f6',
+  colorB = '#f43f5e',
   t = (key: string) => key
 }: FretboardProps) {
 
@@ -73,7 +83,6 @@ export function Fretboard({
 
   const handlePlayPos = () => {
     if (!displayedNotes || displayedNotes.length === 0) return;
-
     const playableNotes = displayedNotes.filter(n => n.fret >= 0);
 
     if (playRealSound) {
@@ -82,13 +91,8 @@ export function Fretboard({
         const baseOctave = Math.floor(STANDARD_BASES[n.string] / 12) - 1;
         const noteName = CHROMATIC_NOTES[(stringRootIndex + n.fret) % 12];
         const octave = baseOctave + Math.floor((stringRootIndex + n.fret) / 12);
-        
         return { note: noteName, octave, string: n.string, fret: n.fret };
-      }).sort((a, b) => {
-        const pitchA = STANDARD_BASES[a.string] + a.fret;
-        const pitchB = STANDARD_BASES[b.string] + b.fret;
-        return pitchA - pitchB;
-      });
+      }).sort((a, b) => (STANDARD_BASES[a.string] + a.fret) - (STANDARD_BASES[b.string] + b.fret));
 
       playRealSound(mappedNotes, isChordMode);
       return;
@@ -97,11 +101,9 @@ export function Fretboard({
     if (!initAudio || !playFreq || !audioCtx) return;
     initAudio();
 
-    const sortedNotes = [...playableNotes].sort((a: any, b: any) => {
-      const pitchA = STANDARD_BASES[a.string] + a.fret;
-      const pitchB = STANDARD_BASES[b.string] + b.fret;
-      return pitchA - pitchB;
-    });
+    const sortedNotes = [...playableNotes].sort((a: any, b: any) =>
+      (STANDARD_BASES[a.string] + a.fret) - (STANDARD_BASES[b.string] + b.fret)
+    );
 
     let currentTime = audioCtx.currentTime;
     const strumDelay = isChordMode ? 0.04 : 0.3;
@@ -125,7 +127,6 @@ export function Fretboard({
         playRealSound([{ note: currentNote, octave: currentOctave, string: stringIndex }], false);
         return;
       }
-      
       if (initAudio && getNoteFrequency && playFreq && audioCtx) {
         initAudio();
         const freq = getNoteFrequency(currentNote, currentOctave);
@@ -174,38 +175,20 @@ export function Fretboard({
               )}
             </div>
           )}
-          
+
           {displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && (playRealSound || initAudio) && (
-            <button 
-              onClick={handlePlayPos} 
-              style={{ 
-                background: 'rgba(220,185,138,0.1)', 
-                color: 'var(--gold)', 
-                border: '1px solid var(--gold)', 
-                padding: '0.4rem 1rem', 
-                borderRadius: '8px', 
-                cursor: 'pointer', 
-                fontSize: '0.85rem',
-                fontWeight: 600,
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                transition: 'all 0.2s'
-              }}
-              onMouseEnter={e => {
-                e.currentTarget.style.background = 'var(--gold)';
-                e.currentTarget.style.color = '#111';
-              }}
-              onMouseLeave={e => {
-                e.currentTarget.style.background = 'rgba(220,185,138,0.1)';
-                e.currentTarget.style.color = 'var(--gold)';
-              }}
+            <button
+              onClick={handlePlayPos}
+              style={{ background: 'rgba(220,185,138,0.1)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '0.4rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold)'; e.currentTarget.style.color = '#111'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(220,185,138,0.1)'; e.currentTarget.style.color = 'var(--gold)'; }}
             >
               <span>▶</span> {isChordMode ? 'Escuchar Acorde' : 'Tocar Escala'}
             </button>
           )}
         </div>
       ) : null}
+
       <div style={{ width: '100%', paddingBottom: '1rem' }}>
         <div style={{
           position: 'relative',
@@ -235,13 +218,8 @@ export function Fretboard({
 
             if (isChordMode) {
               const stringData = (displayedNotes || []).find((n: any) => n.string === stringIndex);
-              if (!stringData || stringData.fret === -1) {
-                nutSymbol = '✕';
-                nutColor = '#ef4444';
-              } else if (stringData.fret === 0) {
-                nutSymbol = '○';
-                nutColor = '#10b981';
-              }
+              if (!stringData || stringData.fret === -1) { nutSymbol = '✕'; nutColor = '#ef4444'; }
+              else if (stringData.fret === 0) { nutSymbol = '○'; nutColor = '#10b981'; }
             }
 
             return (
@@ -265,18 +243,26 @@ export function Fretboard({
 
                   if (isCurrentlyEditing || activeNotesList) {
                     const activeNote = (displayedNotes || []).find((n: any) => n.string === stringIndex && n.fret === fret);
-                    if (activeNote) {
-                      isInActiveList = true;
-                      currentFinger = activeNote.finger || 0;
-                    }
+                    if (activeNote) { isInActiveList = true; currentFinger = activeNote.finger || 0; }
                   }
 
+                  // ─── Visibility & opacity logic ───────────────────────────────
                   let isActive = false;
                   let noteOpacity = 1;
+                  let isCompareShared = false;
+                  let isCompareOnlyA = false;
+                  let isCompareOnlyB = false;
 
                   if (isCurrentlyEditing) {
                     isActive = isInActiveList;
                     noteOpacity = isNoteInScale ? 1 : 0.4;
+                  } else if (compareMode) {
+                    const inA = scaleNotes?.includes(currentNote) ?? false;
+                    const inB = scaleNotesB?.includes(currentNote) ?? false;
+                    isActive = inA || inB;
+                    if (inA && inB) { isCompareShared = true; noteOpacity = 0.3; }
+                    else if (inA) { isCompareOnlyA = true; }
+                    else if (inB) { isCompareOnlyB = true; }
                   } else if (activeNotesList && activeNotesList.length > 0) {
                     if (showGhostNotes && !isChordMode) {
                       isActive = isNoteInScale;
@@ -290,40 +276,39 @@ export function Fretboard({
                     noteOpacity = 1;
                   }
 
-                  const isMarked = MARKED_FRETS.includes(fret);
+                  // ─── Color logic ──────────────────────────────────────────────
                   let bgColor = getIntervalColor ? getIntervalColor(interval) : '#c4b5fd';
                   let textColor = (bgColor === '#f1c40f' || bgColor === '#2ecc71') ? '#000' : '#fff';
+                  // In compare mode, interval colors are overridden by A/B colors
+                  if (compareMode && isActive) {
+                    if (isCompareOnlyA) { bgColor = colorA; textColor = '#fff'; }
+                    else if (isCompareOnlyB) { bgColor = colorB; textColor = '#fff'; }
+                    // isCompareShared handled via gradient below
+                  }
+
                   let displayText = labelMode === 'notes' ? currentNote : intervalNameStr;
+                  // In compare mode always show note names for clarity
+                  if (compareMode) displayText = currentNote;
 
                   if (isChordMode && isInActiveList) {
                     if (currentFinger > 0) {
                       bgColor = FINGER_COLORS[currentFinger] || bgColor;
                       textColor = '#fff';
-                      if (chordDisplayMode === 'fingers') {
-                        displayText = currentFinger.toString();
-                      } else {
-                        displayText = currentNote;
-                      }
+                      displayText = chordDisplayMode === 'fingers' ? currentFinger.toString() : currentNote;
                     } else {
                       displayText = currentNote;
                     }
                   }
 
-                  let isBarreTop = false;
-                  let isBarreBottom = false;
-                  let isBarreMiddle = false;
+                  // ─── Barre logic ──────────────────────────────────────────────
+                  let isBarreTop = false, isBarreBottom = false, isBarreMiddle = false;
 
                   if (isChordMode && absoluteBarres?.includes(fret)) {
                     const allNotesInChord = displayedNotes || [];
                     const notesAtBarreFret = allNotesInChord.filter((n: any) => n.fret === fret);
-
                     if (notesAtBarreFret.length > 0) {
-                      const barreLowestPitchStr = Math.max(...notesAtBarreFret.map((n: any) => n.string));
-                      const chordHighestPitchStr = Math.min(...allNotesInChord.map((n: any) => n.string));
-
-                      const minStr = chordHighestPitchStr;
-                      const maxStr = barreLowestPitchStr;
-
+                      const maxStr = Math.max(...notesAtBarreFret.map((n: any) => n.string));
+                      const minStr = Math.min(...allNotesInChord.map((n: any) => n.string));
                       if (stringIndex >= minStr && stringIndex <= maxStr) {
                         if (stringIndex === minStr) isBarreTop = true;
                         if (stringIndex === maxStr) isBarreBottom = true;
@@ -332,10 +317,17 @@ export function Fretboard({
                     }
                   }
 
+                  // ─── Dot markers ──────────────────────────────────────────────
                   const isSingleDotFret = [3, 5, 7, 9, 15, 17, 19, 21].includes(fret);
                   const isDoubleDotFret = fret === 12 || fret === 24;
                   const hasSingleDot = isSingleDotFret && stringIndex === 2;
                   const hasDoubleDot = isDoubleDotFret && (stringIndex === 1 || stringIndex === 3);
+                  const isMarked = MARKED_FRETS.includes(fret);
+
+                  // ─── Dot background: gradient for shared notes ────────────────
+                  const dotBackground = isCompareShared
+                    ? `linear-gradient(90deg, ${colorA} 50%, ${colorB} 50%)`
+                    : bgColor;
 
                   return (
                     <div key={`cell-${stringIndex}-${fret}`}
@@ -348,57 +340,46 @@ export function Fretboard({
                       }}>
 
                       {(hasSingleDot || hasDoubleDot) && (
-                        <div style={{
-                          position: 'absolute', top: '100%', left: '50%', transform: 'translate(-50%, -50%)',
-                          width: 'clamp(10px, 1.5vw, 16px)', height: 'clamp(10px, 1.5vw, 16px)',
-                          borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.15)',
-                          zIndex: 0, pointerEvents: 'none'
-                        }} />
+                        <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translate(-50%, -50%)', width: 'clamp(10px, 1.5vw, 16px)', height: 'clamp(10px, 1.5vw, 16px)', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.15)', zIndex: 0, pointerEvents: 'none' }} />
                       )}
 
-                      <div style={{
-                        position: 'absolute', left: 0, right: 0, zIndex: 1,
-                        height: `${1 + stringIndex * 0.5}px`,
-                        background: 'linear-gradient(to bottom, #d5d5d5 0%, #8a8a8a 40%, #505050 100%)',
-                        boxShadow: '0 1px 2px rgba(0,0,0,0.5)',
-                        top: '50%', transform: 'translateY(-50%)'
-                      }} />
+                      <div style={{ position: 'absolute', left: 0, right: 0, zIndex: 1, height: `${1 + stringIndex * 0.5}px`, background: 'linear-gradient(to bottom, #d5d5d5 0%, #8a8a8a 40%, #505050 100%)', boxShadow: '0 1px 2px rgba(0,0,0,0.5)', top: '50%', transform: 'translateY(-50%)' }} />
 
                       {(isBarreTop || isBarreMiddle || isBarreBottom) && (
-                        <div style={{
-                          position: 'absolute',
-                          top: isBarreTop ? '15%' : '0',
-                          bottom: isBarreBottom ? '15%' : '0',
-                          left: '50%',
-                          transform: 'translateX(-50%)',
-                          width: 'clamp(14px, 2.5vw, 24px)',
-                          backgroundColor: 'rgba(196, 181, 253, 0.4)',
-                          borderTopLeftRadius: isBarreTop ? '999px' : '0',
-                          borderTopRightRadius: isBarreTop ? '999px' : '0',
-                          borderBottomLeftRadius: isBarreBottom ? '999px' : '0',
-                          borderBottomRightRadius: isBarreBottom ? '999px' : '0',
-                          zIndex: 2,
-                          pointerEvents: 'none'
-                        }} />
+                        <div style={{ position: 'absolute', top: isBarreTop ? '15%' : '0', bottom: isBarreBottom ? '15%' : '0', left: '50%', transform: 'translateX(-50%)', width: 'clamp(14px, 2.5vw, 24px)', backgroundColor: 'rgba(196, 181, 253, 0.4)', borderTopLeftRadius: isBarreTop ? '999px' : '0', borderTopRightRadius: isBarreTop ? '999px' : '0', borderBottomLeftRadius: isBarreBottom ? '999px' : '0', borderBottomRightRadius: isBarreBottom ? '999px' : '0', zIndex: 2, pointerEvents: 'none' }} />
                       )}
 
                       {isActive && (
                         <div
                           style={{
-                            width: 'clamp(12px, 2.5vw, 26px)', height: 'clamp(12px, 2.5vw, 26px)', borderRadius: '50%',
-                            backgroundColor: bgColor, color: textColor,
-                            fontSize: 'clamp(6px, 1vw, 11px)', fontWeight: 'bold',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            zIndex: 3, boxShadow: '0 2px 4px rgba(0,0,0,0.5)',
+                            width: 'clamp(12px, 2.5vw, 26px)',
+                            height: 'clamp(12px, 2.5vw, 26px)',
+                            borderRadius: '50%',
+                            // Use background (supports gradient) instead of backgroundColor
+                            background: dotBackground,
+                            color: isCompareShared ? '#fff' : textColor,
+                            fontSize: 'clamp(6px, 1vw, 11px)',
+                            fontWeight: 'bold',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            zIndex: 3,
+                            boxShadow: isCompareShared
+                              ? `0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.15)`
+                              : '0 2px 4px rgba(0,0,0,0.5)',
                             transform: leftyMode ? 'scaleX(-1)' : 'none',
                             transition: 'transform 0.1s',
-                            opacity: noteOpacity
+                            opacity: noteOpacity,
+                            // Shared note: text shadow to stay readable on gradient split
+                            textShadow: isCompareShared ? '0 1px 2px rgba(0,0,0,0.8)' : 'none',
                           }}
                           onMouseEnter={e => {
-                            if (!isCurrentlyEditing && (initAudio || playRealSound)) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
+                            if (!isCurrentlyEditing && (initAudio || playRealSound))
+                              e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
                           }}
                           onMouseLeave={e => {
-                            if (!isCurrentlyEditing && (initAudio || playRealSound)) e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
+                            if (!isCurrentlyEditing && (initAudio || playRealSound))
+                              e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
                           }}
                         >
                           {displayText}

@@ -12,18 +12,37 @@ interface SmartFretboardProps {
   rootNote: string;
   scaleKey: string;
   customIntervalColors?: Record<number, string>;
+  // Compare mode
+  compareMode?: boolean;
+  scaleNotesB?: string[];
+  colorA?: string;
+  colorB?: string;
 }
 
-export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }: SmartFretboardProps) {
+export function SmartFretboard({
+  rootNote,
+  scaleKey,
+  customIntervalColors = {},
+  compareMode = false,
+  scaleNotesB = [],
+  colorA = '#3b82f6',
+  colorB = '#f43f5e',
+}: SmartFretboardProps) {
   const t = useTranslations('ScalesPanel');
 
   const [labelMode, setLabelMode] = useState<'notes' | 'intervals'>('notes');
   const [leftyMode, setLeftyMode] = useState(false);
+  // Positions view is incompatible with compare mode — reset if needed
   const [viewMode, setViewMode] = useState<'full' | 'positions'>('full');
   const [carouselIndex, setCarouselIndex] = useState(0);
 
   const { scaleData, scaleNotes, positionsData } = useScaleLogic(rootNote, scaleKey, viewMode, t);
   const { playRealSound } = useAudioSynth();
+
+  // If compare mode is turned on while in positions view, switch to full
+  useEffect(() => {
+    if (compareMode && viewMode === 'positions') setViewMode('full');
+  }, [compareMode]);
 
   useEffect(() => {
     const fetchPreferences = async () => {
@@ -51,19 +70,15 @@ export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (viewMode !== 'positions' || !positionsData?.length) return;
-      
-      if (e.key === 'ArrowLeft') {
-        setCarouselIndex(prev => Math.max(0, prev - 1));
-      } else if (e.key === 'ArrowRight') {
-        setCarouselIndex(prev => Math.min(positionsData.length - 1, prev + 1));
-      }
+      if (e.key === 'ArrowLeft') setCarouselIndex(prev => Math.max(0, prev - 1));
+      else if (e.key === 'ArrowRight') setCarouselIndex(prev => Math.min(positionsData.length - 1, prev + 1));
     };
-
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode, positionsData]);
 
-  const getIntervalColor = (interval: number) => customIntervalColors[interval] || DEFAULT_INTERVAL_COLORS[interval] || '#7f8c8d';
+  const getIntervalColor = (interval: number) =>
+    customIntervalColors[interval] || DEFAULT_INTERVAL_COLORS[interval] || '#7f8c8d';
 
   const fretboardProps = {
     rootNote,
@@ -78,36 +93,58 @@ export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }
     draftPosNotes: [],
     setDraftPosNotes: () => {},
     setIsEditingPos: () => {},
-    handleExportCustomPosition: () => {}
+    handleExportCustomPosition: () => {},
+    // Compare
+    compareMode,
+    scaleNotesB,
+    colorA,
+    colorB,
   };
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+      {/* Toolbar */}
       <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface2)', padding: '0.8rem', borderRadius: '8px' }}>
-        
+
+        {/* View mode — positions disabled in compare mode */}
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={() => setViewMode('full')} style={{ background: viewMode === 'full' ? 'var(--gold)' : 'transparent', color: viewMode === 'full' ? '#111' : 'var(--muted)', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+          <button
+            onClick={() => setViewMode('full')}
+            style={{ background: viewMode === 'full' ? 'var(--gold)' : 'transparent', color: viewMode === 'full' ? '#111' : 'var(--muted)', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}
+          >
             {t('viewMode.full')}
           </button>
-          <button onClick={() => setViewMode('positions')} style={{ background: viewMode === 'positions' ? 'var(--gold)' : 'transparent', color: viewMode === 'positions' ? '#111' : 'var(--muted)', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+          <button
+            onClick={() => !compareMode && setViewMode('positions')}
+            disabled={compareMode}
+            title={compareMode ? t('viewMode.positionsDisabledInCompare') : undefined}
+            style={{ background: viewMode === 'positions' ? 'var(--gold)' : 'transparent', color: compareMode ? 'rgba(255,255,255,0.2)' : viewMode === 'positions' ? '#111' : 'var(--muted)', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: compareMode ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}
+          >
             {t('viewMode.positions')}
           </button>
         </div>
 
+        {/* Label & lefty */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <button onClick={() => setLabelMode('notes')} style={{ background: labelMode === 'notes' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'notes' ? '#fff' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
-            {t('labelMode.notes')}
-          </button>
-          <button onClick={() => setLabelMode('intervals')} style={{ background: labelMode === 'intervals' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'intervals' ? '#fff' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
-            {t('labelMode.intervals')}
-          </button>
-          <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }}></div>
+          {/* In compare mode, only note names make sense */}
+          {!compareMode && (
+            <>
+              <button onClick={() => setLabelMode('notes')} style={{ background: labelMode === 'notes' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'notes' ? '#fff' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+                {t('labelMode.notes')}
+              </button>
+              <button onClick={() => setLabelMode('intervals')} style={{ background: labelMode === 'intervals' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'intervals' ? '#fff' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+                {t('labelMode.intervals')}
+              </button>
+              <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+            </>
+          )}
           <button onClick={() => setLeftyMode(!leftyMode)} style={{ background: leftyMode ? 'var(--gold)' : 'transparent', color: leftyMode ? '#111' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
             {t('leftyMode')}
           </button>
         </div>
       </div>
 
+      {/* Fretboard */}
       <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         {viewMode === 'full' ? (
           <Fretboard {...fretboardProps} />
@@ -116,7 +153,6 @@ export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }
             {(positionsData?.length ?? 0) > 0 && (
               <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.8rem 1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                  
                   <button
                     onClick={() => setCarouselIndex(prev => Math.max(0, prev - 1))}
                     disabled={carouselIndex === 0}
@@ -130,21 +166,7 @@ export function SmartFretboard({ rootNote, scaleKey, customIntervalColors = {} }
                       <button
                         key={idx}
                         onClick={() => setCarouselIndex(idx)}
-                        style={{
-                          width: '32px',
-                          height: '32px',
-                          borderRadius: '50%',
-                          background: carouselIndex === idx ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-                          color: carouselIndex === idx ? '#111' : '#fff',
-                          border: 'none',
-                          fontWeight: 'bold',
-                          cursor: 'pointer',
-                          display: 'flex',
-                          alignItems: 'center',
-                          justifyContent: 'center',
-                          transition: 'all 0.2s',
-                          fontSize: '0.9rem'
-                        }}
+                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: carouselIndex === idx ? 'var(--gold)' : 'rgba(255,255,255,0.1)', color: carouselIndex === idx ? '#111' : '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', fontSize: '0.9rem' }}
                       >
                         {idx + 1}
                       </button>

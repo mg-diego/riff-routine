@@ -862,7 +862,8 @@
       "full": "Full Fretboard",
       "positions": "Positions / Shapes",
       "carousel": "Carousel",
-      "list": "List"
+      "list": "List",
+      "positionsDisabledInCompare": "Not available in compare mode"
     },
     "chordType": {
       "triads": "Triads",
@@ -883,6 +884,22 @@
       "targetNotes": "Target Notes",
       "playOver": "Play Over",
       "noInfo": "No additional theory information available for this scale."
+    },
+    "compare": {
+      "scale": "Scale",
+      "scaleA": "Scale A",
+      "scaleB": "Scale B",
+      "addScale": "Add scale to compare",
+      "activate": "Compare scales",
+      "deactivate": "Exit compare mode",
+      "on": "On",
+      "active": "Comparing",
+      "exclusive": "Unique",
+      "noExclusive": "No unique notes",
+      "onlyA": "Only in A",
+      "onlyB": "Only in B",
+      "common": "Common",
+      "compatibility": "Overlap"
     }
   },
   "SidebarControls": {

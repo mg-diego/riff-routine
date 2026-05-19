@@ -862,7 +862,8 @@
       "full": "Mástil Completo",
       "positions": "Posiciones / Shapes",
       "carousel": "Carrusel",
-      "list": "Lista"
+      "list": "Lista",
+      "positionsDisabledInCompare": "No disponible en modo comparación"
     },
     "chordType": {
       "triads": "Tríadas",
@@ -883,6 +884,22 @@
     },
     "fretboard": {
       "playPosition": "▶ Reproducir Posición"
+    },
+    "compare": {
+      "scale": "Escala",
+      "scaleA": "Escala A",
+      "scaleB": "Escala B",
+      "addScale": "Añadir escala para comparar",
+      "activate": "Comparar escalas",
+      "deactivate": "Salir del modo comparación",
+      "on": "Act.",
+      "active": "Comparando",
+      "exclusive": "Exclusivas",
+      "noExclusive": "Sin notas exclusivas",
+      "onlyA": "Solo en A",
+      "onlyB": "Solo en B",
+      "common": "Comunes",
+      "compatibility": "Compatibilidad"
     }
   },
   "SidebarControls": {
