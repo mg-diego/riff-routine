@@ -36,6 +36,17 @@ export function ScalesPanel() {
   const handleColorChange = (interval: number, color: string) =>
     setUserColors(prev => ({ ...prev, [interval]: color }));
 
+  const CATEGORY_ORDER = [
+    'major-scale-modes',
+    'minor-scales',
+    'pentatonics',
+    'triads',
+    'arpeggios',    
+    'hirajoshi-modes',
+    'exotic',
+    'others'
+  ];
+
   const scaleSortedKeys = Object.keys(SCALES).sort((a, b) => {
     const orderA = SCALES[a].order || 999;
     const orderB = SCALES[b].order || 999;
@@ -43,7 +54,6 @@ export function ScalesPanel() {
     if (orderA !== orderB) {
       return orderA - orderB;
     }
-
     return mc(`scales.${a}.name`).localeCompare(mc(`scales.${b}.name`));
   });
 
@@ -53,6 +63,16 @@ export function ScalesPanel() {
     acc[categoryKey].push(key);
     return acc;
   }, {});
+
+  const sortedGroupedEntries = Object.entries(groupedScales).sort(([keyA], [keyB]) => {
+    const indexA = CATEGORY_ORDER.indexOf(keyA);
+    const indexB = CATEGORY_ORDER.indexOf(keyB);
+
+    const pA = indexA === -1 ? 999 : indexA;
+    const pB = indexB === -1 ? 999 : indexB;
+
+    return pA - pB;
+  });
 
   const commonNotes = compareMode ? scaleNotes.filter((n: string) => scaleNotesB.includes(n)) : [];
   const onlyInA = compareMode ? scaleNotes.filter((n: string) => !scaleNotesB.includes(n)) : [];
@@ -105,7 +125,7 @@ export function ScalesPanel() {
                 onChange={e => setScaleKey(e.target.value)}
                 style={selectStyle(compareMode ? `${COMPARE_COLOR_A}66` : undefined)}
               >
-                {Object.entries(groupedScales).map(([categoryKey, keys]) => (
+                {sortedGroupedEntries.map(([categoryKey, keys]) => (
                   <optgroup key={categoryKey} label={mc(`categories.${categoryKey}`)}>
                     {keys.map(k => (
                       <option key={k} value={k}>{mc(`scales.${k}.name`)}</option>
@@ -175,7 +195,7 @@ export function ScalesPanel() {
                 onChange={e => setScaleKey(e.target.value)}
                 style={selectStyle(compareMode ? `${COMPARE_COLOR_B}66` : undefined)}
               >
-                {Object.entries(groupedScales).map(([categoryKey, keys]) => (
+                {sortedGroupedEntries.map(([categoryKey, keys]) => (
                   <optgroup key={categoryKey} label={mc(`categories.${categoryKey}`)}>
                     {keys.map(k => (
                       <option key={k} value={k}>{mc(`scales.${k}.name`)}</option>
