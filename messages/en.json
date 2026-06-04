@@ -1142,6 +1142,16 @@
       "orange": "Orange",
       "pink": "Pink"
     },
+    "categories": {
+      "major-scale-modes": "MAJOR SCALE MODES",
+      "arpeggios": "ARPEGGIOS",
+      "others": "OTHERS",
+      "triads": "TRIADS",
+      "hirajoshi-modes": "HIRAJOSHI MODES",
+      "exotic": "EXOTIC",
+      "pentatonics": "PENTATONICS",
+      "minor-scales": "MINOR SCALES"
+    },
     "scales": {
       "ionian": {
         "name": "Ionian (Major)",
@@ -1262,6 +1272,10 @@
       "chinese": {
         "name": "Chinese",
         "desc": "Based on traditional oriental tunings. Its structure avoids minor thirds and sixths."
+      },
+      "arpeggio-diminished": {
+        "name": "Diminished Arpeggio",
+        "desc": "Built by stacking minor thirds (1, ♭3, ♭5, ♭♭7). It creates a perfect symmetry that generates maximum tension, ideal for resolving into passing or dominant chords."
       }
     }
   },

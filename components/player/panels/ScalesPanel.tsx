@@ -18,17 +18,17 @@ export function ScalesPanel() {
   const t = useTranslations('ScalesPanel');
   const mc = useTranslations('MusicConstants');
 
-  const [rootNote, setRootNote]   = useState('A');
-  const [scaleKey, setScaleKey]   = useState('pentatonic-minor');
+  const [rootNote, setRootNote] = useState('A');
+  const [scaleKey, setScaleKey] = useState('pentatonic-minor');
   const [rootNoteB, setRootNoteB] = useState('A');
   const [scaleKeyB, setScaleKeyB] = useState('pentatonic-major');
 
   const [compareMode, setCompareMode] = useState(false);
-  const [chordType, setChordType]     = useState<'triads' | 'tetrads'>('triads');
-  const [userColors, setUserColors]   = useState<Record<number, string>>({});
-  const [showTheory, setShowTheory]   = useState(false);
+  const [chordType, setChordType] = useState<'triads' | 'tetrads'>('triads');
+  const [userColors, setUserColors] = useState<Record<number, string>>({});
+  const [showTheory, setShowTheory] = useState(false);
 
-  const { scaleData, scaleNotes }   = useScaleLogic(rootNote,  scaleKey,  'full', t);
+  const { scaleData, scaleNotes } = useScaleLogic(rootNote, scaleKey, 'full', t);
   const { scaleNotes: scaleNotesB } = useScaleLogic(rootNoteB, scaleKeyB, 'full', t);
 
   const getIntervalColor = (interval: number) =>
@@ -36,14 +36,28 @@ export function ScalesPanel() {
   const handleColorChange = (interval: number, color: string) =>
     setUserColors(prev => ({ ...prev, [interval]: color }));
 
-  const scaleSortedKeys = Object.keys(SCALES).sort((a, b) =>
-    mc(`scales.${a}.name`).localeCompare(mc(`scales.${b}.name`))
-  );
+  const scaleSortedKeys = Object.keys(SCALES).sort((a, b) => {
+    const orderA = SCALES[a].order || 999;
+    const orderB = SCALES[b].order || 999;
 
-  const commonNotes = compareMode ? scaleNotes.filter((n: string) =>  scaleNotesB.includes(n)) : [];
-  const onlyInA     = compareMode ? scaleNotes.filter((n: string) => !scaleNotesB.includes(n)) : [];
-  const onlyInB     = compareMode ? scaleNotesB.filter((n: string) => !scaleNotes.includes(n)) : [];
-  const totalUnion  = [...new Set([...scaleNotes, ...scaleNotesB])].length;
+    if (orderA !== orderB) {
+      return orderA - orderB;
+    }
+
+    return mc(`scales.${a}.name`).localeCompare(mc(`scales.${b}.name`));
+  });
+
+  const groupedScales = scaleSortedKeys.reduce<Record<string, string[]>>((acc, key) => {
+    const categoryKey = SCALES[key].category || 'others';
+    if (!acc[categoryKey]) acc[categoryKey] = [];
+    acc[categoryKey].push(key);
+    return acc;
+  }, {});
+
+  const commonNotes = compareMode ? scaleNotes.filter((n: string) => scaleNotesB.includes(n)) : [];
+  const onlyInA = compareMode ? scaleNotes.filter((n: string) => !scaleNotesB.includes(n)) : [];
+  const onlyInB = compareMode ? scaleNotesB.filter((n: string) => !scaleNotes.includes(n)) : [];
+  const totalUnion = [...new Set([...scaleNotes, ...scaleNotesB])].length;
 
   const selectStyle = (accent?: string): React.CSSProperties => ({
     flex: 1, minWidth: 0,
@@ -86,9 +100,18 @@ export function ScalesPanel() {
                 style={{ ...selectStyle(compareMode ? `${COMPARE_COLOR_A}66` : undefined), flex: '0 0 64px', width: '64px' }}>
                 {CHROMATIC_NOTES.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
-              <select value={scaleKey} onChange={e => setScaleKey(e.target.value)}
-                style={selectStyle(compareMode ? `${COMPARE_COLOR_A}66` : undefined)}>
-                {scaleSortedKeys.map(k => <option key={k} value={k}>{mc(`scales.${k}.name`)}</option>)}
+              <select
+                value={scaleKey}
+                onChange={e => setScaleKey(e.target.value)}
+                style={selectStyle(compareMode ? `${COMPARE_COLOR_A}66` : undefined)}
+              >
+                {Object.entries(groupedScales).map(([categoryKey, keys]) => (
+                  <optgroup key={categoryKey} label={mc(`categories.${categoryKey}`)}>
+                    {keys.map(k => (
+                      <option key={k} value={k}>{mc(`scales.${k}.name`)}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
             {compareMode && (
@@ -147,9 +170,18 @@ export function ScalesPanel() {
                 style={{ ...selectStyle(compareMode ? `${COMPARE_COLOR_B}66` : undefined), flex: '0 0 64px', width: '64px' }}>
                 {CHROMATIC_NOTES.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
-              <select value={scaleKeyB} onChange={e => setScaleKeyB(e.target.value)}
-                style={selectStyle(compareMode ? `${COMPARE_COLOR_B}66` : undefined)}>
-                {scaleSortedKeys.map(k => <option key={k} value={k}>{mc(`scales.${k}.name`)}</option>)}
+              <select
+                value={scaleKey}
+                onChange={e => setScaleKey(e.target.value)}
+                style={selectStyle(compareMode ? `${COMPARE_COLOR_B}66` : undefined)}
+              >
+                {Object.entries(groupedScales).map(([categoryKey, keys]) => (
+                  <optgroup key={categoryKey} label={mc(`categories.${categoryKey}`)}>
+                    {keys.map(k => (
+                      <option key={k} value={k}>{mc(`scales.${k}.name`)}</option>
+                    ))}
+                  </optgroup>
+                ))}
               </select>
             </div>
             {compareMode && (
@@ -194,7 +226,7 @@ export function ScalesPanel() {
           style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '1.2rem 1.5rem', background: 'transparent', border: 'none', color: '#fff', fontSize: '1rem', fontWeight: 'bold', cursor: 'pointer' }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><line x1="12" y1="16" x2="12" y2="12" /><line x1="12" y1="8" x2="12.01" y2="8" /></svg>
             {t('scaleConfig')}
           </div>
           <span style={{ color: 'var(--gold)', transform: showTheory ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.3s' }}>▼</span>
@@ -204,7 +236,7 @@ export function ScalesPanel() {
           <div style={{ padding: '0 1.5rem 1.5rem', borderTop: '1px solid #222' }}>
             <div style={{ display: 'flex', justifyContent: 'flex-end', paddingTop: '1rem', paddingBottom: '1rem' }}>
               <div style={{ display: 'flex', background: '#111', borderRadius: '6px', padding: '0.2rem' }}>
-                <button onClick={() => setChordType('triads')}  style={{ background: chordType === 'triads'  ? '#333' : 'transparent', color: chordType === 'triads'  ? '#fff' : '#888', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('chordType.triads')}</button>
+                <button onClick={() => setChordType('triads')} style={{ background: chordType === 'triads' ? '#333' : 'transparent', color: chordType === 'triads' ? '#fff' : '#888', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('chordType.triads')}</button>
                 <button onClick={() => setChordType('tetrads')} style={{ background: chordType === 'tetrads' ? '#333' : 'transparent', color: chordType === 'tetrads' ? '#fff' : '#888', border: 'none', padding: '0.4rem 1rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold' }}>{t('chordType.tetrads')}</button>
               </div>
             </div>
@@ -235,7 +267,7 @@ export function ScalesPanel() {
                     <div style={{ display: 'flex', gap: '6px', flexWrap: 'wrap' }}>
                       {scaleData.intervals.map((inv: number, i: number) => {
                         const cur = getIntervalColor(inv);
-                        const tc  = (cur === '#f1c40f' || cur === '#2ecc71') ? '#000' : '#fff';
+                        const tc = (cur === '#f1c40f' || cur === '#2ecc71') ? '#000' : '#fff';
                         return (
                           <select key={i} value={cur} onChange={e => handleColorChange(inv, e.target.value)}
                             style={{ flex: '1 1 0%', minWidth: '35px', padding: 0, border: '1px solid #333', borderRadius: '4px', cursor: 'pointer', textAlign: 'center', fontWeight: 'bold', fontSize: '0.75rem', height: '24px', appearance: 'none', WebkitAppearance: 'none', background: cur, color: tc }}>
@@ -308,7 +340,7 @@ function LegendItem({ color, colorA, colorB, isShared, label, notes }: LegendIte
 
 function SimilarityBar({ shared, total }: { shared: number; total: number }) {
   const pct = total > 0 ? Math.round((shared / total) * 100) : 0;
-  const col  = pct >= 70 ? '#2ecc71' : pct >= 40 ? '#f1c40f' : '#e74c3c';
+  const col = pct >= 70 ? '#2ecc71' : pct >= 40 ? '#f1c40f' : '#e74c3c';
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: '0.45rem' }}>
       <div style={{ width: '64px', height: '4px', background: 'rgba(255,255,255,0.1)', borderRadius: '2px', overflow: 'hidden' }}>

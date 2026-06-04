@@ -1142,6 +1142,16 @@
       "orange": "Naranja",
       "pink": "Rosa"
     },
+    "categories": {
+      "major-scale-modes": "MODOS ESCALA MAYOR",
+      "arpeggios": "ARPEGIOS",
+      "others": "OTROS",
+      "triads": "TRÍADAS",
+      "hirajoshi-modes": "MODOS ESCALA HIRAJOSHI",
+      "exotic": "EXÓTICAS",
+      "pentatonics": "PENTATÓNICAS",
+      "minor-scales": "ESCALAS MENORES"
+    },
     "scales": {
       "ionian": {
         "name": "Jónica (Mayor)",
@@ -1262,6 +1272,10 @@
       "chinese": {
         "name": "China",
         "desc": "Basada en afinaciones orientales tradicionales. Su estructura evita terceras y sextas menores."
+      },
+      "arpeggio-diminished": {
+        "name": "Arpegio Disminuido",
+        "desc": "Formado por terceras menores superpuestas (1, ♭3, ♭5, ♭♭7). Crea una simetría perfecta que genera una tensión máxima, ideal para resolver en acordes de paso o dominantes."
       }
     }
   },

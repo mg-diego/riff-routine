@@ -12,7 +12,7 @@ export const DIFFICULTY_COLORS: { [key: number]: string } = {
 
 export const CHROMATIC_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
 export const STANDARD_TUNING = ['E', 'B', 'G', 'D', 'A', 'E'];
-export const ROOTS      = ["C", "D", "E", "F", "G", "A", "B"];
+export const ROOTS = ["C", "D", "E", "F", "G", "A", "B"];
 export const ENHARMONICS: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Gb': 'F#', 'Ab': 'G#', 'Bb': 'A#' };
 export const MARKED_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
 export const BASIC_SUFFIXES = ['major', 'm', '7', 'm7', 'maj7', 'sus2', 'sus4', '5'];
@@ -36,7 +36,12 @@ export const CHORD_INTERVALS: Record<string, number[]> = {
 };
 
 export const SCALES: Record<string, any> = {
+    // ----------------------------------------------------
+    // MAJOR SCALE MODES
+    // ----------------------------------------------------
     'ionian': {
+        category: 'major-scale-modes',
+        order: 1,
         intervals: [0, 2, 4, 5, 7, 9, 11],
         triads: ['Maj', 'm', 'm', 'Maj', 'Maj', 'm', 'dim'],
         tetrads: ['Maj7', 'm7', 'm7', 'Maj7', '7', 'm7', 'm7♭5'],
@@ -44,6 +49,8 @@ export const SCALES: Record<string, any> = {
         chords: 'Maj, Maj7'
     },
     'dorian': {
+        category: 'major-scale-modes',
+        order: 2,
         intervals: [0, 2, 3, 5, 7, 9, 10],
         triads: ['m', 'm', 'Maj', 'Maj', 'm', 'dim', 'Maj'],
         tetrads: ['m7', 'm7', 'Maj7', '7', 'm7', 'm7♭5', 'Maj7'],
@@ -51,6 +58,8 @@ export const SCALES: Record<string, any> = {
         chords: 'm, m7'
     },
     'phrygian': {
+        category: 'major-scale-modes',
+        order: 3,
         intervals: [0, 1, 3, 5, 7, 8, 10],
         triads: ['m', 'Maj', 'Maj', 'm', 'dim', 'Maj', 'm'],
         tetrads: ['m7', 'Maj7', '7', 'm7', 'm7♭5', 'Maj7', 'm7'],
@@ -58,6 +67,8 @@ export const SCALES: Record<string, any> = {
         chords: 'm, m7'
     },
     'lydian': {
+        category: 'major-scale-modes',
+        order: 4,
         intervals: [0, 2, 4, 6, 7, 9, 11],
         intervalAliases: { 6: '#4' },
         triads: ['Maj', 'Maj', 'm', 'dim', 'Maj', 'm', 'm'],
@@ -66,6 +77,8 @@ export const SCALES: Record<string, any> = {
         chords: 'Maj, Maj7, Maj7#11'
     },
     'mixolydian': {
+        category: 'major-scale-modes',
+        order: 5,
         intervals: [0, 2, 4, 5, 7, 9, 10],
         triads: ['Maj', 'm', 'dim', 'Maj', 'm', 'm', 'Maj'],
         tetrads: ['7', 'm7', 'm7♭5', 'Maj7', 'm7', 'm7', 'Maj7'],
@@ -73,6 +86,8 @@ export const SCALES: Record<string, any> = {
         chords: '7, 9, 13 (Dominantes)'
     },
     'aeolian': {
+        category: 'major-scale-modes',
+        order: 6,
         intervals: [0, 2, 3, 5, 7, 8, 10],
         triads: ['m', 'dim', 'Maj', 'm', 'm', 'Maj', 'Maj'],
         tetrads: ['m7', 'm7♭5', 'Maj7', 'm7', 'm7', 'Maj7', '7'],
@@ -80,55 +95,93 @@ export const SCALES: Record<string, any> = {
         chords: 'm, m7'
     },
     'locrian': {
+        category: 'major-scale-modes',
+        order: 7,
         intervals: [0, 1, 3, 5, 6, 8, 10],
         triads: ['dim', 'Maj', 'm', 'm', 'Maj', 'Maj', 'm'],
         tetrads: ['m7♭5', 'Maj7', 'm7', 'm7', 'Maj7', '7', 'm7'],
         target: '♭2, ♭5',
         chords: 'dim, m7♭5'
     },
-    'blues': {
-        intervals: [0, 3, 5, 6, 7, 10],
-        triads: ['m', 'Maj', 'm', 'dim', 'm', 'Maj'],
-        tetrads: ['m7', 'Maj7', 'm7', 'dim7', 'm7', '7'],
-        target: '♭3, ♭5, ♭7',
-        chords: 'Dominantes (7), m7'
-    },
-    'pentatonic-minor': {
-        intervals: [0, 3, 5, 7, 10],
-        triads: ['m', 'Maj', 'm', 'm', 'Maj'],
-        tetrads: ['m7', 'Maj7', 'm7', 'm7', '7'],
-        target: '1, ♭3, 5',
-        chords: 'm, m7, acordes 7'
-    },
-    'pentatonic-major': {
-        intervals: [0, 2, 4, 7, 9],
-        triads: ['Maj', 'm', 'm', '5', 'm'],
-        tetrads: ['Maj7', 'm7', 'm7', '7', 'm7'],
-        target: '1, 3, 5',
-        chords: 'Maj, Maj7'
-    },
+
+    // ----------------------------------------------------
+    // MINOR SCALES (Melodic & Harmonic and their modes)
+    // ----------------------------------------------------
     'harmonic-minor': {
+        category: 'minor-scales',
+        order: 1,
         intervals: [0, 2, 3, 5, 7, 8, 11],
         triads: ['m', 'dim', 'aug', 'm', 'Maj', 'Maj', 'dim'],
         tetrads: ['mMaj7', 'm7♭5', 'Maj7#5', 'm7', '7', 'Maj7', 'dim7'],
         target: '♭6, 7',
         chords: 'm, mMaj7, 7 (V grado)'
     },
-    'harmonic-major': {
-        intervals: [0, 2, 4, 5, 7, 8, 11],
-        triads: ['Maj', 'dim', 'm', 'm', 'Maj', 'aug', 'dim'],
-        tetrads: ['Maj7', 'm7♭5', 'm7', 'mMaj7', '7', 'Maj7#5', 'dim7'],
-        target: '3, ♭6',
-        chords: 'Maj, Maj7'
-    },
     'melodic-minor': {
+        category: 'minor-scales',
+        order: 2,
         intervals: [0, 2, 3, 5, 7, 9, 11],
         triads: ['m', 'm', 'aug', 'Maj', 'Maj', 'dim', 'dim'],
         tetrads: ['mMaj7', 'm7', 'Maj7#5', '7', '7', 'm7♭5', 'm7♭5'],
         target: '6, 7',
         chords: 'mMaj7, m6'
     },
+    'diminished': {
+        category: 'minor-scales',
+        order: 3,
+        intervals: [0, 2, 3, 5, 6, 8, 9, 11],
+        intervalAliases: { 9: '♭♭7' },
+        triads: ['dim', 'dim', 'dim', 'dim', 'dim', 'dim', 'dim', 'dim'],
+        tetrads: ['dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7'],
+        target: '♭5, ♭♭7',
+        chords: 'dim7'
+    },
+
+    // ----------------------------------------------------
+    // PENTATONICS & BLUES
+    // ----------------------------------------------------
+    'pentatonic-major': {
+        category: 'pentatonics',
+        order: 1,
+        intervals: [0, 2, 4, 7, 9],
+        triads: ['Maj', 'm', 'm', '5', 'm'],
+        tetrads: ['Maj7', 'm7', 'm7', '7', 'm7'],
+        target: '1, 3, 5',
+        chords: 'Maj, Maj7'
+    },
+    'pentatonic-minor': {
+        category: 'pentatonics',
+        order: 2,
+        intervals: [0, 3, 5, 7, 10],
+        triads: ['m', 'Maj', 'm', 'm', 'Maj'],
+        tetrads: ['m7', 'Maj7', 'm7', 'm7', '7'],
+        target: '1, ♭3, 5',
+        chords: 'm, m7, acordes 7'
+    },
+    'blues': {
+        category: 'pentatonics',
+        order: 3,
+        intervals: [0, 3, 5, 6, 7, 10],
+        triads: ['m', 'Maj', 'm', 'dim', 'm', 'Maj'],
+        tetrads: ['m7', 'Maj7', 'm7', 'dim7', 'm7', '7'],
+        target: '♭3, ♭5, ♭7',
+        chords: 'Dominantes (7), m7'
+    },
+
+    // ----------------------------------------------------
+    // EXOTIC / OTHER
+    // ----------------------------------------------------
+    'harmonic-major': {
+        category: 'exotic',
+        order: 1,
+        intervals: [0, 2, 4, 5, 7, 8, 11],
+        triads: ['Maj', 'dim', 'm', 'm', 'Maj', 'aug', 'dim'],
+        tetrads: ['Maj7', 'm7♭5', 'm7', 'mMaj7', '7', 'Maj7#5', 'dim7'],
+        target: '3, ♭6',
+        chords: 'Maj, Maj7'
+    },
     'double-harmonic': {
+        category: 'exotic',
+        order: 2,
         intervals: [0, 1, 4, 5, 7, 8, 11],
         triads: ['Maj', 'Maj', 'm', 'm', 'dim', 'aug', 'm'],
         tetrads: ['Maj7', 'Maj7', 'm7', 'mMaj7', '7♭5', 'Maj7#5', 'm7'],
@@ -136,6 +189,8 @@ export const SCALES: Record<string, any> = {
         chords: 'Maj, Maj7'
     },
     'hungarian': {
+        category: 'exotic',
+        order: 3,
         intervals: [0, 2, 3, 6, 7, 8, 11],
         intervalAliases: { 6: '#4' },
         triads: ['m', 'dim', 'm', 'm', 'm', 'aug', 'Maj'],
@@ -144,6 +199,8 @@ export const SCALES: Record<string, any> = {
         chords: 'm, mMaj7'
     },
     'persian': {
+        category: 'exotic',
+        order: 4,
         intervals: [0, 1, 4, 5, 6, 8, 11],
         triads: ['dim', 'm', 'm', 'm', 'Maj', 'aug', 'dim'],
         tetrads: ['Maj7♭5', 'Maj7', 'm', 'mMaj7', 'Maj7#3', 'Maj7#5', 'dim7'],
@@ -151,6 +208,8 @@ export const SCALES: Record<string, any> = {
         chords: 'Dim, Maj7♭5'
     },
     'neopolitan': {
+        category: 'exotic',
+        order: 5,
         intervals: [0, 1, 3, 5, 7, 9, 11],
         triads: ['m', 'Maj', 'aug', 'Maj', 'Maj', 'dim', 'dim'],
         tetrads: ['mMaj7', 'Maj7#5', 'Maj7#5', 'Maj7', '7♭5', 'm7♭5', 'dim7'],
@@ -158,21 +217,17 @@ export const SCALES: Record<string, any> = {
         chords: 'm, mMaj7'
     },
     'neopolitan-minor': {
+        category: 'exotic',
+        order: 6,
         intervals: [0, 1, 3, 5, 7, 8, 11],
         triads: ['m', 'Maj', 'aug', 'm', 'Maj', 'Maj', 'dim'],
         tetrads: ['mMaj7', 'Maj7', '7#5', 'm7♭5', '7♭5', 'Maj7', 'dim7'],
         target: '♭2, ♭6',
         chords: 'm, mMaj7'
     },
-    'diminished': {
-        intervals: [0, 2, 3, 5, 6, 8, 9, 11],
-        intervalAliases: { 9: '♭♭7' },
-        triads: ['dim', 'dim', 'dim', 'dim', 'dim', 'dim', 'dim', 'dim'],
-        tetrads: ['dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7', 'dim7'],
-        target: '♭5, ♭♭7',
-        chords: 'dim7'
-    },
     'augmented': {
+        category: 'exotic',
+        order: 7,
         intervals: [0, 3, 4, 7, 8, 11],
         intervalAliases: { 3: '#2', 8: '#5' },
         triads: ['aug', 'aug', 'aug', 'aug', 'aug', 'aug'],
@@ -180,7 +235,98 @@ export const SCALES: Record<string, any> = {
         target: '#5',
         chords: 'aug, 7#5'
     },
+    
+    // ----------------------------------------------------
+    // HIRAJOSHI MODES
+    // ----------------------------------------------------
+    'hirajoshi': {
+        category: 'hirajoshi-modes',
+        order: 1,
+        intervals: [0, 2, 3, 7, 8],
+        triads: ['m', 'dim', 'Maj', 'm', 'Maj'],
+        tetrads: ['m7', 'm7♭5', 'Maj7', 'm7', 'Maj7'],
+        target: '2, ♭6',
+        chords: 'm, m7',
+        customPositions: {
+            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 1 }, { "s": 4, "o": 0 }, { "s": 4, "o": 2 }, { "s": 3, "o": -2 }, { "s": 3, "o": 2 }, { "s": 2, "o": -2 }, { "s": 2, "o": 2 }, { "s": 1, "o": 0 }, { "s": 1, "o": 1 }, { "s": 0, "o": 0 }, { "s": 0, "o": 1 }] }
+        }
+    },
+    'iwato': {
+        category: 'hirajoshi-modes',
+        order: 2,
+        intervals: [0, 1, 5, 6, 10],
+        triads: ['dim', 'Maj', 'm', 'm', 'Maj'],
+        tetrads: ['m7♭5', 'Maj7', 'm7', 'm7', 'Maj7'],
+        target: '♭2, ♭5',
+        chords: 'dim'
+    },
+    'kumoi': {
+        category: 'hirajoshi-modes',
+        order: 3,
+        intervals: [0, 2, 3, 7, 9],
+        triads: ['m', 'm', 'Maj', 'm', 'dim'],
+        tetrads: ['m7', 'm7', 'Maj7', 'm7', 'm7♭5'],
+        target: '2, 6',
+        chords: 'm, m6'
+    },
+    'hon-kumoi': {
+        category: 'hirajoshi-modes',
+        order: 4,
+        intervals: [0, 1, 5, 7, 8],
+        triads: ['m', 'Maj', 'Maj', 'm', 'dim'],
+        tetrads: ['m7', 'Maj7', '7', 'm7', 'm7♭5'],
+        target: '♭2, 5',
+        chords: 'm'
+    },
+    'chinese': {
+        category: 'hirajoshi-modes',
+        order: 5,
+        intervals: [0, 4, 6, 7, 11],
+        intervalAliases: { 6: '#4' },
+        triads: ['Maj', 'dim', 'm', 'm', 'Maj'],
+        tetrads: ['Maj7', 'm7♭5', 'm7', 'm7', 'Maj7'],
+        target: '3, 5',
+        chords: 'Maj, Maj7'
+    },
+
+    // ----------------------------------------------------
+    // TRIADS
+    // ----------------------------------------------------
+    'major-triad': {
+        category: 'triads',
+        order: 1,
+        intervals: [0, 4, 7],
+        triads: ['Maj', 'm', 'm'],
+        tetrads: ['Maj7', 'm7', '7'],
+        target: '1, 3, 5',
+        chords: 'Maj',
+        customPositions: {
+            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 4 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 2, "o": 1 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }] },
+            "2": { "rootStr": 4, "notes": [{ "s": 5, "o": -3 }, { "s": 4, "o": 0 }, { "s": 0, "o": -3 }, { "s": 1, "o": -2 }, { "s": 2, "o": -3 }, { "s": 0, "o": 0 }, { "s": 3, "o": -1 }, { "s": 5, "o": 0 }] },
+            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": 4 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 1, "o": 2 }, { "s": 0, "o": 5 }, { "s": 0, "o": 0 }] }
+        }
+    },
+    'minor-triad': {
+        category: 'triads',
+        order: 2,
+        intervals: [0, 3, 7],
+        triads: ['m', 'Maj', 'm'],
+        tetrads: ['m7', 'Maj7', 'm7'],
+        target: '1, b3, 5',
+        chords: 'm',
+        customPositions: {
+            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 3 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 2, "o": 0 }, { "s": 0, "o": 3 }] },
+            "2": { "rootStr": 4, "notes": [{ "s": 4, "o": 0 }, { "s": 0, "o": -4 }, { "s": 1, "o": -2 }, { "s": 2, "o": -3 }, { "s": 3, "o": -2 }, { "s": 4, "o": -5 }, { "s": 5, "o": -4 }, { "s": 0, "o": 0 }] },
+            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": 3 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 0, "o": 5 }, { "s": 0, "o": 0 }, { "s": 1, "o": 1 }] }
+        }
+    },
+
+    // ----------------------------------------------------
+    // ARPEGGIOS
+    // ----------------------------------------------------
     'm7-arpeggio': {
+        category: 'arpeggios',
+        order: 1,
         intervals: [0, 4, 7, 11],
         triads: ['Maj', 'm', 'm', 'dim'],
         tetrads: ['Maj7', 'm7', '7', 'm7♭5'],
@@ -196,6 +342,8 @@ export const SCALES: Record<string, any> = {
         }
     },
     'min7-arpeggio': {
+        category: 'arpeggios',
+        order: 2,
         intervals: [0, 3, 7, 10],
         triads: ['m', 'Maj', 'm', 'Maj'],
         tetrads: ['m7', 'Maj7', 'm7', '7'],
@@ -212,6 +360,8 @@ export const SCALES: Record<string, any> = {
         }
     },
     'dom7-arpeggio': {
+        category: 'arpeggios',
+        order: 3,
         intervals: [0, 4, 7, 10],
         triads: ['Maj', 'dim', 'm', 'Maj'],
         tetrads: ['7', 'dim7', 'm7', 'Maj7'],
@@ -227,68 +377,15 @@ export const SCALES: Record<string, any> = {
             "4": { "rootStr": 5, "notes": [{ "s": 5, "o": -2 }, { "s": 5, "o": 0 }, { "s": 4, "o": -1 }, { "s": 3, "o": 0 }, { "s": 3, "o": -3 }, { "s": 2, "o": -3 }, { "s": 1, "o": 0 }, { "s": 0, "o": -2 }, { "s": 0, "o": 0 }, { "s": 1, "o": -3 }] }
         }
     },
-    'major-triad': {
-        intervals: [0, 4, 7],
-        triads: ['Maj', 'm', 'm'],
-        tetrads: ['Maj7', 'm7', '7'],
-        target: '1, 3, 5',
-        chords: 'Maj',
-        customPositions: {
-            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 4 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 2, "o": 1 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 0, "o": 4 }] },
-            "2": { "rootStr": 4, "notes": [{ "s": 5, "o": -3 }, { "s": 4, "o": 0 }, { "s": 0, "o": -3 }, { "s": 1, "o": -2 }, { "s": 2, "o": -3 }, { "s": 0, "o": 0 }, { "s": 3, "o": -1 }, { "s": 5, "o": 0 }] },
-            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": 4 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 1, "o": 2 }, { "s": 0, "o": 5 }, { "s": 0, "o": 0 }] }
-        }
-    },
-    'minor-triad': {
-        intervals: [0, 3, 7],
-        triads: ['m', 'Maj', 'm'],
-        tetrads: ['m7', 'Maj7', 'm7'],
-        target: '1, b3, 5',
-        chords: 'm',
-        customPositions: {
-            "1": { "rootStr": 5, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 3 }, { "s": 4, "o": 2 }, { "s": 3, "o": 2 }, { "s": 1, "o": 0 }, { "s": 0, "o": 0 }, { "s": 2, "o": 0 }, { "s": 0, "o": 3 }] },
-            "2": { "rootStr": 4, "notes": [{ "s": 4, "o": 0 }, { "s": 0, "o": -4 }, { "s": 1, "o": -2 }, { "s": 2, "o": -3 }, { "s": 3, "o": -2 }, { "s": 4, "o": -5 }, { "s": 5, "o": -4 }, { "s": 0, "o": 0 }] },
-            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 4, "o": 0 }, { "s": 4, "o": 3 }, { "s": 3, "o": 2 }, { "s": 2, "o": 2 }, { "s": 0, "o": 5 }, { "s": 0, "o": 0 }, { "s": 1, "o": 1 }] }
-        }
-    },
-    'hirajoshi': {
-        intervals: [0, 2, 3, 7, 8],
-        triads: ['m', 'dim', 'Maj', 'm', 'Maj'],
-        tetrads: ['m7', 'm7♭5', 'Maj7', 'm7', 'Maj7'],
-        target: '2, ♭6',
-        chords: 'm, m7',
-        customPositions: {
-            "3": { "rootStr": 4, "notes": [{ "s": 5, "o": 0 }, { "s": 5, "o": 1 }, { "s": 4, "o": 0 }, { "s": 4, "o": 2 }, { "s": 3, "o": -2 }, { "s": 3, "o": 2 }, { "s": 2, "o": -2 }, { "s": 2, "o": 2 }, { "s": 1, "o": 0 }, { "s": 1, "o": 1 }, { "s": 0, "o": 0 }, { "s": 0, "o": 1 }] }
-        }
-    },
-    'iwato': {
-        intervals: [0, 1, 5, 6, 10],
-        triads: ['dim', 'Maj', 'm', 'm', 'Maj'],
-        tetrads: ['m7♭5', 'Maj7', 'm7', 'm7', 'Maj7'],
-        target: '♭2, ♭5',
-        chords: 'dim'
-    },
-    'kumoi': {
-        intervals: [0, 2, 3, 7, 9],
-        triads: ['m', 'm', 'Maj', 'm', 'dim'],
-        tetrads: ['m7', 'm7', 'Maj7', 'm7', 'm7♭5'],
-        target: '2, 6',
-        chords: 'm, m6'
-    },
-    'hon-kumoi': {
-        intervals: [0, 1, 5, 7, 8],
-        triads: ['m', 'Maj', 'Maj', 'm', 'dim'],
-        tetrads: ['m7', 'Maj7', '7', 'm7', 'm7♭5'],
-        target: '♭2, 5',
-        chords: 'm'
-    },
-    'chinese': {
-        intervals: [0, 4, 6, 7, 11],
-        intervalAliases: { 6: '#4' },
-        triads: ['Maj', 'dim', 'm', 'm', 'Maj'],
-        tetrads: ['Maj7', 'm7♭5', 'm7', 'm7', 'Maj7'],
-        target: '3, 5',
-        chords: 'Maj, Maj7'
+    'arpeggio-diminished': {
+        category: 'arpeggios',
+        order: 4,
+        intervals: [0, 3, 6, 9],
+        intervalAliases: { 9: '♭♭7' },
+        triads: ['dim', 'dim', 'dim', 'dim'],
+        tetrads: ['dim7', 'dim7', 'dim7', 'dim7'],
+        target: '1, ♭3, ♭5, ♭♭7',
+        chords: 'dim, dim7'
     }
 };
 
@@ -333,9 +430,9 @@ export const DEGREE_MAP_MINOR: Record<string, { idx: number, suffix: string }> =
 };
 
 export const ROLES = {
-  STUDENT: 'student',
-  TEACHER: 'teacher',
-  ADMIN: 'admin'
+    STUDENT: 'student',
+    TEACHER: 'teacher',
+    ADMIN: 'admin'
 } as const;
 export type Role = typeof ROLES[keyof typeof ROLES];
 
@@ -347,17 +444,17 @@ export type SubscriptionTier = typeof SUBSCRIPTION_TIERS[keyof typeof SUBSCRIPTI
 
 
 export const BASIC_SCALE_SUGGESTIONS = {
-  minor: [
-    'pentatonic-minor',
-    'aeolian',
-    'dorian',
-    'phrygian',
-    'hirajoshi'
-  ],
-  major: [
-    'pentatonic-major',
-    'ionian',
-    'mixolydian',
-    'lydian'
-  ]
+    minor: [
+        'pentatonic-minor',
+        'aeolian',
+        'dorian',
+        'phrygian',
+        'hirajoshi'
+    ],
+    major: [
+        'pentatonic-major',
+        'ionian',
+        'mixolydian',
+        'lydian'
+    ]
 } as const;
