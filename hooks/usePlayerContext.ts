@@ -4,7 +4,7 @@ import { Exercise } from '../lib/types';
 
 export function usePlayerContext() {
     const [isReady, setIsReady] = useState(false);
-    const [mode, setMode] = useState<'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords' | 'rhythm' | 'earTraining'>('free');
+    const [mode, setMode] = useState<'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords' | 'rhythm' | 'earTraining' | 'harmonization'>('free');
     const [routineList, setRoutineList] = useState<any[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);

@@ -810,7 +810,8 @@
       "composition": "Composition",
       "chords": "Chords",
       "rhythm": "Rhythm",
-      "earTraining": "Ear Training"
+      "earTraining": "Ear Training",
+      "harmonization": "Harmonization"
     },
     "alerts": {
       "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
@@ -1720,6 +1721,9 @@
     "sys_ear_training_title": "Ear Training",
     "sys_ear_training_technique": "Ear Training",
     "sys_ear_training_notes": "Train your ears to recognize chord qualities and structures.",
+    "sys_harmonization_title": "Harmonization",
+    "sys_harmonization_technique": "Harmonization",
+    "sys_harmonization_notes": "Explore diatonic chord matrices across multiple modes. Find pivot chords instantly to modulate or compose backing tracks from a bird's-eye view.",
     "sys_3_notes_beat_title": "3 Notes per Beat",
     "sys_3_notes_beat_notes": "Rhythmic exercise based on triplets. Perfect for developing timing in compound meters or blues and rock licks.",
     "sys_4_notes_beat_title": "4 Notes per Beat",
@@ -2033,5 +2037,12 @@
     "nextChord": "Next chord",
     "tapAgain": "Tap again to replay",
     "listenFirst": "Listen to the chord first"
+  },
+  "HarmonizationPanel": {
+    "controlsTitle": "Global Configuration",
+    "triads": "Triads",
+    "tetrads": "Tetrads (Sevenths)",
+    "searchPlaceholder": "Search pivot chord (e.g., Dm7)...",
+    "scaleOrMode": "SCALE / MODE"
   }
 }

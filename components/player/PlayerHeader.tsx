@@ -8,7 +8,7 @@ import { useTranslations } from 'next-intl';
 import { usePlayerHeader } from '../../hooks/usePlayerHeader';
 
 interface PlayerHeaderProps {
-    mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords' | 'rhythm' | 'earTraining';
+    mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords' | 'rhythm' | 'earTraining'| 'harmonization';
     routineList: any[];
     routineLength: number;
     currentIndex: number;
@@ -176,7 +176,8 @@ export function PlayerHeader({
         composition: { label: t('modes.composition'), icon: '🧠', color: 'var(--gold)' },
         chords: { label: t('modes.chords'), icon: '🎵', color: 'var(--gold)' },
         rhythm: { label: t('modes.rhythm'), icon: '🥁', color: 'var(--gold)' },        
-        earTraining: { label: t('modes.earTraining'), icon: '👂', color: 'var(--gold)' }
+        earTraining: { label: t('modes.earTraining'), icon: '👂', color: 'var(--gold)' },
+        harmonization: { label: t('modes.harmonization'), icon: '🎸', color: 'var(--gold)' }
     }), [t]);
 
     const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;

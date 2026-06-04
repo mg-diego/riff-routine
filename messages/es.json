@@ -810,7 +810,8 @@
       "composition": "Composición",
       "chords": "Acordes",
       "rhythm": "Rítmica",
-      "earTraining": "Entrenamiento Auditio"
+      "earTraining": "Entrenamiento Auditivo",
+      "harmonization": "Armonización"
     },
     "alerts": {
       "unsavedTime": "Tienes tiempo sin registrar. ¿Seguro que quieres salir?"
@@ -1719,7 +1720,10 @@
     "sys_rhythm_notes": "Entrena tu reloj interno con la Pirámide de Subdivisión.",
     "sys_ear_training_title": "Entramiento Auditivo",
     "sys_ear_training_technique": "Entramiento Auditivo",
-    "sys_ear_training_notes": "Entrena tu oído para reconocer la cualidad y estructura de los acordes.",
+    "sys_ear_training_notes": "Entrena tu oído para reconocer la cualidad y estructura de los acordes.",    
+    "sys_harmonization_title": "Armonización",
+    "sys_harmonization_technique": "Armonización",
+    "sys_harmonization_notes": "Explora matrices de acordes diatónicos a través de múltiples modos. Encuentra acordes pivote al instante para modular o componer pistas desde una perspectiva global.",
     "sys_3_notes_beat_title": "3 Notas por Beat",
     "sys_3_notes_beat_notes": "Ejercicio rítmico basado en tresillos. Ideal para desarrollar el sentido del tiempo en compases compuestos o licks de blues y rock.",
     "sys_4_notes_beat_title": "4 Notas por Beat",
@@ -2033,5 +2037,12 @@
     "nextChord": "Siguiente acorde",
     "tapAgain": "Pulsa de nuevo para repetir",
     "listenFirst": "Escucha el acorde primero"
+  },
+  "HarmonizationPanel": {
+    "controlsTitle": "Configuración Global",
+    "triads": "Tríadas",
+    "tetrads": "Tétradas (Séptimas)",
+    "searchPlaceholder": "Buscar acorde pivote (ej: Dm7)...",
+    "scaleOrMode": "ESCALA / MODO"
   }
 }

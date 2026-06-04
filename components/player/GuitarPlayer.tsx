@@ -20,6 +20,7 @@ import { BackingTracksLibrary } from '../backing-tracks/BackingTracksLibrary';
 import { RhythmPanel } from './panels/RhythmPanel';
 import { EarTrainingPanel } from './panels/EarTrainingPanel';
 import { PdfViewer } from './PdfViewer'; 
+import { HarmonizationPanel } from './panels/HarmonizationPanel';
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -99,7 +100,8 @@ export default function GuitarPlayer() {
         mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
         mode === 'chords' || activeExercise?.title === 'sys_chords_title' ||
         mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title' ||
-        mode === 'earTraining' || activeExercise?.title === 'sys_ear_training_title';
+        mode === 'earTraining' || activeExercise?.title === 'sys_ear_training_title' ||
+        mode === 'harmonization' || activeExercise?.title === 'sys_harmonization_title';
 
     const specialPanel = (() => {
         if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
@@ -158,6 +160,7 @@ export default function GuitarPlayer() {
 
         if (mode === 'composition' || activeExercise?.title === 'sys_composition_title') return <CompositionPanel />;
         if (mode === 'chords' || activeExercise?.title === 'sys_chords_title') return <ChordsPanel />;
+        if (mode === 'harmonization' || activeExercise?.title === 'sys_harmonization_title') return <HarmonizationPanel />;
 
         return null;
     })();
