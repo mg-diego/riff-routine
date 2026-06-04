@@ -87,7 +87,8 @@ export default function ExplorePage() {
             'sys_composition_title': 'composition',
             'sys_chords_title': 'chords',
             'sys_rhythm_title': 'rhythm',
-            'sys_ear_training_title': 'earTraining'
+            'sys_ear_training_title': 'earTraining',
+            'sys_harmonization_title': 'harmonization'
         };
 
         const targetTitle = routes[exercise.title] || exercise.title;
