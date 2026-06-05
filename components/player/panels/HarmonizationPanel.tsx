@@ -60,9 +60,13 @@ export function HarmonizationPanel() {
     groupedByCategory.push({ category: 'others', keys: orphanedKeys });
   }
 
+  const handleChordClick = (chordStr: string) => {
+    if (chordStr === '-') return;
+    setSearchQuery(prev => prev === chordStr ? '' : chordStr);
+  };
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', height: '100%' }}>
-      
       <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
         <h3 style={{ color: 'var(--gold)', margin: '0 0 1.5rem 0', fontSize: '1.2rem' }}>
           {t('controlsTitle')}
@@ -149,19 +153,23 @@ export function HarmonizationPanel() {
                             }}
                           >
                             {chordStr !== '-' ? (
-                              <div style={{ 
-                                display: 'inline-block',
-                                background: isMatch ? 'var(--gold)' : 'rgba(255,255,255,0.03)',
-                                color: isMatch ? '#111' : isFaded ? 'rgba(255,255,255,0.2)' : 'var(--text)',
-                                padding: '0.5rem 0.8rem',
-                                borderRadius: '6px',
-                                fontWeight: isMatch ? 800 : 500,
-                                fontFamily: 'DM Sans, sans-serif',
-                                fontSize: '1rem',
-                                letterSpacing: '0.01em',
-                                border: isMatch ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)',
-                                transform: isMatch ? 'scale(1.05)' : 'scale(1)'
-                              }}>
+                              <div 
+                                onClick={() => handleChordClick(chordStr)}
+                                style={{ 
+                                  display: 'inline-block',
+                                  background: isMatch ? 'var(--gold)' : 'rgba(255,255,255,0.03)',
+                                  color: isMatch ? '#111' : isFaded ? 'rgba(255,255,255,0.2)' : 'var(--text)',
+                                  padding: '0.5rem 0.8rem',
+                                  borderRadius: '6px',
+                                  fontWeight: isMatch ? 800 : 500,
+                                  fontFamily: 'DM Sans, sans-serif',
+                                  fontSize: '1rem',
+                                  letterSpacing: '0.01em',
+                                  border: isMatch ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)',
+                                  transform: isMatch ? 'scale(1.05)' : 'scale(1)',
+                                  cursor: 'pointer'
+                                }}
+                              >
                                 {chordStr}
                               </div>
                             ) : (
