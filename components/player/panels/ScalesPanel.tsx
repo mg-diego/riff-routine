@@ -191,8 +191,8 @@ export function ScalesPanel() {
                 {CHROMATIC_NOTES.map(n => <option key={n} value={n}>{n}</option>)}
               </select>
               <select
-                value={scaleKey}
-                onChange={e => setScaleKey(e.target.value)}
+                value={scaleKeyB}
+                onChange={e => setScaleKeyB(e.target.value)}
                 style={selectStyle(compareMode ? `${COMPARE_COLOR_B}66` : undefined)}
               >
                 {sortedGroupedEntries.map(([categoryKey, keys]) => (
