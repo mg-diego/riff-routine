@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from 'react';
-import { CHROMATIC_NOTES, SCALES } from '@/lib/constants';
+import { CHROMATIC_NOTES, ROOTS, SCALES, NORMALIZE_ROOT, INTERVAL_OFFSET, SHARP_NOTES, FLAT_NOTES, FLAT_ROOTS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
 
 const CATEGORY_ORDER = [
@@ -14,6 +14,26 @@ const CATEGORY_ORDER = [
   'hirajoshi-modes',
   'others'
 ];
+
+const getProperNoteName = (rootNote: string, interval: number) => {
+  const normalizedRoot = NORMALIZE_ROOT[rootNote] || rootNote;
+  const rootLetter = normalizedRoot.charAt(0);
+  const rootLetterIndex = ROOTS.indexOf(rootLetter);
+  
+  const expectedLetter = ROOTS[(rootLetterIndex + INTERVAL_OFFSET[interval]) % 7];
+  
+  const rootIndex = CHROMATIC_NOTES.indexOf(rootNote);
+  const pitchClass = (rootIndex + interval) % 12;
+  
+  const sharpNote = SHARP_NOTES[pitchClass];
+  const flatNote = FLAT_NOTES[pitchClass];
+  
+  if (sharpNote.charAt(0) === expectedLetter) return sharpNote;
+  if (flatNote.charAt(0) === expectedLetter) return flatNote;
+  
+  const isFlat = FLAT_ROOTS.includes(normalizedRoot);
+  return isFlat ? flatNote : sharpNote;
+};
 
 export function HarmonizationPanel() {
   const t = useTranslations('HarmonizationPanel');
@@ -28,8 +48,7 @@ export function HarmonizationPanel() {
     if (!scale || !scale.intervals || scale.intervals.length <= gradeIdx) return '-';
     
     const interval = scale.intervals[gradeIdx];
-    const rootIndex = CHROMATIC_NOTES.indexOf(globalRoot);
-    const chordRootNote = CHROMATIC_NOTES[(rootIndex + interval) % 12];
+    const chordRootNote = getProperNoteName(globalRoot, interval);
     const chordExtension = scale[chordType]?.[gradeIdx];
     
     return chordExtension ? `${chordRootNote}${chordExtension}` : '-';

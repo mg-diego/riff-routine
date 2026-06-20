@@ -17,6 +17,19 @@ export const ENHARMONICS: Record<string, string> = { 'Db': 'C#', 'Eb': 'D#', 'Gb
 export const MARKED_FRETS = [3, 5, 7, 9, 12, 15, 17, 19, 21, 24];
 export const BASIC_SUFFIXES = ['major', 'm', '7', 'm7', 'maj7', 'sus2', 'sus4', '5'];
 
+export const SHARP_NOTES = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+export const FLAT_NOTES = ['C', 'Db', 'D', 'Eb', 'E', 'F', 'Gb', 'G', 'Ab', 'A', 'Bb', 'B'];
+export const FLAT_ROOTS = ['F', 'Bb', 'Eb', 'Ab', 'Db', 'Gb', 'A#', 'D#', 'G#', 'C#'];
+export const NORMALIZE_ROOT: Record<string, string> = {
+  'A#': 'Bb',
+  'D#': 'Eb',
+  'G#': 'Ab',
+  'C#': 'Db',
+};
+export const INTERVAL_OFFSET: Record<number, number> = {
+  0: 0, 1: 1, 2: 1, 3: 2, 4: 2, 5: 3, 6: 3, 7: 4, 8: 5, 9: 5, 10: 6, 11: 6
+};
+
 
 export const INTERVAL_NAMES: Record<number, string> = { 0: '1', 1: '♭2', 2: '2', 3: '♭3', 4: '3', 5: '4', 6: '♭5', 7: '5', 8: '♭6', 9: '6', 10: '♭7', 11: '7' };
 export const STANDARD_BASES = [64, 59, 55, 50, 45, 40];
