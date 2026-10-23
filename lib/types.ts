@@ -37,9 +37,9 @@ export interface ChordDefinition {
   type: string;
 }
 
-export interface DbBackingTrack {
+export interface BackingTrack {
   id: string;
-  user_id: string;
+  user_id: string | null;
   title: string;
   youtube_url: string;
   tonality_note: string | null;

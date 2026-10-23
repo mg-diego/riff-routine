@@ -1,0 +1,360 @@
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  min-width: 80px;
+}
+
+.row {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+}
+
+.block {
+  width: 8px;
+  height: 8px;
+  border-radius: 2px;
+  transition: background 0.2s;
+}
+
+.label {
+  font-size: 0.65rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.titleBox {
+  background: var(--surface);
+  border: 1px solid rgba(var(--danger-rgb), 0.3);
+  border-radius: 14px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 380px;
+  font-family: var(--font-body), sans-serif;
+}
+
+.titleSubheading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.4rem;
+  color: var(--danger);
+  margin: 0 0 0.5rem;
+}
+
+.confirmText {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 1.5rem;
+  line-height: 1.6;
+}
+
+.cancelRow {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+.cancelButton {
+  padding: 0.55rem 1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 7px;
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+}
+
+.removingButton {
+  padding: 0.55rem 1rem;
+  background: rgba(var(--danger-rgb), 0.15);
+  border: 1px solid rgba(var(--danger-rgb), 0.35);
+  border-radius: 7px;
+  color: var(--danger);
+  font-size: 0.82rem;
+  font-weight: 700;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+}
+
+.labelStack {
+  max-width: 1100px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: var(--font-body), sans-serif;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.inviteButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: rgba(var(--violet-rgb), 0.15);
+  border: 1px solid rgba(var(--violet-rgb), 0.35);
+  border-radius: 8px;
+  color: var(--violet-light);
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inviteButton:hover {
+  background: rgba(var(--violet-rgb), 0.22);
+}
+
+.allRow {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.button {
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.15s;
+}
+
+.allRowLabel {
+  margin-left: 0.4rem;
+  font-size: 0.7rem;
+  opacity: 0.7;
+}
+
+.emptyBox {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 3rem;
+  text-align: center;
+}
+
+.emptyText {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0 0 1rem;
+}
+
+.inviteButton2 {
+  padding: 0.55rem 1.1rem;
+  background: rgba(var(--violet-rgb), 0.15);
+  border: 1px solid rgba(var(--violet-rgb), 0.3);
+  border-radius: 8px;
+  color: var(--violet-light);
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+}
+
+.studentBox {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.studentGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1fr auto;
+  gap: 1rem;
+  padding: 0.65rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  align-items: center;
+}
+
+.studentGridLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.pendingGrid {
+  display: grid;
+  grid-template-columns: 2fr 1fr 1.5fr 1fr auto;
+  gap: 1rem;
+  padding: 0.9rem 1.25rem;
+  align-items: center;
+  transition: background 0.15s;
+}
+
+.pendingRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  min-width: 0;
+}
+
+.pendingRowBlock {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.layer {
+  position: absolute;
+  bottom: 0;
+  right: 0;
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  border: 1.5px solid #0e0e0e;
+}
+
+.block3 {
+  min-width: 0;
+}
+
+.text {
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.875rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inviteEmailText {
+  margin: 0;
+  font-size: 0.7rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pendingLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 2px 6px;
+  border-radius: 4px;
+  background: rgba(var(--gold-rgb), 0.1);
+  color: var(--gold);
+  flex-shrink: 0;
+}
+
+.pendingGridLabel {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.lastSessionStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.pendingGridRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.pendingGridRowLabel {
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.lastSessionLabel {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+
+.lastRoutineText {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--text);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.resendRow {
+  display: flex;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.resendButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(var(--gold-rgb), 0.08);
+  border: 1px solid rgba(var(--gold-rgb), 0.15);
+  color: var(--gold);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.resendButton:hover {
+  background: rgba(var(--gold-rgb), 0.15);
+}
+
+.statsButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(var(--violet-rgb), 0.08);
+  border: 1px solid rgba(var(--violet-rgb), 0.15);
+  color: var(--violet-light);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.statsButton:hover {
+  background: rgba(var(--violet-rgb), 0.15);
+}
+
+.removeButton {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  background: rgba(var(--danger-rgb), 0.06);
+  border: 1px solid rgba(var(--danger-rgb), 0.12);
+  color: var(--danger);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+}
+
+.removeButton:hover {
+  background: rgba(var(--danger-rgb), 0.14);
+}
+
+.pendingGrid:hover {
+  background: rgba(255,255,255,0.02);
+}

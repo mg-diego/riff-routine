@@ -1,0 +1,28 @@
+.block {
+  padding: 0 2rem;
+  width: 100%;
+  overflow: visible;
+}
+
+.block2 {
+  position: relative;
+  width: 100%;
+}
+
+.block3 {
+  width: 100%;
+}
+
+.noScoreMessageStack {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.noScoreMessageStackBlock {
+  font-size: 3rem;
+}

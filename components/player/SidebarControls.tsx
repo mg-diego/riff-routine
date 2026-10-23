@@ -1,17 +1,21 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from 'react';
-import { SpeedSelect } from '../player/SpeedSelect';
+import { SpeedSelect } from '@/components/player/SpeedSelect';
 import { useTranslations } from 'next-intl';
+import type { model } from '@coderline/alphatab';
+import type { AlphaTabApiRef } from '@/hooks/useAlphaTab';
+import styles from './SidebarControls.module.css';
+import { cx } from '@/lib/cx';
 
 interface SidebarControlsProps {
-  apiRef: React.MutableRefObject<any>;
+  apiRef: AlphaTabApiRef;
   isLoaded: boolean;
   isPlaying: boolean;
   // setIsPlaying eliminado: la única fuente de verdad es playerStateChanged en useAlphaTab.
   // Llamarlo manualmente desincronizaba el estado React con el estado interno de AlphaTab.
-  tracks: any[];
-  setTracks: React.Dispatch<React.SetStateAction<any[]>>;
+  tracks: model.Track[];
+  setTracks: React.Dispatch<React.SetStateAction<model.Track[]>>;
   currentPlaybackBpm?: number | null;
   originalBpm?: number | null;
   forceDisabled: boolean;
@@ -70,7 +74,7 @@ export function SidebarControls({
     if (!apiRef.current) return;
     setIsMetronomeOn(prev => {
       const next = !prev;
-      apiRef.current.metronomeVolume = next ? 1 : 0;
+      if (apiRef.current) apiRef.current.metronomeVolume = next ? 1 : 0;
       return next;
     });
   }, [apiRef]);
@@ -79,7 +83,7 @@ export function SidebarControls({
     if (!apiRef.current) return;
     setIsLooping(prev => {
       const next = !prev;
-      apiRef.current.isLooping = next;
+      if (apiRef.current) apiRef.current.isLooping = next;
       return next;
     });
   }, [apiRef]);
@@ -228,229 +232,109 @@ export function SidebarControls({
 
   return (
     <>
-      <style>{`
-        .sidebar-root {
-          position: relative; 
-          /* ELIMINAMOS height: 100% Y AÑADIMOS align-self: stretch */
-          align-self: stretch; 
-          flex-shrink: 0;
-          display: flex; flex-direction: column;
-          background: #141414; border-left: 1px solid rgba(220,185,138,0.1);
-          transition: width 0.35s cubic-bezier(.4,0,.2,1);
-          overflow: hidden; z-index: 20;
-        }
-        .sidebar-root.open  { width: 300px; }
-        .sidebar-root.closed { width: 52px; }
-
-        .sidebar-toggle {
-          position: absolute; top: 1.2rem; z-index: 30;
-          width: 30px; height: 30px; border-radius: 6px;
-          border: 1px solid rgba(220,185,138,0.2);
-          background: rgba(20,20,20,0.9); color: var(--gold,#dcb98a);
-          cursor: pointer; display: flex; align-items: center; justify-content: center;
-          transition: all 0.2s; font-size: 0.75rem;
-        }
-        .sidebar-toggle:hover { background: rgba(220,185,138,0.15); border-color: rgba(220,185,138,0.4); }
-
-        .sidebar-icons {
-          position: absolute; top: 0; left: 0; width: 52px;
-          display: flex; flex-direction: column; align-items: center;
-          gap: 1.2rem; padding-top: 4.5rem;
-          opacity: 0; transition: opacity 0.2s; pointer-events: none;
-        }
-        .sidebar-root.closed .sidebar-icons { opacity: 1; pointer-events: auto; }
-        .sidebar-icon-dot { width: 6px; height: 6px; border-radius: 50%; background: rgba(220,185,138,0.3); }
-        .sidebar-icon-dot.active { background: var(--gold,#dcb98a); }
-
-        .sidebar-content {
-          width: 300px; height: 100%; overflow-y: auto; overflow-x: hidden;
-          padding: 1.4rem 1.25rem 2rem; box-sizing: border-box;
-          display: flex; flex-direction: column; gap: 1.75rem;
-          opacity: 1; transition: opacity 0.2s;
-          scrollbar-width: thin; scrollbar-color: rgba(220,185,138,0.2) transparent;
-        }
-        .sidebar-root.closed .sidebar-content { opacity: 0; pointer-events: none; }
-
-        .sb-kbd {
-          display: inline-flex; align-items: center; justify-content: center;
-          padding: 0.1rem 0.35rem; border-radius: 4px; font-size: 0.6rem;
-          font-weight: 700; font-family: monospace; letter-spacing: 0.03em;
-          background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.1);
-          color: rgba(255,255,255,0.35); margin-left: auto; flex-shrink: 0;
-        }
-
-        .sb-toast {
-          position: fixed; bottom: 2rem; left: 50%; transform: translateX(-50%);
-          display: flex; align-items: center; gap: 0.6rem;
-          background: rgba(20,20,20,0.95); border: 1px solid rgba(220,185,138,0.25);
-          border-radius: 100px; padding: 0.55rem 1.1rem;
-          font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
-          color: var(--text,#f0e8dc); z-index: 9999; pointer-events: none;
-          box-shadow: 0 4px 24px rgba(0,0,0,0.5);
-          animation: sb-toast-in 0.15s ease;
-        }
-        @keyframes sb-toast-in {
-          from { opacity: 0; transform: translateX(-50%) translateY(6px); }
-          to   { opacity: 1; transform: translateX(-50%) translateY(0); }
-        }
-        .sb-toast-icon { font-size: 1.1rem; }
-
-        .sb-section-label {
-          font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em;
-          text-transform: uppercase; color: rgba(220,185,138,0.5); margin: 0 0 0.75rem;
-        }
-        .sb-select {
-          width: 100%; padding: 0.6rem 0.8rem;
-          background: rgba(255,255,255,0.04); color: var(--text,#f0e8dc);
-          border: 1px solid rgba(255,255,255,0.08); border-radius: 7px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.85rem;
-          outline: none; cursor: pointer; appearance: none;
-          background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%236a5f52' stroke-width='2'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-          background-repeat: no-repeat; background-position: right 0.75rem center; padding-right: 2rem;
-        }
-        .sb-toggle-btn {
-          width: 100%; padding: 0.6rem 0.8rem; border-radius: 7px;
-          font-family: 'DM Sans', sans-serif; font-size: 0.85rem; font-weight: 600;
-          cursor: pointer; transition: all 0.2s;
-          border: 1px solid rgba(255,255,255,0.08); background: rgba(255,255,255,0.04);
-          color: var(--text,#f0e8dc); text-align: left;
-          display: flex; align-items: center; gap: 0.5rem;
-        }
-        .sb-toggle-btn.on       { background: rgba(231,76,60,0.15);  border-color: rgba(231,76,60,0.4);  color: #e74c3c; }
-        .sb-toggle-btn.loop.on  { background: rgba(167,139,250,0.15); border-color: rgba(167,139,250,0.4); color: #a78bfa; }
-        .sb-toggle-btn.sel.on   { background: rgba(220,185,138,0.15); border-color: rgba(220,185,138,0.4); color: var(--gold,#dcb98a); }
-        .sb-transport { display: grid; grid-template-columns: 1fr auto; gap: 0.5rem; }
-        .sb-play { padding: 0.65rem; background: var(--gold,#dcb98a); color: #111; border: none; border-radius: 7px; cursor: pointer; font-weight: 700; }
-        .sb-stop { padding: 0.65rem 0.85rem; background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 7px; cursor: pointer; color: var(--text,#f0e8dc); }
-        .sb-divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 0; }
-        .sb-track { background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.05); border-radius: 8px; padding: 0.75rem 0.85rem; display: flex; flex-direction: column; gap: 0.55rem; }
-        .sb-track.active { border-color: rgba(220,185,138,0.5); background: rgba(220,185,138,0.08); box-shadow: inset 3px 0 0 var(--gold,#dcb98a); }
-        .sb-track-header { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
-        .sb-track-name { font-size: 0.82rem; font-weight: 600; color: var(--text,#f0e8dc); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; flex: 1; }
-        .sb-track-eye { background: none; border: none; color: rgba(220,185,138,0.4); cursor: pointer; padding: 0.15rem; display: flex; align-items: center; }
-        .sb-track-vol { display: flex; align-items: center; gap: 0.6rem; }
-        .sb-vol-label { font-size: 0.62rem; font-weight: 700; color: rgba(220,185,138,0.35); width: 22px; }
-        .sb-vol-slider { flex: 1; accent-color: var(--gold,#dcb98a); cursor: pointer; height: 3px; }
-        .sb-track-actions { display: flex; gap: 0.4rem; }
-        .sb-mute, .sb-solo { flex: 1; padding: 0.25rem; font-size: 0.68rem; font-weight: 700; border: none; border-radius: 4px; cursor: pointer; }
-        .sb-mute { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
-        .sb-mute.on { background: #e74c3c; color: #fff; }
-        .sb-solo { background: rgba(255,255,255,0.05); color: rgba(255,255,255,0.4); }
-        .sb-solo.on { background: #f1c40f; color: #111; }
-
-        .sb-shortcuts-card {
-          background: rgba(255,255,255,0.02); border: 1px solid rgba(255,255,255,0.05);
-          border-radius: 8px; padding: 0.85rem;
-          display: flex; flex-direction: column; gap: 0.45rem;
-        }
-        .sb-shortcut-row {
-          display: flex; align-items: center; justify-content: space-between;
-          font-size: 0.75rem; color: rgba(255,255,255,0.35);
-        }
-      `}</style>
 
       {toast && (
-        <div key={toast.id} className="sb-toast">
-          <span className="sb-toast-icon">{toast.icon}</span>
+        <div key={toast.id} className={styles['sb-toast']}>
+          <span className={styles['sb-toast-icon']}>{toast.icon}</span>
           {toast.label}
         </div>
       )}
 
-      <aside data-onboarding="practice-02" className={`sidebar-root ${actuallyOpen ? 'open' : 'closed'}`}>
+      <aside data-onboarding="practice-02" className={`${styles['sidebar-root']} ${actuallyOpen ? styles.open : styles.closed}`}>
         {!forceDisabled && (
           <button
-            className="sidebar-toggle"
+            className={cx(styles['sidebar-toggle'], styles.button)}
             onClick={() => setIsOpen(o => !o)}
-            style={{ right: actuallyOpen ? '0.85rem' : '11px', transition: 'right 0.35s cubic-bezier(.4,0,.2,1)' }}
+            style={{ right: actuallyOpen ? '0.85rem' : '11px' }}
           >
             {actuallyOpen ? '›' : '‹'}
           </button>
         )}
 
-        <div className="sidebar-icons">
-          <div className={`sidebar-icon-dot ${isLoaded ? 'active' : ''}`} />
-          <div className={`sidebar-icon-dot ${isPlaying ? 'active' : ''}`} />
-          <div className={`sidebar-icon-dot ${tracks.length > 0 ? 'active' : ''}`} />
+        <div className={styles['sidebar-icons']}>
+          <div className={`${styles['sidebar-icon-dot']} ${isLoaded ? styles.active : ''}`} />
+          <div className={`${styles['sidebar-icon-dot']} ${isPlaying ? styles.active : ''}`} />
+          <div className={`${styles['sidebar-icon-dot']} ${tracks.length > 0 ? styles.active : ''}`} />
         </div>
 
-        <div className="sidebar-content">
-          <div style={{ paddingTop: '2.4rem' }}>
-            <p className="sb-section-label" style={{ opacity: 0.5 }}>{t('sections.panel')}</p>
-            <h2 style={{ margin: '0.2rem 0 0', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold,#dcb98a)' }}>{t('sections.controls')}</h2>
+        <div className={styles['sidebar-content']}>
+          <div className={styles.panel}>
+            <p className={cx(styles['sb-section-label'], styles.panelText)}>{t('sections.panel')}</p>
+            <h2 className={styles.controlsHeading}>{t('sections.controls')}</h2>
           </div>
 
           <div>
-            <p className="sb-section-label">{t('sections.speed')}</p>
+            <p className={styles['sb-section-label']}>{t('sections.speed')}</p>
             <SpeedSelect value={speed} onChange={setSpeed} disabled={!isLoaded} />
-            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.3rem', marginTop: '0.4rem' }}>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginRight: 'auto', alignSelf: 'center' }}>{t('labels.shortcuts')}</span>
-              <span className="sb-kbd">−</span>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>/</span>
-              <span className="sb-kbd">+</span>
+            <div className={styles.shortcutsRow}>
+              <span className={styles.shortcutsLabel}>{t('labels.shortcuts')}</span>
+              <span className={styles['sb-kbd']}>−</span>
+              <span className={styles.label}>/</span>
+              <span className={styles['sb-kbd']}>+</span>
             </div>
           </div>
 
           {effectiveBpm !== null && (
-            <div style={{ textAlign: 'center', background: 'rgba(220,185,138,0.05)', padding: '0.5rem', borderRadius: '7px' }}>
-              <span style={{ fontSize: '0.75rem', color: 'var(--gold)', fontWeight: 'bold' }}>{t('labels.bpm', { value: effectiveBpm })}</span>
+            <div className={styles.bpmBox}>
+              <span className={styles.bpmLabel}>{t('labels.bpm', { value: effectiveBpm })}</span>
             </div>
           )}
 
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-            <p className="sb-section-label">{t('sections.tools')}</p>
-            <button className={`sb-toggle-btn ${isMetronomeOn ? 'on' : ''}`} onClick={handleMetronome} disabled={!isLoaded}>
-              {isMetronomeOn ? '🔴' : '⚪️'} {t('labels.metronome')} <span className="sb-kbd">M</span>
+          <div className={styles.toolsStack}>
+            <p className={styles['sb-section-label']}>{t('sections.tools')}</p>
+            <button className={`${styles['sb-toggle-btn']} ${isMetronomeOn ? styles.on : ''}`} onClick={handleMetronome} disabled={!isLoaded}>
+              {isMetronomeOn ? '🔴' : '⚪️'} {t('labels.metronome')} <span className={styles['sb-kbd']}>M</span>
             </button>
-            <button className={`sb-toggle-btn ${isCountIn ? 'on' : ''}`} onClick={handleCountIn} disabled={!isLoaded}>
+            <button className={`${styles['sb-toggle-btn']} ${isCountIn ? styles.on : ''}`} onClick={handleCountIn} disabled={!isLoaded}>
               {isCountIn ? '🔴' : '⚪️'} {t('labels.countIn')}
             </button>
-            <button className={`sb-toggle-btn loop ${isLooping ? 'on' : ''}`} onClick={handleLooping} disabled={!isLoaded}>
-              {isLooping ? '🟣' : '⚪️'} {t('labels.loop')} <span className="sb-kbd">L</span>
+            <button className={`${styles['sb-toggle-btn']} ${styles.loop} ${isLooping ? styles.on : ''}`} onClick={handleLooping} disabled={!isLoaded}>
+              {isLooping ? '🟣' : '⚪️'} {t('labels.loop')} <span className={styles['sb-kbd']}>L</span>
             </button>
-            <button className={`sb-toggle-btn sel ${hasSelection ? 'on' : ''}`} onClick={clearSelection} disabled={!isLoaded || !hasSelection}>
+            <button className={`${styles['sb-toggle-btn']} ${styles.sel} ${hasSelection ? styles.on : ''}`} onClick={clearSelection} disabled={!isLoaded || !hasSelection}>
               {hasSelection ? `✖️ ${t('labels.clearSelection')}` : `🖱️ ${t('labels.dragToSelect')}`}
             </button>
           </div>
 
-          <hr className="sb-divider" />
+          <hr className={styles['sb-divider']} />
 
           <div>
-            <p className="sb-section-label">{t('sections.playback')}</p>
-            <div className="sb-transport">
-              <button className="sb-play" onClick={handlePlayPause} disabled={!isLoaded}>
+            <p className={styles['sb-section-label']}>{t('sections.playback')}</p>
+            <div className={styles['sb-transport']}>
+              <button className={styles['sb-play']} onClick={handlePlayPause} disabled={!isLoaded}>
                 {isPlaying ? `⏸ ${t('labels.pause')}` : `▶ ${t('labels.play')}`}
               </button>
-              <button className="sb-stop" onClick={handleStop} disabled={!isLoaded}>⏹</button>
+              <button className={styles['sb-stop']} onClick={handleStop} disabled={!isLoaded}>⏹</button>
             </div>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.45rem' }}>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)' }}>Play / Pause</span>
-              <span className="sb-kbd">Espacio</span>
-              <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.2)', marginLeft: '0.75rem' }}>Stop</span>
-              <span className="sb-kbd">Esc</span>
+            <div className={styles.row}>
+              <span className={styles.label}>Play / Pause</span>
+              <span className={styles['sb-kbd']}>Espacio</span>
+              <span className={styles.openLabel}>Stop</span>
+              <span className={styles['sb-kbd']}>Esc</span>
             </div>
           </div>
 
           {tracks.length > 0 && (
             <>
-              <hr className="sb-divider" />
+              <hr className={styles['sb-divider']} />
               <div>
-                <p className="sb-section-label">{t('sections.tracks', { count: tracks.length })}</p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <p className={styles['sb-section-label']}>{t('sections.tracks', { count: tracks.length })}</p>
+                <div className={styles.toolsStack}>
                   {tracks.map((track, index) => (
-                    <div key={index} className={`sb-track ${activeTrackIndex === index ? 'active' : ''}`}>
-                      <div className="sb-track-header">
-                        <span className="sb-track-name">{track.name}</span>
-                        <button className="sb-track-eye" onClick={() => handleTrackView(track, index)}>
+                    <div key={index} className={`${styles['sb-track']} ${activeTrackIndex === index ? styles.active : ''}`}>
+                      <div className={styles['sb-track-header']}>
+                        <span className={styles['sb-track-name']}>{track.name}</span>
+                        <button className={styles['sb-track-eye']} onClick={() => handleTrackView(track, index)}>
                           <svg viewBox="0 0 24 24" width="14" height="14" stroke="currentColor" strokeWidth="2" fill="none"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z" /><circle cx="12" cy="12" r="3" /></svg>
                         </button>
                       </div>
-                      <div className="sb-track-vol">
-                        <span className="sb-vol-label">{t('labels.vol')}</span>
-                        <input type="range" className="sb-vol-slider" min="0" max="2" step="0.1" defaultValue="1" onChange={(e) => changeVolume(track, e.target.value)} />
+                      <div className={styles['sb-track-vol']}>
+                        <span className={styles['sb-vol-label']}>{t('labels.vol')}</span>
+                        <input type="range" className={styles['sb-vol-slider']} min="0" max="2" step="0.1" defaultValue="1" onChange={(e) => changeVolume(track, e.target.value)} />
                       </div>
-                      <div className="sb-track-actions">
-                        <button className={`sb-mute ${track.playbackInfo?.isMute ? 'on' : ''}`} onClick={() => toggleMute(track)}>{t('labels.mute')}</button>
-                        <button className={`sb-solo ${track.playbackInfo?.isSolo ? 'on' : ''}`} onClick={() => toggleSolo(track)}>{t('labels.solo')}</button>
+                      <div className={styles['sb-track-actions']}>
+                        <button className={`${styles['sb-mute']} ${track.playbackInfo?.isMute ? styles.on : ''}`} onClick={() => toggleMute(track)}>{t('labels.mute')}</button>
+                        <button className={`${styles['sb-solo']} ${track.playbackInfo?.isSolo ? styles.on : ''}`} onClick={() => toggleSolo(track)}>{t('labels.solo')}</button>
                       </div>
                     </div>
                   ))}

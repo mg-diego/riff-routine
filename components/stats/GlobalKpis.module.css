@@ -1,0 +1,80 @@
+.totalTimeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(190px, 1fr));
+  gap: 1rem;
+}
+
+.totalTimeBox {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.04);
+}
+
+.totalTimeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.6rem;
+}
+
+.text {
+  color: var(--text);
+  font-size: 2.4rem;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1;
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.label {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-family: var(--font-body), sans-serif;
+  font-weight: 600;
+}
+
+.daysUnitText {
+  color: var(--text);
+  font-size: 2.4rem;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1;
+}
+
+.daysUnitLabel {
+  font-size: 0.9rem;
+  color: var(--muted);
+  font-family: var(--font-body), sans-serif;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+
+.currentStreak {
+  padding: 1.5rem;
+  border-radius: 12px;
+}
+
+.daysUnitText2 {
+  font-size: 2.4rem;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1;
+}
+
+.daysUnitLabel2 {
+  font-size: 0.9rem;
+  font-family: var(--font-body), sans-serif;
+  font-weight: 600;
+  margin-left: 0.3rem;
+}
+
+.streakText {
+  margin: 0.4rem 0 0;
+  font-size: 0.72rem;
+  color: #fb923c;
+  font-weight: 600;
+}

@@ -1,4 +1,3 @@
-@import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@400;500;600&display=swap');
 
 *,
 *::before,
@@ -7,17 +6,30 @@
 }
 
 :root {
+  /* Brand */
   --gold: #dcb98a;
   --gold-dark: #b8945f;
+  --gold-rgb: 220, 185, 138; /* for alpha variants: rgba(var(--gold-rgb), 0.3) */
+
+  /* Surfaces & text */
   --bg: #111;
   --surface: #1c1c1c;
   --surface2: #252525;
   --text: #f0e8dc;
   --muted: #6a5f52;
+
+  /* Status / accents */
+  --danger: #e74c3c;
+  --danger-rgb: 231, 76, 60;
+  --success: #4ade80;
+  --success-rgb: 74, 222, 128;
+  --violet: #a78bfa; /* teacher mode */
+  --violet-light: #c4b5fd;
+  --violet-rgb: 167, 139, 250;
 }
 
 body {
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body), sans-serif;
   background-color: var(--bg);
   color: var(--text);
   margin: 0;
@@ -62,7 +74,7 @@ header {
 }
 
 header h1 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display), sans-serif;
   font-size: 2.4rem;
   letter-spacing: 0.06em;
   color: var(--gold);
@@ -121,7 +133,7 @@ header span {
 }
 
 .sidebar h2 {
-  font-family: 'Bebas Neue', sans-serif;
+  font-family: var(--font-display), sans-serif;
   font-size: 1.8rem;
   color: var(--text);
   margin: 0;
@@ -141,7 +153,7 @@ button {
   font-size: 0.9rem;
   border-radius: 6px;
   cursor: pointer;
-  font-family: 'DM Sans', sans-serif;
+  font-family: var(--font-body), sans-serif;
   font-weight: 600;
   transition: all 0.2s;
   letter-spacing: 0.02em;
@@ -368,6 +380,16 @@ button:disabled {
   width: 2px;
 }
 
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(4px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 @keyframes spin {
   to {
     transform: rotate(360deg);
@@ -406,3 +428,55 @@ button:disabled {
   scrollbar-color: rgba(220, 185, 138, 0.3) var(--surface);
 }
 
+/* ── Shared UI primitives ─────────────────────────── */
+.page-title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 3rem;
+  color: var(--gold);
+  margin: 0;
+  line-height: 1;
+}
+
+.page-subtitle {
+  color: var(--muted);
+  margin: 0.5rem 0 0;
+  font-size: 0.9rem;
+}
+
+.section-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
+.surface-card {
+  background: var(--surface);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.empty-state {
+  background: var(--surface);
+  padding: 4rem 2rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(220, 185, 138, 0.3);
+  text-align: center;
+}
+
+.loader-container {
+  display: flex;
+  justify-content: center;
+  padding: 4rem;
+}
+
+.alert-error {
+  background: rgba(231, 76, 60, 0.12);
+  border: 1px solid rgba(231, 76, 60, 0.35);
+  border-radius: 8px;
+  padding: 0.75rem 1rem;
+  color: #e74c3c;
+  font-size: 0.88rem;
+}

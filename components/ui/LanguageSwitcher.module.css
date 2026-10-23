@@ -1,0 +1,15 @@
+.button {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-weight: bold;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+  margin-left: 1rem;
+}
+
+.button:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+}

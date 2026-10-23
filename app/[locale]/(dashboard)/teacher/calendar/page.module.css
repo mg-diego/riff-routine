@@ -1,0 +1,199 @@
+.labelStack {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  font-family: var(--font-body), sans-serif;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.stack {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: rgba(0,0,0,0.2);
+}
+
+.block {
+  padding: 1rem;
+  border-right: 1px solid rgba(255,255,255,0.05);
+}
+
+.labelStackBlock {
+  padding: 1rem;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.hourStack {
+  display: flex;
+  flex-direction: column;
+  max-height: 600px;
+  overflow-y: auto;
+}
+
+.hourGrid {
+  display: grid;
+  grid-template-columns: 60px repeat(7, 1fr);
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+
+.row {
+  padding: 1rem 0.5rem;
+  text-align: center;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+}
+
+.box {
+  border-right: 1px solid rgba(255,255,255,0.02);
+  min-height: 60px;
+  padding: 4px;
+  cursor: pointer;
+  transition: background 0.2s;
+  background: transparent;
+}
+
+.box:hover {
+  background: rgba(255,255,255,0.02);
+}
+
+.studentNameStack {
+  background: rgba(var(--violet-rgb), 0.15);
+  border: 1px solid rgba(var(--violet-rgb), 0.3);
+  border-radius: 6px;
+  padding: 0.4rem;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+}
+
+.label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--violet-light);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.button {
+  background: none;
+  border: none;
+  color: rgba(var(--danger-rgb), 0.7);
+  cursor: pointer;
+  padding: 0;
+  align-self: flex-end;
+}
+
+.titleBox {
+  background: var(--surface);
+  border: 1px solid rgba(var(--violet-rgb), 0.2);
+  border-radius: 14px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 400px;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+}
+
+.titleSubheading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  color: var(--violet-light);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.titleRowButton {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.titleBoxStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  max-height: 300px;
+  overflow-y: auto;
+}
+
+.text {
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-align: center;
+  padding: 1rem 0;
+}
+
+.titleBoxButton {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  cursor: pointer;
+  color: var(--text);
+  text-align: left;
+  transition: background 0.2s;
+}
+
+.titleBoxButton:hover {
+  background: rgba(255,255,255,0.08);
+}
+
+.titleBoxRow {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: rgba(var(--violet-rgb), 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--violet-light);
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.usernameLabel {
+  font-size: 0.9rem;
+  font-weight: 600;
+}

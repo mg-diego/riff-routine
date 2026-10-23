@@ -1,0 +1,28 @@
+.row {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.block {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.titleText {
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.subtitleText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}

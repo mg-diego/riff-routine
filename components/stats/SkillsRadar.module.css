@@ -1,0 +1,150 @@
+.tooltipLabelBox {
+  background: #111;
+  padding: 0.8rem;
+  border-radius: 8px;
+  min-width: 180px;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.text {
+  margin: 0 0 0.3rem 0;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.tooltipLabelText {
+  margin: 0 0 0.8rem 0;
+  color: var(--text);
+  font-weight: 600;
+}
+
+.label {
+  font-size: 0.65rem;
+  color: var(--gold);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 700;
+}
+
+.tooltipLabelBoxText {
+  margin: 0.2rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.row {
+  background: var(--surface);
+  border-radius: 12px;
+  height: 450px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.noDataStack {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.noDataStackLabel {
+  font-size: 2rem;
+}
+
+.noDataText {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.titleStack {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.03);
+  height: 450px;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+.button {
+  position: absolute;
+  top: 1.5rem;
+  right: 1.5rem;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.button:hover {
+  color: var(--text);
+}
+
+.titleSubheading {
+  color: var(--text);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  margin-bottom: 0.5rem;
+  text-align: center;
+}
+
+.stack {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  overflow-y: auto;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  margin-top: 0.5rem;
+}
+
+.box {
+  background: rgba(255,255,255,0.02);
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.subheading {
+  margin: 0 0 0.4rem 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.titleStackText {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.tooltipLabel {
+  flex: 1;
+  width: 100%;
+  position: relative;
+}
+
+.footerNoteText {
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.5rem;
+  transition: opacity 0.2s;
+}

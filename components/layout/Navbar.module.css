@@ -1,0 +1,267 @@
+.layer {
+  position: absolute;
+  bottom: -4px;
+  right: -6px;
+  font-size: 0.48rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  line-height: 1;
+  padding: 2px 4px;
+  border-radius: 4px;
+  font-family: var(--font-body), sans-serif;
+  pointer-events: none;
+  white-space: nowrap;
+  box-shadow: 0 1px 4px rgba(0,0,0,0.4);
+}
+
+.modeStudentRow {
+  display: flex;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  padding: 3px;
+  gap: 2px;
+}
+
+.modeStudentButton {
+  padding: 0.3rem 0.75rem;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  letter-spacing: 0.02em;
+  transition: all 0.18s ease;
+}
+
+.activateTeacherNav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 1.25rem 3rem;
+  background: rgba(13,13,13,0.92);
+  backdrop-filter: blur(12px);
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+.block {
+  width: 28px;
+  height: 28px;
+  position: relative;
+}
+
+.rowLinkBlock {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+.label {
+  color: var(--text);
+}
+
+.list {
+  display: flex;
+  gap: 2.5rem;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-body), sans-serif;
+  align-items: center;
+}
+
+.activateTeacherRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.profile {
+  position: relative;
+}
+
+.row {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1px solid rgba(var(--gold-rgb), 0.3);
+  color: var(--gold);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-family: var(--font-display), sans-serif;
+  cursor: pointer;
+  font-size: 1.1rem;
+  text-transform: uppercase;
+  transition: all 0.2s ease;
+  position: relative;
+  overflow: visible;
+}
+
+.dot {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  overflow: hidden;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.profileRow {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.profileStack {
+  position: absolute;
+  top: calc(100% + 0.75rem);
+  right: 0;
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 0.5rem;
+  display: flex;
+  flex-direction: column;
+  min-width: 220px;
+  z-index: 50;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+  font-family: var(--font-body), sans-serif;
+}
+
+.emailRow {
+  padding: 0.75rem 0.5rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  margin-bottom: 0.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.emailLabel {
+  font-size: 0.75rem;
+  color: var(--muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 140px;
+}
+
+.profileStackLabel {
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.07em;
+  padding: 2px 6px;
+  border-radius: 5px;
+  flex-shrink: 0;
+  margin-left: 0.5rem;
+}
+
+.box {
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+  margin: 0.25rem 0;
+}
+
+.logoutButton {
+  background: transparent;
+  border: none;
+  color: var(--red, var(--danger));
+  text-align: left;
+  padding: 0.6rem 0.5rem;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: background 0.2s ease;
+}
+
+.logoutButton:hover {
+  background: rgba(var(--danger-rgb), 0.1);
+}
+
+.rowLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.link {
+  text-decoration: none;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+.activateTeacherBox {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: rgba(var(--violet-rgb), 0.8);
+  text-decoration: none;
+  padding: 0.3rem 0.75rem;
+  border: 1px solid rgba(var(--violet-rgb), 0.2);
+  border-radius: 6px;
+  transition: all 0.2s;
+  font-family: var(--font-body), sans-serif;
+  white-space: nowrap;
+}
+
+.profileLink {
+  text-decoration: none;
+  color: var(--text);
+  padding: 0.6rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 500;
+  transition: background 0.2s ease;
+  display: block;
+}
+
+.upgradeProRow {
+  text-decoration: none;
+  padding: 0.6rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  color: var(--gold);
+}
+
+.profileRowLink {
+  text-decoration: none;
+  color: #a855f7;
+  padding: 0.6rem 0.5rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  transition: background 0.2s ease;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.profileLink:hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.upgradeProRow:hover {
+  background: rgba(var(--gold-rgb), 0.07);
+}
+
+.profileRowLink:hover {
+  background: rgba(168,85,247,0.1);
+}
+
+.activateTeacherBox:hover {
+  background: rgba(var(--violet-rgb), 0.08);
+  border-color: rgba(var(--violet-rgb), 0.4);
+}

@@ -1,0 +1,442 @@
+/* Base styles (element-specific classes below override them) */
+.input {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.55rem 0.85rem;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: var(--font-body), sans-serif;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+
+.btnPrimary {
+  padding: 0.55rem 1.1rem;
+  background: var(--gold);
+  border: none;
+  border-radius: 8px;
+  color: #111;
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  flex-shrink: 0;
+}
+
+.btnGhost {
+  padding: 0.55rem 1.1rem;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  color: var(--muted);
+  font-weight: 600;
+  font-size: 0.82rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.btnPurple {
+  padding: 0.55rem 1.1rem;
+  background: rgba(var(--violet-rgb), 0.15);
+  border: 1px solid rgba(var(--violet-rgb), 0.35);
+  border-radius: 8px;
+  color: var(--violet-light);
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+  flex-shrink: 0;
+}
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  padding: 3px 8px;
+  border-radius: 6px;
+  font-family: var(--font-body), sans-serif;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+.section {
+  background: var(--surface);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.block {
+  padding: 1.25rem 1.5rem;
+}
+
+.heading {
+  font-size: 0.95rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.text {
+  font-size: 0.8rem;
+  margin: 0.2rem 0 0;
+}
+
+.stack {
+  padding: 1.25rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.text2 {
+  color: var(--text);
+  font-size: 0.875rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.descriptionText {
+  color: var(--muted);
+  font-size: 0.78rem;
+  margin: 0.15rem 0 0;
+}
+
+.button {
+  width: 44px;
+  height: 24px;
+  border-radius: 12px;
+  border: none;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.layer {
+  position: absolute;
+  top: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  transition: left 0.2s, background 0.2s;
+}
+
+.labelStack {
+  max-width: 680px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.labelText {
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin: 0 0 0.3rem;
+  opacity: 0.7;
+}
+
+.title {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.5rem;
+  color: var(--gold);
+  margin: 0;
+  line-height: 1;
+}
+
+.usernameRow {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  flex-wrap: wrap;
+}
+
+.initialsBlock {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.initialsRow {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--gold-rgb), 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  overflow: hidden;
+  position: relative;
+}
+
+.image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.initialsLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.4rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+.usernameRowInner {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+
+.usernameRowInner:hover {
+  opacity: 1;
+}
+
+.hiddenFileInput {
+  display: none;
+}
+
+.username {
+  flex: 1;
+  min-width: 200px;
+}
+
+.usernameRow2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.usernameFieldLabel {
+  color: var(--muted);
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.usernamePlaceholderStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.usernamePlaceholderInput {
+  width: 100%;
+}
+
+.upgradeRow {
+  display: flex;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+  padding-top: 0.25rem;
+}
+
+.lifetimeManageText {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.feature1Stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.usernamePlaceholderStackRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.usernamePlaceholderStackRowInner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(var(--violet-rgb), 0.15);
+  border: 1px solid rgba(var(--violet-rgb), 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.usernamePlaceholderStackLabel {
+  font-size: 0.82rem;
+  color: var(--muted);
+}
+
+.activatingRow {
+  display: flex;
+  justify-content: flex-start;
+  padding-top: 0.25rem;
+}
+
+.activeRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  background: rgba(var(--violet-rgb), 0.08);
+  border: 1px solid rgba(var(--violet-rgb), 0.2);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+}
+
+.activeRowInner {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  background: rgba(var(--violet-rgb), 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.activeLabel {
+  font-size: 0.82rem;
+  color: var(--violet-light);
+  font-weight: 600;
+}
+
+.bioPlaceholderTextarea {
+  resize: vertical;
+  line-height: 1.6;
+  font-family: var(--font-body), sans-serif;
+}
+
+.deactivateRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.deactivateButton {
+  font-size: 0.78rem;
+  color: rgba(var(--violet-rgb), 0.5);
+  border-color: rgba(var(--violet-rgb), 0.15);
+}
+
+.newPasswordStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.6rem;
+}
+
+.passwordErrorText {
+  color: var(--danger);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.passwordSaveRow {
+  display: flex;
+  justify-content: flex-end;
+}
+
+.labelStackBlock {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 1.25rem;
+}
+
+.labelStackRow {
+  display: flex;
+  gap: 0.4rem;
+}
+
+.labelStackButton {
+  padding: 0.4rem 0.85rem;
+  border-radius: 6px;
+  font-size: 0.78rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.prefsSaveRow {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 1rem;
+}
+
+.deleteButton {
+  color: var(--danger);
+  border-color: rgba(var(--danger-rgb), 0.3);
+}
+
+.deleteConfirmRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.deleteConfirmLabel {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.confirmYesButton {
+  background: var(--danger);
+}
+
+.block4 {
+  position: fixed;
+  bottom: 24px;
+  right: 24px;
+  color: #fff;
+  padding: 12px 20px;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 0.85rem;
+  font-family: var(--font-body), sans-serif;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  z-index: 9998;
+}
+
+.inputFocusable:focus {
+  border-color: rgba(var(--gold-rgb), 0.4);
+}
+
+.confirmPasswordFocusable:focus {
+  border-color: rgba(var(--gold-rgb), 0.4);
+}
+
+.usernamePlaceholderInput:focus {
+  border-color: rgba(var(--gold-rgb), 0.4);
+}
+
+.bioPlaceholderTextarea:focus {
+  border-color: rgba(var(--violet-rgb), 0.4);
+}

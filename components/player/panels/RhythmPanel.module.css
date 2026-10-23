@@ -1,0 +1,286 @@
+.row {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  line-height: 1;
+  min-width: 24px;
+}
+
+.row2 {
+  display: flex;
+  align-items: center;
+  font-size: 0.6rem;
+  font-weight: 700;
+  margin-bottom: -4px;
+  opacity: 0.9;
+}
+
+.label {
+  border-top: 1px solid currentColor;
+  border-left: 1px solid currentColor;
+  width: 3px;
+  height: 4px;
+}
+
+.label2 {
+  padding: 0 3px;
+  transform: translateY(-1px);
+}
+
+.label3 {
+  border-top: 1px solid currentColor;
+  border-right: 1px solid currentColor;
+  width: 3px;
+  height: 4px;
+}
+
+.noteLabel {
+  font-size: 1.2rem;
+}
+
+.titleBox {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  width: 100%;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.titleSubheading {
+  color: var(--gold);
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-size: 1.4rem;
+  font-family: var(--font-display), sans-serif;
+  letter-spacing: 0.05em;
+}
+
+.descriptionText {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+  line-height: 1.5;
+  max-width: 600px;
+}
+
+.generateRow {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  background: rgba(255,255,255,0.03);
+  padding: 0.4rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.block {
+  position: relative;
+}
+
+.button {
+  background: transparent;
+  color: var(--text);
+  border: none;
+  padding: 0.4rem 0.8rem;
+  outline: none;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.generateRowLabel {
+  font-size: 0.7em;
+  opacity: 0.6;
+  transition: transform 0.2s;
+}
+
+.layer {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 10px;
+  padding: 0.35rem;
+  z-index: 100;
+  min-width: 180px;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  animation: fadeUp 0.12s ease;
+}
+
+.generateRowButton {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.75rem;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-body), sans-serif;
+  transition: background 0.1s;
+}
+
+.generateRowButtonLabel {
+  float: right;
+  opacity: 0.7;
+}
+
+.generateButton {
+  background: var(--gold);
+  color: #111;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+}
+
+.sequencePreviewBox {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 1rem;
+  border-radius: 8px;
+  margin-bottom: 1.5rem;
+  min-height: 80px;
+}
+
+.sequencePreviewText {
+  margin: 0 0 0.8rem 0;
+  color: rgba(var(--gold-rgb), 0.7);
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.symbolRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.row4 {
+  display: flex;
+  align-items: center;
+  background: rgba(var(--gold-rgb), 0.1);
+  border: 1px solid rgba(var(--gold-rgb), 0.3);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.symbolLabel {
+  padding: 0.4rem 0.6rem;
+  color: var(--gold);
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.label8 {
+  font-size: 1.1rem;
+}
+
+.sequencePreviewBoxButton {
+  background: rgba(0,0,0,0.2);
+  border: none;
+  border-left: 1px solid rgba(var(--gold-rgb), 0.2);
+  padding: 0.4rem 0.6rem;
+  transition: color 0.2s;
+}
+
+.sequencePreviewBoxLabel {
+  color: rgba(255,255,255,0.2);
+  font-size: 0.8rem;
+}
+
+.addMeasureText {
+  margin: 0 0 0.8rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+  gap: 0.6rem;
+}
+
+.symbolButton {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.tipsText {
+  margin: 1rem 0 0 0;
+  color: rgba(255,255,255,0.4);
+  font-size: 0.8rem;
+  font-style: italic;
+}
+
+.symbolButton:hover {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+}
+
+/* Dropdown options */
+.generateRowButton {
+  background: transparent;
+  color: var(--text);
+  font-weight: 400;
+}
+
+.generateRowButton:not(.generateRowButtonActive):hover {
+  background: rgba(255,255,255,0.06);
+}
+
+.generateRowButtonActive {
+  background: rgba(var(--gold-rgb), 0.12);
+  color: var(--gold);
+  font-weight: 700;
+}
+
+/* Remove-measure button (disabled while only one measure is left) */
+.sequencePreviewBoxButton {
+  color: var(--muted);
+  cursor: pointer;
+}
+
+.sequencePreviewBoxButton:hover:not(:disabled) {
+  color: var(--danger);
+}
+
+.sequencePreviewBoxButton:disabled {
+  color: rgba(255,255,255,0.2);
+  cursor: not-allowed;
+}

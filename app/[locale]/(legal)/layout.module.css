@@ -1,0 +1,19 @@
+.row {
+  min-height: 100vh;
+  background: var(--bg);
+  display: flex;
+  justify-content: center;
+  padding: 3rem 1.5rem;
+}
+
+.block {
+  width: 100%;
+  max-width: 860px;
+}
+
+.row2 {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2.5rem;
+}

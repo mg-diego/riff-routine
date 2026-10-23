@@ -2,10 +2,12 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
-import { supabase } from '../../../lib/supabase';
-import Navbar from '../../../components/layout/Navbar';
-import { Footer } from '../../../components/layout/Footer';
+import { supabase } from '@/lib/supabase';
+import Navbar from '@/components/layout/Navbar';
+import { Footer } from '@/components/layout/Footer';
 import { OnboardingWrapper } from '@/components/onboarding/OnboardingWrapper';
+import { ProModalHost } from '@/components/ui/ProModalHost';
+import styles from './layout.module.css';
 
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -31,10 +33,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   if (!isAuthenticated) return null;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', width: '100%' }}>
+    <div className={styles.stack}>
       <OnboardingWrapper />
+      <ProModalHost />
       <Navbar />
-      <main style={{ flex: 1, padding: '2.5rem 2rem', width: '100%', maxWidth: '1600px', margin: '0 auto' }}>
+      <main className={styles.main}>
         {children}
       </main>
       <Footer />

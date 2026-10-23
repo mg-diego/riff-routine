@@ -13,26 +13,26 @@ export function useScaleLogic(rootNote: string, scaleKey: string, viewMode: stri
     if (viewMode === 'full') return null;
 
     const N = scaleNotes.length;
-    let baseLowest = STANDARD_BASES[5];
-    let stringBasesInternal = STANDARD_BASES.map(b => b - baseLowest);
-    let eRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[5]);
+    const baseLowest = STANDARD_BASES[5];
+    const stringBasesInternal = STANDARD_BASES.map(b => b - baseLowest);
+    const eRootIndex = CHROMATIC_NOTES.indexOf(STANDARD_TUNING[5]);
 
     let positions: { activeNotes: any[], startFret: number, title: string, id: string }[] = [];
 
     if (N <= 4) {
-      let scalePitches: number[] = [];
+      const scalePitches: number[] = [];
       for (let pitch = 0; pitch <= 60; pitch++) {
-        let noteName = CHROMATIC_NOTES[(eRootIndex + pitch) % 12];
+        const noteName = CHROMATIC_NOTES[(eRootIndex + pitch) % 12];
         if (scaleNotes.includes(noteName)) scalePitches.push(pitch);
       }
 
       for (let p = 0; p < N; p++) {
-        let activeNotes = [];
-        let startNote = scaleNotes[p];
+        const activeNotes = [];
+        const startNote = scaleNotes[p];
         let baseFret = (CHROMATIC_NOTES.indexOf(startNote) - eRootIndex + 12) % 12;
         if (baseFret === 0) baseFret += 12;
 
-        let startPitch = baseFret;
+        const startPitch = baseFret;
         let startIndex = scalePitches.indexOf(startPitch);
         if (startIndex === -1) startIndex = scalePitches.indexOf(startPitch + 12);
 
@@ -42,15 +42,15 @@ export function useScaleLogic(rootNote: string, scaleKey: string, viewMode: stri
         let notesOnString = 0;
 
         while (currentIndex < scalePitches.length && currentString >= 0) {
-          let pitch = scalePitches[currentIndex];
-          let fretSame = pitch - stringBasesInternal[currentString];
-          let fretNext = currentString > 0 ? pitch - stringBasesInternal[currentString - 1] : -1;
+          const pitch = scalePitches[currentIndex];
+          const fretSame = pitch - stringBasesInternal[currentString];
+          const fretNext = currentString > 0 ? pitch - stringBasesInternal[currentString - 1] : -1;
           let placeOnSame = false;
 
           if (notesOnString === 0) {
             placeOnSame = true;
           } else if (notesOnString < 2 && fretSame <= currentFret + 5) {
-            let costSame = (fretSame - currentFret) * 1;
+            const costSame = (fretSame - currentFret) * 1;
             let costNext = Infinity;
             if (fretNext >= 0) {
               if (fretNext < currentFret) costNext = (currentFret - fretNext) * 3 + 2;
@@ -70,22 +70,22 @@ export function useScaleLogic(rootNote: string, scaleKey: string, viewMode: stri
           }
         }
 
-        let string6Note = activeNotes.find(n => n.string === 5);
-        let startFret = string6Note ? string6Note.fret : 0;
+        const string6Note = activeNotes.find(n => n.string === 5);
+        const startFret = string6Note ? string6Note.fret : 0;
         positions.push({ activeNotes, startFret, title: t('positionTitle', { pos: String(p + 1) }), id: String(p + 1) });
       }
     } else {
       const nps = N <= 5 ? 2 : 3;
       for (let p = 0; p < N; p++) {
         let activeNotes: { string: number, fret: number, note: string }[] = [];
-        let startNote = scaleNotes[p];
-        let baseFret = (CHROMATIC_NOTES.indexOf(startNote) - eRootIndex + 12) % 12;
+        const startNote = scaleNotes[p];
+        const baseFret = (CHROMATIC_NOTES.indexOf(startNote) - eRootIndex + 12) % 12;
         let currentPitch = baseFret;
 
         for (let s = 5; s >= 0; s--) {
           let found = 0;
           while (found < nps) {
-            let noteName = CHROMATIC_NOTES[(eRootIndex + currentPitch) % 12];
+            const noteName = CHROMATIC_NOTES[(eRootIndex + currentPitch) % 12];
             if (scaleNotes.includes(noteName)) {
               let fret = currentPitch - stringBasesInternal[s];
               if (fret < 0) { fret += 12; currentPitch += 12; }
@@ -96,7 +96,7 @@ export function useScaleLogic(rootNote: string, scaleKey: string, viewMode: stri
           }
         }
 
-        let string6Note = activeNotes.find(n => n.string === 5);
+        const string6Note = activeNotes.find(n => n.string === 5);
         let startFret = string6Note ? string6Note.fret : 0;
 
         if (startFret === 0) {
@@ -180,14 +180,14 @@ export function useScaleLogic(rootNote: string, scaleKey: string, viewMode: stri
       });
     }
 
-    let extendedPositions: { activeNotes: any[]; startFret: number; title: string; id: string }[] = [];
+    const extendedPositions: { activeNotes: any[]; startFret: number; title: string; id: string }[] = [];
 
     positions.forEach(pos => {
       extendedPositions.push(pos);
 
-      let newStartFret12 = pos.startFret + 12;
+      const newStartFret12 = pos.startFret + 12;
       if (newStartFret12 <= 24) {
-        let newActiveNotes = pos.activeNotes
+        const newActiveNotes = pos.activeNotes
           .map((n: { string: number; fret: number; note: string }) => ({ ...n, fret: n.fret + 12 }))
           .filter((n: { string: number; fret: number; note: string }) => n.fret <= 24);
 
@@ -201,9 +201,9 @@ export function useScaleLogic(rootNote: string, scaleKey: string, viewMode: stri
         }
       }
 
-      let newStartFret24 = pos.startFret + 24;
+      const newStartFret24 = pos.startFret + 24;
       if (newStartFret24 <= 24) {
-        let newActiveNotes = pos.activeNotes
+        const newActiveNotes = pos.activeNotes
           .map((n: { string: number; fret: number; note: string }) => ({ ...n, fret: n.fret + 24 }))
           .filter((n: { string: number; fret: number; note: string }) => n.fret <= 24);
 

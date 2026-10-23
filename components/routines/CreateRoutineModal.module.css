@@ -1,0 +1,47 @@
+/* Base styles (element-specific classes below override them) */
+.input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.93rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.nameLabelStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.2rem;
+}
+
+.nameLabelFieldLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.optionalLabel {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.descriptionPlaceholderTextarea {
+  resize: vertical;
+}
+
+.inputFocusable:focus {
+  border-color: var(--gold);
+}
+
+.descriptionPlaceholderTextarea:focus {
+  border-color: var(--gold);
+}

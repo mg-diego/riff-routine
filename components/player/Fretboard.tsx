@@ -1,5 +1,7 @@
 import React from 'react';
 import { CHROMATIC_NOTES, INTERVAL_NAMES, MARKED_FRETS, STANDARD_BASES, STANDARD_TUNING } from '@/lib/constants';
+import styles from './Fretboard.module.css';
+import { cx } from '@/lib/cx';
 
 const FINGER_COLORS: Record<number, string> = {
   1: '#3b82f6',
@@ -105,7 +107,7 @@ export function Fretboard({
       (STANDARD_BASES[a.string] + a.fret) - (STANDARD_BASES[b.string] + b.fret)
     );
 
-    let currentTime = audioCtx.currentTime;
+    const currentTime = audioCtx.currentTime;
     const strumDelay = isChordMode ? 0.04 : 0.3;
 
     sortedNotes.forEach((n: any, i: number) => {
@@ -145,22 +147,22 @@ export function Fretboard({
   const showHeader = title || (displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && (playRealSound || initAudio));
 
   return (
-    <div style={{ width: '100%', marginBottom: '3rem' }}>
+    <div className={styles.block}>
       {showHeader ? (
-        <div style={{ display: 'flex', justifyContent: title ? 'space-between' : 'flex-end', marginBottom: '1rem', padding: '0 1rem', alignItems: 'center' }}>
+        <div className={styles.row} style={{ justifyContent: title ? 'space-between' : 'flex-end' }}>
           {title && (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <h3 style={{ color: 'var(--gold)', margin: 0 }}>{title}</h3>
+            <div className={styles.row2}>
+              <h3 className={styles.subheading}>{title}</h3>
               {isDevMode && positionIndex !== undefined && setIsEditingPos && setDraftPosNotes && (
                 isCurrentlyEditing ? (
-                  <div style={{ display: 'flex', gap: '0.5rem' }}>
-                    <button onClick={() => setDraftPosNotes([])} style={{ background: '#e74c3c', color: '#fff', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                  <div className={styles.row3}>
+                    <button onClick={() => setDraftPosNotes([])} className={styles.button}>
                       Limpiar
                     </button>
-                    <button onClick={handleExportCustomPosition} style={{ background: '#34d399', color: '#111', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                    <button onClick={handleExportCustomPosition} className={styles.button2}>
                       Exportar a TS
                     </button>
-                    <button onClick={() => setIsEditingPos(null)} style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid var(--muted)', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.75rem' }}>
+                    <button onClick={() => setIsEditingPos(null)} className={styles.button3}>
                       Cancelar
                     </button>
                   </div>
@@ -168,7 +170,7 @@ export function Fretboard({
                   <button onClick={() => {
                     setIsEditingPos(positionIndex);
                     setDraftPosNotes(activeNotesList ? [...activeNotesList] : []);
-                  }} style={{ background: 'transparent', color: 'var(--muted)', border: '1px dashed rgba(255,255,255,0.2)', padding: '0.3rem 0.6rem', borderRadius: '4px', cursor: 'pointer', fontSize: '0.7rem', textTransform: 'uppercase' }}>
+                  }} className={styles.button4}>
                     ✎ Editar Posición
                   </button>
                 )
@@ -179,9 +181,7 @@ export function Fretboard({
           {displayedNotes && displayedNotes.length > 0 && !isCurrentlyEditing && (playRealSound || initAudio) && (
             <button
               onClick={handlePlayPos}
-              style={{ background: 'rgba(220,185,138,0.1)', color: 'var(--gold)', border: '1px solid var(--gold)', padding: '0.4rem 1rem', borderRadius: '8px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 600, display: 'flex', alignItems: 'center', gap: '0.4rem', transition: 'all 0.2s' }}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--gold)'; e.currentTarget.style.color = '#111'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'rgba(220,185,138,0.1)'; e.currentTarget.style.color = 'var(--gold)'; }}
+              className={styles.button5}
             >
               <span>▶</span> {isChordMode ? 'Escuchar Acorde' : 'Tocar Escala'}
             </button>
@@ -189,22 +189,11 @@ export function Fretboard({
         </div>
       ) : null}
 
-      <div style={{ width: '100%', paddingBottom: '1rem' }}>
-        <div style={{
-          position: 'relative',
-          display: 'grid',
-          gridTemplateColumns: `minmax(40px, 6%) ${fretCols}`,
-          background: '#2a1a0a',
-          border: isCurrentlyEditing ? '2px dashed #34d399' : '2px solid #8b5a2b',
-          borderRadius: '8px',
-          padding: '1% 1% 1% 0',
-          width: '100%',
-          transform: leftyMode ? 'scaleX(-1)' : 'none',
-          transition: 'border 0.2s'
-        }}>
+      <div className={styles.openNoteBlock}>
+        <div className={styles.grid} style={{ gridTemplateColumns: `minmax(40px, 6%) ${fretCols}`, border: isCurrentlyEditing ? '2px dashed #34d399' : '2px solid #8b5a2b', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
           <div></div>
           {Array.from({ length: 24 }).map((_, i) => (
-            <div key={`header-${i}`} style={{ display: 'flex', justifyContent: 'center', alignItems: 'flex-end', paddingBottom: '10px', color: 'var(--gold)', fontSize: 'clamp(8px, 1.2vw, 14px)', fontWeight: 'bold', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
+            <div key={`header-${i}`} className={styles.openNoteBlockRow} style={{ transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
               {i + 1}
             </div>
           ))}
@@ -224,9 +213,9 @@ export function Fretboard({
 
             return (
               <React.Fragment key={`string-${stringIndex}`}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px', color: '#fff', fontWeight: 'bold', fontSize: 'clamp(10px, 1.5vw, 16px)', paddingRight: '8px', transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
+                <div className={styles.openNoteRow} style={{ transform: leftyMode ? 'scaleX(-1)' : 'none' }}>
                   <span>{openNote}</span>
-                  <span style={{ color: nutColor, fontSize: nutSymbol === '✕' ? '1.4em' : '2.5em', width: '16px', textAlign: 'center', lineHeight: 1 }}>{nutSymbol}</span>
+                  <span className={styles.label} style={{ color: nutColor, fontSize: nutSymbol === '✕' ? '1.4em' : '2.5em' }}>{nutSymbol}</span>
                 </div>
 
                 {Array.from({ length: 24 }).map((_, fretIndex) => {
@@ -237,7 +226,7 @@ export function Fretboard({
                   const intervalNameStr = aliases[interval] || INTERVAL_NAMES[interval];
                   const currentOctave = baseOctave + Math.floor((stringRootIndex + fret) / 12);
 
-                  let isNoteInScale = scaleNotes?.includes(currentNote);
+                  const isNoteInScale = scaleNotes?.includes(currentNote);
                   let isInActiveList = false;
                   let currentFinger = 0;
 
@@ -332,55 +321,24 @@ export function Fretboard({
                   return (
                     <div key={`cell-${stringIndex}-${fret}`}
                       onClick={() => handleCellClick(stringIndex, fret, currentNote, currentOctave)}
-                      style={{
-                        position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        borderRight: 'clamp(1px, 0.2vw, 3px) solid silver', height: 'clamp(20px, 3.5vw, 42px)',
-                        backgroundColor: isMarked ? 'rgba(255, 255, 255, 0.03)' : 'transparent',
-                        cursor: isCurrentlyEditing || initAudio || playRealSound ? 'pointer' : 'default'
-                      }}>
+                      className={styles.displayTextRow} style={{ backgroundColor: isMarked ? 'rgba(255, 255, 255, 0.03)' : 'transparent', cursor: isCurrentlyEditing || initAudio || playRealSound ? 'pointer' : 'default' }}>
 
                       {(hasSingleDot || hasDoubleDot) && (
-                        <div style={{ position: 'absolute', top: '100%', left: '50%', transform: 'translate(-50%, -50%)', width: 'clamp(10px, 1.5vw, 16px)', height: 'clamp(10px, 1.5vw, 16px)', borderRadius: '50%', backgroundColor: 'rgba(255, 255, 255, 0.15)', zIndex: 0, pointerEvents: 'none' }} />
+                        <div className={styles.layer} />
                       )}
 
-                      <div style={{ position: 'absolute', left: 0, right: 0, zIndex: 1, height: `${1 + stringIndex * 0.5}px`, background: 'linear-gradient(to bottom, #d5d5d5 0%, #8a8a8a 40%, #505050 100%)', boxShadow: '0 1px 2px rgba(0,0,0,0.5)', top: '50%', transform: 'translateY(-50%)' }} />
+                      <div className={styles.displayTextRowLayer} style={{ height: `${1 + stringIndex * 0.5}px` }} />
 
                       {(isBarreTop || isBarreMiddle || isBarreBottom) && (
-                        <div style={{ position: 'absolute', top: isBarreTop ? '15%' : '0', bottom: isBarreBottom ? '15%' : '0', left: '50%', transform: 'translateX(-50%)', width: 'clamp(14px, 2.5vw, 24px)', backgroundColor: 'rgba(196, 181, 253, 0.4)', borderTopLeftRadius: isBarreTop ? '999px' : '0', borderTopRightRadius: isBarreTop ? '999px' : '0', borderBottomLeftRadius: isBarreBottom ? '999px' : '0', borderBottomRightRadius: isBarreBottom ? '999px' : '0', zIndex: 2, pointerEvents: 'none' }} />
+                        <div className={styles.layer3} style={{ top: isBarreTop ? '15%' : '0', bottom: isBarreBottom ? '15%' : '0', borderTopLeftRadius: isBarreTop ? '999px' : '0', borderTopRightRadius: isBarreTop ? '999px' : '0', borderBottomLeftRadius: isBarreBottom ? '999px' : '0', borderBottomRightRadius: isBarreBottom ? '999px' : '0' }} />
                       )}
 
                       {isActive && (
                         <div
-                          style={{
-                            width: 'clamp(12px, 2.5vw, 26px)',
-                            height: 'clamp(12px, 2.5vw, 26px)',
-                            borderRadius: '50%',
-                            // Use background (supports gradient) instead of backgroundColor
-                            background: dotBackground,
-                            color: isCompareShared ? '#fff' : textColor,
-                            fontSize: 'clamp(6px, 1vw, 11px)',
-                            fontWeight: 'bold',
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            zIndex: 3,
-                            boxShadow: isCompareShared
+                          className={cx(styles.row7, leftyMode && styles.lefty, !isCurrentlyEditing && (initAudio || playRealSound) && styles.playable)}
+                          style={{ background: dotBackground, color: isCompareShared ? '#fff' : textColor, boxShadow: isCompareShared
                               ? `0 2px 6px rgba(0,0,0,0.6), inset 0 0 0 1px rgba(255,255,255,0.15)`
-                              : '0 2px 4px rgba(0,0,0,0.5)',
-                            transform: leftyMode ? 'scaleX(-1)' : 'none',
-                            transition: 'transform 0.1s',
-                            opacity: noteOpacity,
-                            // Shared note: text shadow to stay readable on gradient split
-                            textShadow: isCompareShared ? '0 1px 2px rgba(0,0,0,0.8)' : 'none',
-                          }}
-                          onMouseEnter={e => {
-                            if (!isCurrentlyEditing && (initAudio || playRealSound))
-                              e.currentTarget.style.transform = leftyMode ? 'scaleX(-1) scale(1.15)' : 'scale(1.15)';
-                          }}
-                          onMouseLeave={e => {
-                            if (!isCurrentlyEditing && (initAudio || playRealSound))
-                              e.currentTarget.style.transform = leftyMode ? 'scaleX(-1)' : 'none';
-                          }}
+                              : '0 2px 4px rgba(0,0,0,0.5)', opacity: noteOpacity, textShadow: isCompareShared ? '0 1px 2px rgba(0,0,0,0.8)' : 'none' }}
                         >
                           {displayText}
                         </div>

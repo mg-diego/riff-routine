@@ -1,0 +1,46 @@
+.titleBox {
+  background: #141414;
+  border: 1px solid rgba(var(--gold-rgb), 0.2);
+  border-radius: 12px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  text-align: center;
+}
+
+.titleHeading {
+  color: var(--gold);
+  margin: 0 0 1rem;
+  font-size: 1.8rem;
+}
+
+.text {
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.closeRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.closeButton {
+  flex: 1;
+  padding: 0.8rem;
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  border-radius: 8px;
+  cursor: pointer;
+}
+
+.upgradeButton {
+  flex: 1;
+  padding: 0.8rem;
+  background: var(--gold);
+  border: none;
+  color: #000;
+  border-radius: 8px;
+  font-weight: bold;
+  cursor: pointer;
+}

@@ -1,0 +1,147 @@
+.badgeLifetimeRow {
+  position: relative;
+  min-height: 80vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+}
+
+.canvas {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.badgeLifetimeStack {
+  position: relative;
+  z-index: 1;
+  max-width: 480px;
+  width: 100%;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 2.5rem 2rem;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.5);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.75rem;
+  text-align: center;
+  transition: opacity 0.4s ease, transform 0.4s ease;
+}
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 50%;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(var(--gold-rgb), 0.7), transparent);
+}
+
+.row {
+  width: 72px;
+  height: 72px;
+  border-radius: 20px;
+  background: rgba(var(--gold-rgb), 0.1);
+  border: 1px solid rgba(var(--gold-rgb), 0.3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--gold);
+}
+
+.badgeLifetimeStack2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.badgeLifetimeText {
+  color: var(--gold);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.headlineTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.6rem;
+  color: var(--text);
+  margin: 0;
+  line-height: 1.05;
+}
+
+.subLifetimeText {
+  color: var(--muted);
+  font-size: 0.88rem;
+  line-height: 1.65;
+  margin: 0;
+}
+
+.box {
+  width: 100%;
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+}
+
+.perksTitleStack {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  gap: 0.7rem;
+}
+
+.perksTitleText {
+  color: var(--muted);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0;
+  text-align: left;
+}
+
+.perkRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.icon {
+  flex-shrink: 0;
+}
+
+.label {
+  color: var(--text);
+  font-size: 0.82rem;
+  text-align: left;
+}
+
+.ctaButton {
+  width: 100%;
+  padding: 0.85rem;
+  background: var(--gold);
+  border: none;
+  border-radius: 10px;
+  color: #111;
+  font-weight: 800;
+  font-size: 0.9rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+}
+
+.emailNoteText {
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin: -1rem 0 0;
+}
+
+.ctaButton:hover {
+  opacity: 0.85;
+}

@@ -4,6 +4,7 @@ import React, { useState, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
 import { SpotlightRect } from '@/hooks/useOnboarding';
 import { ONBOARDING_STEPS } from '@/hooks/onboardingSteps';
+import css from './OnboardingModal.module.css';
 
 const PADDING = 12;
 
@@ -115,14 +116,9 @@ export function OnboardingModal({
     };
 
     const Dots = () => (
-        <div style={{ display: 'flex', gap: '0.35rem', alignItems: 'center' }}>
+        <div className={css.row}>
             {ONBOARDING_STEPS.map((_, i) => (
-                <div key={i} style={{
-                    width: i === currentIndex ? '16px' : '6px', height: '6px',
-                    borderRadius: '3px',
-                    background: i === currentIndex ? 'var(--gold)' : 'rgba(220,185,138,0.2)',
-                    transition: 'all 0.2s ease',
-                }} />
+                <div key={i} className={css.block} style={{ width: i === currentIndex ? '16px' : '6px', background: i === currentIndex ? 'var(--gold)' : 'rgba(220,185,138,0.2)' }} />
             ))}
         </div>
     );
@@ -130,8 +126,8 @@ export function OnboardingModal({
     const NavButtons = ({ welcome }: { welcome?: boolean }) => {
         if (navigating) {
             return (
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--muted)', fontSize: '0.78rem' }}>
-                    <div style={{ width: '12px', height: '12px', borderRadius: '50%', border: '2px solid rgba(220,185,138,0.25)', borderTopColor: 'var(--gold)', animation: 'ob-spin 0.7s linear infinite' }} />
+                <div className={css.navigatingRow}>
+                    <div className={css.dot} />
                     {t('navigating')}
                 </div>
             );
@@ -141,50 +137,20 @@ export function OnboardingModal({
         const isActionRequired = step.waitForEvent && !isWelcome;
 
         return (
-            <div style={{ display: 'flex', gap: '0.5rem', width: '100%', flexDirection: 'column' }}>
-                <div style={{ display: 'flex', gap: '0.5rem', width: '100%' }}>
+            <div className={css.prevStack}>
+                <div className={css.prevRow}>
                     {currentIndex > 0 && (
-                        <button onClick={onPrev} style={{
-                            flex: 1, padding: welcome ? '0.65rem' : '0.5rem 0.65rem',
-                            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.08)',
-                            borderRadius: '7px', color: 'var(--muted)', cursor: 'pointer',
-                            fontSize: welcome ? '0.85rem' : '0.78rem', fontWeight: 600,
-                            fontFamily: 'DM Sans, sans-serif', transition: 'all 0.15s',
-                        }}
-                            onMouseEnter={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.08)'; e.currentTarget.style.color = 'var(--text)'; }}
-                            onMouseLeave={e => { e.currentTarget.style.background = 'rgba(255,255,255,0.04)'; e.currentTarget.style.color = 'var(--muted)'; }}
+                        <button onClick={onPrev} className={css.prevButton} style={{ padding: welcome ? '0.65rem' : '0.5rem 0.65rem', fontSize: welcome ? '0.85rem' : '0.78rem' }}
                         >{t('prev')}</button>
                     )}
 
                     {!isActionRequired ? (
-                        <button onClick={isLastStep ? onComplete : onNext} style={{
-                            flex: currentIndex > 0 ? 2 : 1,
-                            padding: welcome ? '0.65rem' : '0.5rem 0.65rem',
-                            background: 'var(--gold)', border: 'none', borderRadius: '7px', color: '#111',
-                            cursor: 'pointer', fontSize: welcome ? '0.85rem' : '0.78rem', fontWeight: 700,
-                            fontFamily: 'DM Sans, sans-serif', transition: 'opacity 0.15s',
-                        }}
-                            onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-                            onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                        <button onClick={isLastStep ? onComplete : onNext} className={css.finishButton} style={{ flex: currentIndex > 0 ? 2 : 1, padding: welcome ? '0.65rem' : '0.5rem 0.65rem', fontSize: welcome ? '0.85rem' : '0.78rem' }}
                         >
                             {isLastStep ? t('finish') : t('next')}
                         </button>
                     ) : (
-                        <div style={{
-                            flex: 2,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            padding: '0.5rem',
-                            background: 'rgba(220,185,138,0.05)',
-                            border: '1px dashed rgba(220,185,138,0.3)',
-                            borderRadius: '7px',
-                            color: 'var(--gold)',
-                            fontSize: '0.72rem',
-                            fontWeight: 600,
-                            textAlign: 'center',
-                            animation: 'ob-fade 0.5s ease-in-out infinite alternate'
-                        }}>
+                        <div className={css.actionRequiredRow}>
                             {t('actionRequired', { defaultValue: 'Haz clic para continuar' })}
                         </div>
                     )}
@@ -194,14 +160,7 @@ export function OnboardingModal({
     };
 
     const SkipButton = ({ size = '0.78rem' }: { size?: string }) => (
-        <button onClick={onComplete} style={{
-            background: 'none', border: 'none', color: 'var(--muted)',
-            cursor: 'pointer', fontSize: size, padding: '0.2rem',
-            fontFamily: 'DM Sans, sans-serif', transition: 'color 0.15s',
-            alignSelf: 'center',
-        }}
-            onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-            onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+        <button onClick={onComplete} className={css.skipButton} style={{ fontSize: size }}
         >
             {t('skip')}
         </button>
@@ -209,16 +168,10 @@ export function OnboardingModal({
 
     return (
         <>
-            <style>{`
-                @keyframes ob-fade  { from { opacity:0 } to { opacity:1 } }
-                @keyframes ob-up    { from { opacity:0; transform:translate(-50%,calc(-50% + 10px)) } to { opacity:1; transform:translate(-50%,-50%) } }
-                @keyframes ob-pulse { 0%,100% { box-shadow:0 0 0 0 rgba(220,185,138,0.35) } 60% { box-shadow:0 0 0 7px rgba(220,185,138,0) } }
-                @keyframes ob-spin  { to { transform:rotate(360deg) } }
-            `}</style>
 
-            <div style={{ position: 'fixed', inset: 0, zIndex: 9999, pointerEvents: 'none' }}>
+            <div className={css.overlay}>
                 {spotlightRect && !isWelcome ? (
-                    <svg style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', pointerEvents: isWaitingForEvent ? 'none' : 'auto' }} onClick={undefined}>
+                    <svg className={css.icon} style={{ pointerEvents: isWaitingForEvent ? 'none' : 'auto' }} onClick={undefined}>
                         <defs>
                             <mask id="ob-mask">
                                 <rect width="100%" height="100%" fill="white" />
@@ -235,51 +188,30 @@ export function OnboardingModal({
                         <rect width="100%" height="100%" fill="rgba(0,0,0,0.72)" mask="url(#ob-mask)" />
                     </svg>
                 ) : (
-                    <div style={{ position: 'absolute', inset: 0, background: isWaitingForEvent ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.72)', backdropFilter: 'blur(3px)', pointerEvents: isWaitingForEvent ? 'none' : 'auto' }} onClick={undefined} />
+                    <div className={css.layer} style={{ background: isWaitingForEvent ? 'rgba(0,0,0,0.25)' : 'rgba(0,0,0,0.72)', pointerEvents: isWaitingForEvent ? 'none' : 'auto' }} onClick={undefined} />
                 )}
 
                 {spotlightRect && !isWelcome && (
-                    <div style={{
-                        position: 'absolute',
-                        // 4. Y aplicamos la corrección al borde pulsante
-                        top: (spotlightRect.top - scrollPos.y) - PADDING,
-                        left: (spotlightRect.left - scrollPos.x) - PADDING,
-                        width: spotlightRect.width + PADDING * 2, height: spotlightRect.height + PADDING * 2,
-                        borderRadius: '8px', border: '1.5px solid rgba(220,185,138,0.5)',
-                        animation: 'ob-pulse 2s ease infinite', pointerEvents: 'none',
-                    }} />
+                    <div className={css.layer2} style={{ top: (spotlightRect.top - scrollPos.y) - PADDING, left: (spotlightRect.left - scrollPos.x) - PADDING, width: spotlightRect.width + PADDING * 2, height: spotlightRect.height + PADDING * 2 }} />
                 )}
             </div>
 
             {/* ── WELCOME modal — large centered ── */}
             {isWelcome && (
-                <div onClick={e => e.stopPropagation()} style={{
-                    ...getTooltipStyle(), zIndex: 9999,
-                    background: 'var(--surface)', border: '1px solid rgba(220,185,138,0.2)',
-                    borderRadius: '16px', padding: '2rem',
-                    width: '100%', maxWidth: '420px',
-                    display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.25rem',
-                    boxShadow: '0 20px 60px rgba(0,0,0,0.6)',
-                    animation: 'ob-up 0.22s ease',
-                    pointerEvents: 'auto', textAlign: 'center',
-                }}>
-                    <div style={{
-                        width: '56px', height: '56px', borderRadius: '14px',
-                        background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.25)',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)',
-                    }}>
+                <div onClick={e => e.stopPropagation()} className={css.titleStack} style={{ ...getTooltipStyle() }}>
+                    <div className={css.welcomeRow}>
                         {ICONS.welcome}
                     </div>
                     <div>
-                        <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', color: 'var(--gold)', margin: '0 0 0.5rem', letterSpacing: '0.04em', lineHeight: 1.1 }}>
+                        <h2 className={css.titleHeading}>
                             {t('slides.welcome.title')}
                         </h2>
-                        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', lineHeight: 1.7, margin: 0 }}>
+                        <p className={css.descriptionText}>
                             {t('slides.welcome.description')}
                         </p>
                     </div>
                     <Dots />
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', width: '100%' }}>
+                    <div className={css.stack}>
                         <NavButtons welcome />
                         <SkipButton />
                     </div>
@@ -288,32 +220,19 @@ export function OnboardingModal({
 
             {/* ── SPOTLIGHT tooltip — compact ── */}
             {!isWelcome && (
-                <div onClick={e => e.stopPropagation()} style={{
-                    ...getTooltipStyle(), zIndex: 9999,
-                    background: 'var(--surface)', border: '1px solid rgba(220,185,138,0.2)',
-                    borderRadius: '10px', padding: '1rem 1rem 0.9rem',
-                    width: '100%', maxWidth: '260px',
-                    display: 'flex', flexDirection: 'column', gap: '0.75rem',
-                    boxShadow: '0 12px 36px rgba(0,0,0,0.55)',
-                    animation: 'ob-fade 0.18s ease',
-                    pointerEvents: 'auto',
-                }}>
+                <div onClick={e => e.stopPropagation()} className={css.navigatingStack} style={{ ...getTooltipStyle() }}>
                     <Arrow position={pos} />
 
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <div style={{
-                            width: '26px', height: '26px', borderRadius: '6px', flexShrink: 0,
-                            background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.2)',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)',
-                        }}>
+                    <div className={css.navigatingStackRow}>
+                        <div className={css.navigatingStackRowInner}>
                             {ICONS[step.key]}
                         </div>
-                        <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1rem', color: 'var(--gold)', letterSpacing: '0.04em', lineHeight: 1.2, flex: 1 }}>
+                        <span className={css.label}>
                             {t(`slides.${step.key}.title`)}
                         </span>
                     </div>
 
-                    <p style={{ color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.6, margin: 0 }}>
+                    <p className={css.navigatingText}>
                         {navigating ? t('navigating') : t(`slides.${step.key}.description`)}
                     </p>
 

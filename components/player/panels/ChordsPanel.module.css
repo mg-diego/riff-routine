@@ -1,0 +1,313 @@
+.titleBox {
+  padding: 2rem;
+  background: var(--surface);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.titleHeading {
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.5rem;
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.rootRow {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  align-items: flex-end;
+}
+
+.rootStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.rootLabel {
+  font-size: 0.75rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-weight: 600;
+}
+
+.select {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+}
+
+.option {
+  background: #111;
+}
+
+.rootStackSelect {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  max-width: 150px;
+}
+
+.select3 {
+  background: rgba(59, 130, 246, 0.1);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  color: #93c5fd;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  max-width: 180px;
+}
+
+.fundamentalShortSelect {
+  background: rgba(245, 158, 11, 0.1);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  color: #fcd34d;
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  outline: none;
+  cursor: pointer;
+  max-width: 120px;
+}
+
+.advancedModeOnRow {
+  display: flex;
+  align-items: flex-end;
+  padding-bottom: 1px;
+}
+
+.advancedModeOnButton {
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 36px;
+}
+
+.box {
+  width: 1px;
+  height: 24px;
+  background: rgba(255,255,255,0.1);
+  margin: 0 0.5rem;
+  align-self: center;
+  margin-top: 16px;
+}
+
+.detailRow {
+  display: flex;
+  background: rgba(0,0,0,0.3);
+  border-radius: 8px;
+  padding: 0.2rem;
+  align-self: flex-end;
+  margin-bottom: 1px;
+}
+
+.detailButton {
+  border: none;
+  padding: 0.3rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  height: 30px;
+}
+
+.loadingBox {
+  background: rgba(0,0,0,0.2);
+  padding: 2rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.loading {
+  padding: 4rem 0;
+  text-align: center;
+  color: var(--muted);
+}
+
+.notFoundRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.notFoundRow2 {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.notFoundSubheading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 3rem;
+  margin: 0;
+  color: var(--text);
+  line-height: 1;
+  text-transform: none;
+}
+
+.inversionLabel {
+  font-size: 0.8rem;
+  background: rgba(245, 158, 11, 0.15);
+  color: #fcd34d;
+  padding: 0.4rem 0.8rem;
+  border-radius: 8px;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.positionRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  background: rgba(255,255,255,0.03);
+  padding: 0.4rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.button {
+  border: none;
+  border-radius: 6px;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  font-size: 1.2rem;
+  line-height: 1;
+}
+
+.positionLabel {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 600;
+  min-width: 80px;
+  text-align: center;
+}
+
+.positionStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.positionGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.positionStack2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.position {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: bold;
+}
+
+.block {
+  width: 100%;
+  overflow-x: auto;
+}
+
+.fingerIndexRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  background: rgba(255,255,255,0.02);
+  padding: 1rem;
+  border-radius: 8px;
+  width: 100%;
+}
+
+.fingerIndexRow2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-right: 1rem;
+}
+
+.dot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #3b82f6;
+}
+
+.fingerIndexLabel {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.fingerIndexRowDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #10b981;
+}
+
+.dot3 {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #f59e0b;
+}
+
+.fingerPinkyRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.fingerPinkyRowDot {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  background: #ef4444;
+}

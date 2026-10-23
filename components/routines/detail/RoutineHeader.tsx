@@ -2,8 +2,10 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Routine } from '../../../lib/types';
+import { Routine } from '@/lib/types';
 import { useTranslations } from 'next-intl';
+import { formatClock } from '@/lib/utils';
+import styles from './RoutineHeader.module.css';
 
 interface RoutineHeaderProps {
   routine: Routine;
@@ -36,7 +38,6 @@ function EditableField({
   inputStyle?: React.CSSProperties;
 }) {
   const [isEditing, setIsEditing] = useState(false);
-  const [isHovered, setIsHovered] = useState(false);
   const [draft, setDraft] = useState(value);
   const inputRef = useRef<HTMLInputElement | HTMLTextAreaElement>(null);
 
@@ -96,7 +97,7 @@ function EditableField({
         onBlur={commit}
         onKeyDown={handleKeyDown}
         placeholder={placeholder}
-        style={{ ...sharedStyle, display: 'block' }}
+        className={styles.textarea} style={{ ...sharedStyle }}
       />
     );
   }
@@ -104,20 +105,12 @@ function EditableField({
   const Tag = as;
   return (
     <Tag
+      className={styles.editable}
       style={{ ...style, display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', userSelect: 'none' }}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
       onClick={startEdit}
     >
-      <span>{value || <span style={{ opacity: 0.35 }}>{placeholder}</span>}</span>
-      <span style={{
-        opacity: isHovered ? 1 : 0,
-        transition: 'opacity 0.15s',
-        color: 'rgba(220,185,138,0.6)',
-        flexShrink: 0,
-        display: 'flex',
-        alignItems: 'center',
-      }}>
+      <span>{value || <span className={styles.label}>{placeholder}</span>}</span>
+      <span className={styles.editableLabel}>
         <PencilIcon />
       </span>
     </Tag>
@@ -128,27 +121,21 @@ export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClic
   const router = useRouter();
   const t = useTranslations('RoutineHeader');
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
   return (
     <>
-      <button onClick={() => router.push('/routines')} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem' }}>
+      <button onClick={() => router.push('/routines')} className={styles.backButton}>
         {t('back')}
       </button>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
-        <div style={{ flex: 1, minWidth: 0 }}>
+      <div className={styles.titlePlaceholderRow}>
+        <div className={styles.titlePlaceholder}>
           <EditableField
             as="h1"
             value={routine.title}
             placeholder={t('titlePlaceholder')}
             onSave={val => onUpdateRoutine?.('title', val)}
-            style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}
-            inputStyle={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', letterSpacing: '0.02em' }}
+            style={{ fontFamily: 'var(--font-display), sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}
+            inputStyle={{ fontFamily: 'var(--font-display), sans-serif', fontSize: '3rem', color: 'var(--gold)', letterSpacing: '0.02em' }}
           />
 
           <EditableField
@@ -156,22 +143,22 @@ export function RoutineHeader({ routine, totalDuration, exerciseCount, onAddClic
             value={routine.description || ''}
             placeholder={t('descriptionPlaceholder')}
             onSave={val => onUpdateRoutine?.('description', val)}
-            style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.95rem', fontFamily: 'DM Sans, sans-serif', fontWeight: 'normal' }}
+            style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.95rem', fontFamily: 'var(--font-body), sans-serif', fontWeight: 'normal' }}
             inputStyle={{ color: 'var(--muted)', fontSize: '0.95rem' }}
           />
 
-          <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-            <span style={{ background: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text)' }}>
-              {t('estimatedTime')} <strong style={{ color: 'var(--gold)' }}>{formatTime(totalDuration)}</strong>
+          <div className={styles.estimatedTimeRow}>
+            <span className={styles.estimatedTimeLabel}>
+              {t('estimatedTime')} <strong className={styles.strong}>{formatClock(totalDuration)}</strong>
             </span>
-            <span style={{ background: 'rgba(255,255,255,0.05)', padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.85rem', color: 'var(--text)' }}>
-              {t('exercisesCount')} <strong style={{ color: 'var(--gold)' }}>{exerciseCount}</strong>
+            <span className={styles.estimatedTimeLabel}>
+              {t('exercisesCount')} <strong className={styles.strong}>{exerciseCount}</strong>
             </span>
           </div>
         </div>
 
-        <div style={{ display: 'flex', gap: '1rem' }}>
-          <button onClick={onAddClick} style={{ background: 'transparent', color: 'var(--text)', padding: '0.8rem 1.5rem', borderRadius: '8px', fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem', border: '1px solid rgba(255,255,255,0.2)' }}>
+        <div className={styles.addExerciseRow}>
+          <button onClick={onAddClick} className={styles.addExerciseButton}>
             {t('addExercise')}
           </button>
         </div>

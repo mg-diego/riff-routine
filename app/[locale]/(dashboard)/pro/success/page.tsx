@@ -4,6 +4,7 @@ import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useLocale } from 'next-intl';
+import styles from './page.module.css';
 
 type Plan = 'pro' | 'lifetime' | null;
 
@@ -80,39 +81,19 @@ export default function ProSuccessPage() {
         : [t('perks.unlimited'), t('perks.fullStats'), t('perks.playerFull'), t('perks.prioritySupport')];
 
     return (
-        <div style={{ position: 'relative', minHeight: '80vh', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '2rem' }}>
+        <div className={styles.badgeLifetimeRow}>
 
             {/* Confetti canvas */}
-            <canvas id="confetti-canvas" style={{ position: 'fixed', inset: 0, pointerEvents: 'none', zIndex: 0 }} />
+            <canvas id="confetti-canvas" className={styles.canvas} />
 
             {/* Card */}
-            <div style={{
-                position: 'relative', zIndex: 1,
-                maxWidth: '480px', width: '100%',
-                background: 'var(--surface)',
-                border: `1.5px solid ${isLifetime ? 'rgba(220,185,138,0.25)' : 'rgba(220,185,138,0.35)'}`,
-                borderRadius: '20px', padding: '2.5rem 2rem',
-                boxShadow: '0 24px 64px rgba(0,0,0,0.5)',
-                display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1.75rem',
-                textAlign: 'center',
-                opacity: visible ? 1 : 0,
-                transform: visible ? 'translateY(0)' : 'translateY(16px)',
-                transition: 'opacity 0.4s ease, transform 0.4s ease',
-            }}>
+            <div className={styles.badgeLifetimeStack} style={{ border: `1.5px solid ${isLifetime ? 'rgba(220,185,138,0.25)' : 'rgba(220,185,138,0.35)'}`, opacity: visible ? 1 : 0, transform: visible ? 'translateY(0)' : 'translateY(16px)' }}>
 
                 {/* Top glow */}
-                <div style={{
-                    position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)',
-                    width: '50%', height: '1px',
-                    background: 'linear-gradient(90deg, transparent, rgba(220,185,138,0.7), transparent)',
-                }} />
+                <div className={styles.layer} />
 
                 {/* Icon */}
-                <div style={{
-                    width: '72px', height: '72px', borderRadius: '20px',
-                    background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.3)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)',
-                }}>
+                <div className={styles.row}>
                     {isLifetime ? (
                         <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round">
                             <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -126,32 +107,32 @@ export default function ProSuccessPage() {
                 </div>
 
                 {/* Text */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                    <p style={{ color: 'var(--gold)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.16em', textTransform: 'uppercase', margin: 0 }}>
+                <div className={styles.badgeLifetimeStack2}>
+                    <p className={styles.badgeLifetimeText}>
                         {isLifetime ? t('badgeLifetime') : t('badgePro')}
                     </p>
-                    <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.6rem', color: 'var(--text)', margin: 0, lineHeight: 1.05 }}>
+                    <h1 className={styles.headlineTitle}>
                         {t('headline')}
                     </h1>
-                    <p style={{ color: 'var(--muted)', fontSize: '0.88rem', lineHeight: 1.65, margin: 0 }}>
+                    <p className={styles.subLifetimeText}>
                         {isLifetime ? t('subLifetime') : t('subPro')}
                     </p>
                 </div>
 
                 {/* Divider */}
-                <div style={{ width: '100%', height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+                <div className={styles.box} />
 
                 {/* Perks unlocked */}
-                <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '0.7rem' }}>
-                    <p style={{ color: 'var(--muted)', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', margin: 0, textAlign: 'left' }}>
+                <div className={styles.perksTitleStack}>
+                    <p className={styles.perksTitleText}>
                         {t('perksTitle')}
                     </p>
                     {perks.map((perk, i) => (
-                        <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0 }}>
+                        <div key={i} className={styles.perkRow}>
+                            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles.icon}>
                                 <polyline points="20 6 9 17 4 12" />
                             </svg>
-                            <span style={{ color: 'var(--text)', fontSize: '0.82rem', textAlign: 'left' }}>{perk}</span>
+                            <span className={styles.label}>{perk}</span>
                         </div>
                     ))}
                 </div>
@@ -159,20 +140,12 @@ export default function ProSuccessPage() {
                 {/* CTA */}
                 <button
                     onClick={() => router.push(`/${locale}/home`)}
-                    style={{
-                        width: '100%', padding: '0.85rem',
-                        background: 'var(--gold)', border: 'none', borderRadius: '10px',
-                        color: '#111', fontWeight: 800, fontSize: '0.9rem',
-                        fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
-                        transition: 'opacity 0.15s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.opacity = '0.85'}
-                    onMouseLeave={e => e.currentTarget.style.opacity = '1'}
+                    className={styles.ctaButton}
                 >
                     {t('cta')}
                 </button>
 
-                <p style={{ color: 'var(--muted)', fontSize: '0.72rem', margin: '-1rem 0 0' }}>
+                <p className={styles.emailNoteText}>
                     {t('emailNote')}
                 </p>
             </div>

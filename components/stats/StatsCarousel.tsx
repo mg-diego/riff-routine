@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { CategoryDistribution } from './CategoryDistribution';
 import { SkillsRadar } from './SkillsRadar';
 import { useTranslations } from 'next-intl';
+import styles from './StatsCarousel.module.css';
 
 interface Props { dateFilter: string; }
 
@@ -17,34 +18,30 @@ export function StatsCarousel({ dateFilter }: Props) {
   ];
 
   return (
-    <div style={{ position: 'relative', width: '100%', overflow: 'hidden' }}>
-      <div style={{ display: 'flex', transition: 'transform 0.5s cubic-bezier(0.4, 0, 0.2, 1)', transform: `translateX(-${activeSlide * 100}%)` }}>
+    <div className={styles.block}>
+      <div className={styles.row} style={{ transform: `translateX(-${activeSlide * 100}%)` }}>
         {slides.map(slide => (
-          <div key={slide.id} style={{ minWidth: '100%', boxSizing: 'border-box' }}>
+          <div key={slide.id} className={styles.componentBlock}>
             {slide.component}
           </div>
         ))}
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '1rem', marginTop: '1.5rem' }}>
+      <div className={styles.row2}>
         <button
           onClick={() => setActiveSlide(p => (p - 1 + slides.length) % slides.length)}
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', transition: 'border-color 0.2s' }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+          className={`${styles.button} ${styles.buttonHoverable}`}
         >←</button>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className={styles.row3}>
           {slides.map((_, i) => (
-            <div key={i} onClick={() => setActiveSlide(i)} style={{ width: 8, height: 8, borderRadius: '50%', background: i === activeSlide ? 'var(--gold)' : 'rgba(255,255,255,0.2)', cursor: 'pointer', transition: 'background 0.3s' }} />
+            <div key={i} onClick={() => setActiveSlide(i)} className={styles.dot} style={{ background: i === activeSlide ? 'var(--gold)' : 'rgba(255,255,255,0.2)' }} />
           ))}
         </div>
 
         <button
           onClick={() => setActiveSlide(p => (p + 1) % slides.length)}
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: 'pointer', transition: 'border-color 0.2s' }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.25)'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+          className={`${styles.button} ${styles.buttonHoverable2}`}
         >→</button>
       </div>
     </div>

@@ -1,0 +1,22 @@
+.th {
+  padding: 1.2rem 1.5rem;
+  font-weight: 700;
+  cursor: pointer;
+  user-select: none;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+
+.icon {
+  margin-bottom: -4px;
+}

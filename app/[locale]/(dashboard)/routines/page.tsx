@@ -2,14 +2,18 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../../lib/supabase';
-import { Routine } from '../../../../lib/types';
-import { SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../lib/constants';
-import { RoutinesPageHeader } from '../../../../components/routines/RoutinesPageHeader';
-import { RoutineCard } from '../../../../components/routines/RoutineCard';
-import { DeleteConfirmModal } from '../../../../components/ui/DeleteConfirmModal';
+import { supabase } from '@/lib/supabase';
+import { Routine } from '@/lib/types';
+import { SUBSCRIPTION_TIERS, SubscriptionTier } from '@/lib/constants';
+import { FREE_TIER_LIMITS, fetchSubscriptionTier, isFreeTier } from '@/lib/subscription';
+import { APP_EVENTS, emitAppEvent } from '@/lib/events';
+import { RoutinesPageHeader } from '@/components/routines/RoutinesPageHeader';
+import { RoutineCard } from '@/components/routines/RoutineCard';
+import { DeleteConfirmModal } from '@/components/ui/DeleteConfirmModal';
 import { useTranslations } from 'next-intl';
 import { BecomeProModal } from '@/components/ui/BecomeProModal';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
 
 export default function RoutinesPage() {
   const router = useRouter();
@@ -38,15 +42,7 @@ export default function RoutinesPage() {
       return;
     }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', user.id)
-      .single();
-
-    if (profile) {
-      setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
-    }
+    setUserTier(await fetchSubscriptionTier(user.id));
 
     const { data, error } = await supabase
       .from('routines')
@@ -94,12 +90,11 @@ export default function RoutinesPage() {
     }
   };
 
-  const MAX_FREE_ROUTINES = 3;
-  const canCreateRoutine = userTier !== SUBSCRIPTION_TIERS.FREE || routines.length < MAX_FREE_ROUTINES;
+  const canCreateRoutine = !isFreeTier(userTier) || routines.length < FREE_TIER_LIMITS.routines;
 
   const handleCreateClick = () => {
     if (canCreateRoutine) {
-      window.dispatchEvent(new CustomEvent('app:open-new-routine-modal'));
+      emitAppEvent(APP_EVENTS.OPEN_NEW_ROUTINE_MODAL);
       router.push('/routines/new');
     } else {
       setShowProModal(true);
@@ -116,26 +111,26 @@ export default function RoutinesPage() {
       />
 
       {error && (
-        <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+        <div className={`alert-error ${styles.row}`}>
           <span>⚠ {error}</span>
-          <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}>✕</button>
+          <button onClick={() => setError(null)} className={ui.dangerTextButton}>✕</button>
         </div>
       )}
 
       {loading ? (
-        <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}>
+        <div className="loader-container">
           <span className="loader" />
         </div>
       ) : routines.length === 0 ? (
-        <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>⏱️</div>
-          <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>{t('emptyState.title')}</p>
-          <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('emptyState.subtitle')}</p>
+        <div className="empty-state">
+          <div className={styles.block}>⏱️</div>
+          <p className={styles.titleText}>{t('emptyState.title')}</p>
+          <p className={styles.subtitleText}>{t('emptyState.subtitle')}</p>
         </div>
       ) : (
-        <div data-onboarding="routines-05" style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+        <div data-onboarding="routines-05" className={styles.stack}>
           {routines.map((routine, index) => {
-            const isReadonly = userTier === SUBSCRIPTION_TIERS.FREE && index >= MAX_FREE_ROUTINES;
+            const isReadonly = isFreeTier(userTier) && index >= FREE_TIER_LIMITS.routines;
             
             return (
               <RoutineCard

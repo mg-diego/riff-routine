@@ -1,0 +1,186 @@
+.keySelectorGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  width: 100%;
+  height: 100%;
+  align-items: start;
+}
+
+.keySelectorStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.keySelectorSubheading {
+  color: var(--gold);
+  margin: 0 0 1.5rem 0;
+  font-size: 1.2rem;
+}
+
+.majorRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.select {
+  flex: 1;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.6rem;
+  border-radius: 6px;
+  outline: none;
+  font-weight: bold;
+}
+
+.diatonicPaletteSubheading {
+  color: var(--muted);
+  margin: 0 0 1rem 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.button {
+  background: rgba(var(--gold-rgb), 0.1);
+  border: 1px solid rgba(var(--gold-rgb), 0.3);
+  color: var(--text);
+  padding: 0.8rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 60px;
+  transition: all 0.2s;
+}
+
+.button:hover {
+  background: rgba(var(--gold-rgb), 0.2);
+}
+
+.label {
+  font-size: 1.2rem;
+  font-weight: bold;
+  font-family: var(--font-display), sans-serif;
+}
+
+.romanLabel {
+  font-size: 0.75rem;
+  color: var(--gold);
+}
+
+.progressionBuilderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.progressionBuilderSubheading {
+  color: var(--gold);
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.undoRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.undoButton {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--muted);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.clearProgressionButton {
+  background: transparent;
+  color: var(--danger);
+  border: 1px solid var(--danger);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+}
+
+.chordRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  min-height: 80px;
+  background: #111;
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px dashed rgba(255,255,255,0.1);
+}
+
+.row3 {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.chordLabel {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: var(--text);
+}
+
+.label4 {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.keySelectorStackLabel {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: auto;
+}
+
+.notesTitleStack {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+}
+
+.notesTitleStack2 {
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-height: 500px;
+}
+
+.notesTitleSubheading {
+  color: var(--gold);
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+}
+
+.notesPlaceholderTextarea {
+  flex: 1;
+  width: 100%;
+  background: var(--surface2);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 1rem;
+  font-family: var(--font-body), sans-serif;
+  resize: none;
+  outline: none;
+}

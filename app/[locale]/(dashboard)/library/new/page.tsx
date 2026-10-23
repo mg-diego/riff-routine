@@ -1,17 +1,17 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import { ExerciseForm } from '../../../../../components/library/ExerciseForm';
-import { BecomeProModal } from '../../../../../components/ui/BecomeProModal';
+import { ExerciseForm } from '@/components/library/ExerciseForm';
 import { useTranslations } from 'next-intl';
-import { useExerciseActions } from '../../../../../hooks/useExerciseActions';
-import { VALID_FILE_TYPES } from '../../../../../lib/constants';
+import { useExerciseActions } from '@/hooks/useExerciseActions';
+import { VALID_FILE_TYPES } from '@/lib/constants';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
 
 export default function NewExercisePage() {
   const router = useRouter();
   const t = useTranslations('NewExercisePage');
-  const p = useTranslations('BecomeProModal');
   const inputRef = useRef<HTMLInputElement>(null);
 
   const { saving, error, createCustomExercise, setError } = useExerciseActions();
@@ -26,15 +26,6 @@ export default function NewExercisePage() {
   const [difficulty, setDifficulty] = useState(0);
   const [notes, setNotes] = useState('');
   const [fileType, setFileType] = useState('gp5');
-
-  const [showProModal, setShowProModal] = useState(false);
-
-  // Escuchar el evento del hook para mostrar el modal de pago
-  useEffect(() => {
-    const handleShowProModal = () => setShowProModal(true);
-    window.addEventListener('app:show-pro-modal', handleShowProModal);
-    return () => window.removeEventListener('app:show-pro-modal', handleShowProModal);
-  }, []);
 
   const handleFileDrop = (e: React.DragEvent<HTMLDivElement> | React.ChangeEvent<HTMLInputElement>) => {
     e.preventDefault();
@@ -96,16 +87,10 @@ export default function NewExercisePage() {
   };
 
   return (
-    <div data-onboarding="library-08" style={{ maxWidth: '800px', margin: '0 auto', paddingBottom: '4rem' }}>
+    <div data-onboarding="library-08" className={styles.back}>
       <button
         onClick={() => router.push('/library')}
-        style={{
-          background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem',
-          padding: 0, fontFamily: 'DM Sans, sans-serif', transition: 'color 0.2s'
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-        onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+        className={ui.backLink}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
@@ -113,8 +98,8 @@ export default function NewExercisePage() {
         {t('back')}
       </button>
 
-      <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
+      <div className="surface-card">
+        <h1 className={ui.formTitle}>
           {t('title')}
         </h1>
 
@@ -124,74 +109,57 @@ export default function NewExercisePage() {
           onDragOver={e => { e.preventDefault(); setDragOver(true); }}
           onDragLeave={() => setDragOver(false)}
           onClick={() => inputRef.current?.click()}
-          style={{
-            border: `2px dashed ${dragOver ? 'var(--gold)' : file ? 'rgba(74,222,128,0.5)' : 'rgba(220,185,138,0.3)'}`,
-            borderRadius: '10px', padding: '1.5rem', textAlign: 'center', cursor: 'pointer',
-            background: dragOver ? 'rgba(220,185,138,0.05)' : file ? 'rgba(74,222,128,0.04)' : 'rgba(255,255,255,0.02)',
-            transition: 'all 0.2s', display: 'flex', flexDirection: 'column', alignItems: 'center',
-            justifyContent: 'center', minHeight: '100px', marginBottom: '1.5rem'
-          }}
+          className={styles.readyToUploadStack} style={{ border: `2px dashed ${dragOver ? 'var(--gold)' : file ? 'rgba(74,222,128,0.5)' : 'rgba(220,185,138,0.3)'}`, background: dragOver ? 'rgba(220,185,138,0.05)' : file ? 'rgba(74,222,128,0.04)' : 'rgba(255,255,255,0.02)' }}
         >
           {/* Se usa la constante que debería incluir .pdf */}
           <input ref={inputRef} type="file" accept={VALID_FILE_TYPES} onChange={handleFileDrop} hidden />
 
           {file ? (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', textAlign: 'left' }}>
+            <div className={styles.readyToUploadRow}>
               {/* Cambia el emoji dinámicamente si es PDF */}
-              <div style={{ fontSize: '1.8rem' }}>{fileType === 'pdf' ? '📄' : '🎵'}</div>
+              <div className={styles.block}>{fileType === 'pdf' ? '📄' : '🎵'}</div>
               <div>
-                <p style={{ color: '#4ade80', margin: 0, fontWeight: 600, fontSize: '0.95rem', lineHeight: 1.2 }}>{file.name}</p>
-                <p style={{ color: 'var(--muted)', margin: '0.2rem 0 0', fontSize: '0.8rem' }}>
+                <p className={styles.text}>{file.name}</p>
+                <p className={styles.readyToUploadText}>
                   {(file.size / 1024).toFixed(1)} KB · {t('fileDrop.readyToUpload')}
                 </p>
               </div>
             </div>
           ) : (
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-              <div style={{ fontSize: '1.8rem' }}>🎸</div>
-              <div style={{ textAlign: 'center' }}>
-                <p style={{ color: 'var(--muted)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
+            <div className={styles.optionalRow}>
+              <div className={styles.block}>🎸</div>
+              <div className={styles.optional}>
+                <p className={styles.optionalText}>
                   {/* Aquí podrías añadir una clave nueva al JSON: fileDrop.guitarProOrPdfFile */}
-                  Guitar Pro / PDF <span style={{ fontWeight: 400, fontSize: '0.85rem' }}>{t('fileDrop.optional')}</span>
+                  Guitar Pro / PDF <span className={styles.optionalLabel}>{t('fileDrop.optional')}</span>
                 </p>
-                <p style={{ color: 'rgba(106,95,82,0.6)', margin: 0, fontSize: '0.8rem' }}>{t('fileDrop.dragOrClick')}</p>
+                <p className={styles.dragOrClickText}>{t('fileDrop.dragOrClick')}</p>
               </div>
             </div>
           )}
         </div>
 
-        <div style={{ width: '100%', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.stack}>
           <ExerciseForm {...{ name, setName, categories, setCategories, bpmSuggested, setBpmSuggested, bpmGoal, setBpmGoal, difficulty, setDifficulty, notes, setNotes, isSystem: false }} />
         </div>
 
         {error && (
-          <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginTop: '1.5rem' }}>
+          <div className={`alert-error ${styles.errorBlock}`}>
             ⚠ {error}
           </div>
         )}
 
-        <div style={{ marginTop: '2rem', display: 'flex', gap: '1rem', flexDirection: 'column' }}>
+        <div className={styles.savingStack}>
           <button
             onClick={handleSubmit}
             disabled={saving}
-            style={{
-              width: '100%', padding: '1rem', background: 'var(--gold)', color: '#111',
-              border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '1rem',
-              cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif',
-              opacity: saving ? 0.7 : 1, transition: 'background 0.2s'
-            }}
+            className={styles.savingButton} style={{ cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}
           >
             {saving ? t('buttons.saving') : t('buttons.save')}
           </button>
         </div>
       </div>
 
-      {showProModal && (
-        <BecomeProModal
-          onClose={() => setShowProModal(false)}
-          description={p('libraryLimit')}
-        />
-      )}
     </div>
   );
 }

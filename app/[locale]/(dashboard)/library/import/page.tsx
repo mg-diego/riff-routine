@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { TECHNIQUES } from '../../../../../lib/constants';
+import { TECHNIQUES } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
-import { BecomeProModal } from '@/components/ui/BecomeProModal';
 import { useExerciseActions } from '@/hooks/useExerciseActions';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
 
 interface ParsedExercise {
     id: string;
@@ -18,7 +19,6 @@ interface ParsedExercise {
 export default function ImportExercisesPage() {
     const router = useRouter();
     const t = useTranslations('ImportExercisesPage');
-    const p = useTranslations('BecomeProModal');
     
     // --- Integramos el Hook ---
     const { saving, error: hookError, setError: setHookError, validateLimit, importBulkExercises } = useExerciseActions();
@@ -27,14 +27,6 @@ export default function ImportExercisesPage() {
     const [parsedData, setParsedData] = useState<ParsedExercise[]>([]);
     const [globalError, setGlobalError] = useState<string | null>(null);
     const [openDropdownId, setOpenDropdownId] = useState<string | null>(null);
-    const [showProModal, setShowProModal] = useState(false);
-
-    // Escuchamos el evento de límite superado
-    useEffect(() => {
-        const handleShowProModal = () => setShowProModal(true);
-        window.addEventListener('app:show-pro-modal', handleShowProModal);
-        return () => window.removeEventListener('app:show-pro-modal', handleShowProModal);
-    }, []);
 
     const validateTechnique = (techString: string): string | undefined => {
         if (!techString || techString.trim() === '') return t('errors.techniqueRequired');
@@ -135,16 +127,10 @@ export default function ImportExercisesPage() {
     const displayError = globalError || hookError;
 
     return (
-        <div style={{ maxWidth: '900px', margin: '0 auto', paddingBottom: '4rem' }}>
+        <div className={styles.back}>
             <button
                 onClick={() => router.push('/library')}
-                style={{
-                    background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer',
-                    display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem',
-                    padding: 0, fontFamily: 'DM Sans, sans-serif', transition: 'color 0.2s'
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+                className={ui.backLink}
             >
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                     <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
@@ -152,26 +138,26 @@ export default function ImportExercisesPage() {
                 {t('back')}
             </button>
 
-            <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-                <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
+            <div className="surface-card">
+                <h1 className={ui.formTitle}>
                     {t('title')}
                 </h1>
 
                 {parsedData.length === 0 ? (
                     <>
-                        <div style={{ marginBottom: '1.5rem' }}>
-                            <p style={{ color: 'var(--muted)', margin: '0 0 0.5rem', fontSize: '0.9rem' }}>{t('instructions.text')}</p>
-                            <div style={{ background: 'rgba(255,255,255,0.03)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.08)' }}>
-                                <p style={{ margin: '0 0 0.5rem', color: 'var(--gold)', fontWeight: 600, fontSize: '0.9rem' }}>{t('instructions.formatRequired')}</p>
-                                <code style={{ color: 'var(--text)', background: '#111', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.85rem' }}>{t('instructions.formatExample')}</code><br /><br />
-                                <code style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('instructions.example1')}</code><br />
-                                <code style={{ color: 'var(--muted)', fontSize: '0.85rem' }}>{t('instructions.example2')}</code>
+                        <div className={styles.text}>
+                            <p className={styles.textText}>{t('instructions.text')}</p>
+                            <div className={styles.formatRequiredBox}>
+                                <p className={styles.formatRequiredText}>{t('instructions.formatRequired')}</p>
+                                <code className={styles.formatExampleCode}>{t('instructions.formatExample')}</code><br /><br />
+                                <code className={styles.example1Code}>{t('instructions.example1')}</code><br />
+                                <code className={styles.example1Code}>{t('instructions.example2')}</code>
                             </div>
-                            <div style={{ margin: '0.8rem 0 0' }}>
-                                <p style={{ color: 'var(--gold)', margin: '0 0 0.5rem', fontSize: '0.85rem', fontWeight: 600 }}>{t('instructions.allowedTechniques')}</p>
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem' }}>
+                            <div className={styles.allowedTechniques}>
+                                <p className={styles.allowedTechniquesText}>{t('instructions.allowedTechniques')}</p>
+                                <div className={styles.row}>
                                     {TECHNIQUES.map(tech => (
-                                        <span key={tech} style={{ background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--muted)', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.75rem', whiteSpace: 'nowrap' }}>
+                                        <span key={tech} className={styles.label}>
                                             {tech}
                                         </span>
                                     ))}
@@ -186,14 +172,11 @@ export default function ImportExercisesPage() {
                                 if (globalError) setGlobalError(null);
                             }}
                             placeholder={t('input.placeholder')}
-                            style={{
-                                width: '100%', height: '200px', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '1rem',
-                                color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem', resize: 'vertical', marginBottom: '1rem', outline: 'none'
-                            }}
+                            className={styles.placeholderTextarea}
                         />
 
                         {displayError && (
-                            <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1rem' }}>
+                            <div className={`alert-error ${styles.block}`}>
                                 ⚠ {displayError}
                             </div>
                         )}
@@ -201,70 +184,65 @@ export default function ImportExercisesPage() {
                         <button
                             onClick={parseText}
                             disabled={inputText.trim() === ''}
-                            style={{
-                                width: '100%', background: 'var(--surface2)', color: 'var(--text)', padding: '1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)',
-                                cursor: inputText.trim() === '' ? 'not-allowed' : 'pointer', fontWeight: 600, transition: 'background 0.2s'
-                            }}
-                            onMouseEnter={e => { if (inputText.trim() !== '') e.currentTarget.style.background = 'rgba(255,255,255,0.1)'; }}
-                            onMouseLeave={e => { if (inputText.trim() !== '') e.currentTarget.style.background = 'var(--surface2)'; }}
+                            className={styles.analyzeButton} style={{ cursor: inputText.trim() === '' ? 'not-allowed' : 'pointer' }}
                         >
                             {t('input.analyzeButton')}
                         </button>
                     </>
                 ) : (
                     <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-                            <h3 style={{ color: 'var(--text)', margin: 0 }}>{t('review.title', { count: parsedData.length })}</h3>
-                            <button onClick={() => { setParsedData([]); setOpenDropdownId(null); }} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', textDecoration: 'underline', fontSize: '0.85rem' }}>
+                        <div className={styles.titleRow}>
+                            <h3 className={styles.titleSubheading}>{t('review.title', { count: parsedData.length })}</h3>
+                            <button onClick={() => { setParsedData([]); setOpenDropdownId(null); }} className={styles.backToTextButton}>
                                 {t('review.backToText')}
                             </button>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem', marginBottom: '2rem' }}>
+                        <div className={styles.titleStack}>
                             {parsedData.map((ex) => {
                                 const currentTechs = ex.technique ? ex.technique.split(',').map(t => t.trim()).filter(Boolean) : [];
                                 const isOpen = openDropdownId === ex.id;
 
                                 return (
-                                    <div key={ex.id} style={{ display: 'grid', gridTemplateColumns: '2fr 2fr 1fr auto', gap: '0.8rem', alignItems: 'start', background: ex.error ? 'rgba(231,76,60,0.05)' : 'rgba(0,0,0,0.2)', border: `1px solid ${ex.error ? 'rgba(231,76,60,0.3)' : 'rgba(255,255,255,0.05)'}`, padding: '1rem', borderRadius: '8px' }}>
+                                    <div key={ex.id} className={styles.titleGrid} style={{ background: ex.error ? 'rgba(231,76,60,0.05)' : 'rgba(0,0,0,0.2)', border: `1px solid ${ex.error ? 'rgba(231,76,60,0.3)' : 'rgba(255,255,255,0.05)'}` }}>
                                         
                                         {/* Título */}
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                            <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('review.labels.title')}</label>
-                                            <input type="text" value={ex.title} onChange={(e) => handleUpdateRow(ex.id, 'title', e.target.value)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)', border: `1px solid ${!ex.title.trim() ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`, color: 'var(--text)', outline: 'none' }} />
+                                        <div className={styles.titleGridStack}>
+                                            <label className={styles.titleFieldLabel}>{t('review.labels.title')}</label>
+                                            <input type="text" value={ex.title} onChange={(e) => handleUpdateRow(ex.id, 'title', e.target.value)} className={styles.input} style={{ border: `1px solid ${!ex.title.trim() ? '#e74c3c' : 'rgba(255,255,255,0.1)'}` }} />
                                         </div>
 
                                         {/* Técnica */}
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem', position: 'relative' }}>
-                                            <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('review.labels.technique')}</label>
-                                            {isOpen && <div style={{ position: 'fixed', inset: 0, zIndex: 9 }} onClick={() => setOpenDropdownId(null)} />}
-                                            <button onClick={() => setOpenDropdownId(isOpen ? null : ex.id)} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)', border: `1px solid ${ex.error ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`, color: ex.technique ? 'var(--text)' : 'var(--muted)', outline: 'none', cursor: 'pointer', textAlign: 'left', display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: '34px' }}>
-                                                <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{ex.technique || t('review.labels.select')}</span>
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}><polyline points="6 9 12 15 18 9"></polyline></svg>
+                                        <div className={styles.techniqueStack}>
+                                            <label className={styles.titleFieldLabel}>{t('review.labels.technique')}</label>
+                                            {isOpen && <div className={styles.overlay} onClick={() => setOpenDropdownId(null)} />}
+                                            <button onClick={() => setOpenDropdownId(isOpen ? null : ex.id)} className={styles.selectButton} style={{ border: `1px solid ${ex.error ? '#e74c3c' : 'rgba(255,255,255,0.1)'}`, color: ex.technique ? 'var(--text)' : 'var(--muted)' }}>
+                                                <span className={styles.selectLabel}>{ex.technique || t('review.labels.select')}</span>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.icon} style={{ transform: isOpen ? 'rotate(180deg)' : 'none' }}><polyline points="6 9 12 15 18 9"></polyline></svg>
                                             </button>
 
                                             {isOpen && (
-                                                <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, width: '100%', background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '0.5rem', zIndex: 10, maxHeight: '200px', overflowY: 'auto', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
+                                                <div className={styles.layer}>
                                                     {TECHNIQUES.map(tech => (
-                                                        <label key={tech} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem', cursor: 'pointer', borderRadius: '4px', color: 'var(--text)', fontSize: '0.85rem' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                                                            <input type="checkbox" checked={currentTechs.includes(tech)} onChange={() => handleToggleTechnique(ex.id, ex.technique, tech)} style={{ accentColor: 'var(--gold)' }} />
+                                                        <label key={tech} className={styles.fieldLabel}>
+                                                            <input type="checkbox" checked={currentTechs.includes(tech)} onChange={() => handleToggleTechnique(ex.id, ex.technique, tech)} className={styles.techniqueStackInput} />
                                                             {tech}
                                                         </label>
                                                     ))}
                                                 </div>
                                             )}
-                                            {ex.error && <span style={{ color: '#e74c3c', fontSize: '0.7rem' }}>{ex.error}</span>}
+                                            {ex.error && <span className={styles.errorLabel}>{ex.error}</span>}
                                         </div>
 
                                         {/* BPM */}
-                                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                            <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('review.labels.bpm')}</label>
-                                            <input type="number" value={ex.bpm_goal} onChange={(e) => handleUpdateRow(ex.id, 'bpm_goal', e.target.value)} placeholder={t('review.labels.optional')} style={{ width: '100%', padding: '0.5rem', borderRadius: '4px', background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none' }} />
+                                        <div className={styles.titleGridStack}>
+                                            <label className={styles.titleFieldLabel}>{t('review.labels.bpm')}</label>
+                                            <input type="number" value={ex.bpm_goal} onChange={(e) => handleUpdateRow(ex.id, 'bpm_goal', e.target.value)} placeholder={t('review.labels.optional')} className={styles.optionalInput} />
                                         </div>
 
                                         {/* Borrar Fila */}
-                                        <div style={{ display: 'flex', alignItems: 'center', height: '100%', paddingTop: '1.2rem' }}>
-                                            <button onClick={() => handleRemoveRow(ex.id)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '0.5rem' }} title={t('review.actions.deleteRow')}>
+                                        <div className={styles.deleteRow}>
+                                            <button onClick={() => handleRemoveRow(ex.id)} className={styles.deleteRowButton} title={t('review.actions.deleteRow')}>
                                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2-2v2"></path></svg>
                                             </button>
                                         </div>
@@ -274,7 +252,7 @@ export default function ImportExercisesPage() {
                         </div>
 
                         {displayError && (
-                            <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1.5rem' }}>
+                            <div className={`alert-error ${styles.text}`}>
                                 ⚠ {displayError}
                             </div>
                         )}
@@ -282,7 +260,7 @@ export default function ImportExercisesPage() {
                         <button
                             onClick={handleImport}
                             disabled={saving || hasInvalidRows}
-                            style={{ width: '100%', background: 'var(--gold)', color: '#111', padding: '1rem', borderRadius: '8px', border: 'none', cursor: saving || hasInvalidRows ? 'not-allowed' : 'pointer', fontWeight: 700, fontSize: '1rem', transition: 'all 0.2s', opacity: saving || hasInvalidRows ? 0.5 : 1 }}
+                            className={styles.savingButton} style={{ cursor: saving || hasInvalidRows ? 'not-allowed' : 'pointer', opacity: saving || hasInvalidRows ? 0.5 : 1 }}
                         >
                             {saving ? t('review.actions.saving') : t('review.actions.confirmSave')}
                         </button>
@@ -290,9 +268,6 @@ export default function ImportExercisesPage() {
                 )}
             </div>
 
-            {showProModal && (
-                <BecomeProModal onClose={() => setShowProModal(false)} description={p('libraryLimit')} />
-            )}
         </div>
     );
 }

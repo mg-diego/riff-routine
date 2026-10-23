@@ -1,0 +1,230 @@
+.eyebrowStack {
+  max-width: 980px;
+  margin: 0 auto;
+  padding: 3rem 1.5rem 4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3rem;
+}
+
+.eyebrowStack2 {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.eyebrowText {
+  color: var(--gold);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  margin: 0;
+  opacity: 0.8;
+}
+
+.headlineTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: clamp(2.6rem, 6vw, 4.2rem);
+  color: var(--text);
+  margin: 0;
+  line-height: 1;
+}
+
+.subheadlineText {
+  color: var(--muted);
+  font-size: 0.95rem;
+  max-width: 500px;
+  line-height: 1.7;
+  margin: 0;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  background: var(--surface);
+  border-radius: 100px;
+  padding: 0.3rem;
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+.button {
+  padding: 0.45rem 1.2rem;
+  border-radius: 100px;
+  border: none;
+  font-weight: 700;
+  font-size: 0.82rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.label {
+  font-size: 0.62rem;
+  font-weight: 800;
+  padding: 0.1rem 0.4rem;
+  border-radius: 100px;
+}
+
+.foreverGrid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  width: 100%;
+  align-items: start;
+}
+
+.footerText {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+  opacity: 0.55;
+  max-width: 480px;
+}
+
+.currentPlanStack {
+  background: var(--surface);
+  border-radius: 16px;
+  padding: 1.75rem 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+  position: relative;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  height: 1px;
+}
+
+.currentPlanLayer {
+  position: absolute;
+  top: 1.1rem;
+  right: 1.1rem;
+  font-size: 0.6rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+}
+
+.text {
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  margin: 0 0 0.4rem;
+}
+
+.priceRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  flex-wrap: wrap;
+}
+
+.priceLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.6rem;
+  line-height: 1;
+}
+
+.priceSubLabel {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.priceNoteText {
+  color: var(--muted);
+  font-size: 0.73rem;
+  margin: 0.2rem 0 0;
+}
+
+.descriptionText {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0.6rem 0 0;
+  line-height: 1.55;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  flex: 1;
+}
+
+.currentPlanStackRow {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.6rem;
+}
+
+.icon {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.currentPlanStackLabel {
+  font-size: 0.8rem;
+  line-height: 1.4;
+}
+
+.currentPlanStackLabelInner {
+  margin-left: 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+}
+
+.guaranteeText {
+  color: var(--muted);
+  font-size: 0.7rem;
+  text-align: center;
+  margin: -1rem 0 0;
+}
+
+/* Plan CTA */
+.cta {
+  padding: 0.8rem;
+  border-radius: 10px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: opacity 0.15s;
+  background: rgba(255,255,255,0.04);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.ctaLifetime {
+  background: rgba(var(--gold-rgb), 0.1);
+  color: var(--gold);
+  border: 1px solid rgba(var(--gold-rgb), 0.25);
+}
+
+.ctaHighlighted {
+  background: var(--gold);
+  color: #111;
+  border: none;
+}
+
+.cta:hover:not(:disabled) {
+  opacity: 0.8;
+}
+
+.cta:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

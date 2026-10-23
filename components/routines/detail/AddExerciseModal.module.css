@@ -1,0 +1,153 @@
+.searchPlaceholderInput {
+  width: 100%;
+  padding: 0.9rem 1.2rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  outline: none;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  transition: border-color 0.2s;
+}
+
+.noResultsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+  max-height: 55vh;
+  overflow-y: auto;
+  padding-right: 0.5rem;
+}
+
+.noResultsBox {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 3rem 1rem;
+  background: rgba(255,255,255,0.02);
+  border-radius: 10px;
+  border: 1px dashed rgba(255,255,255,0.1);
+}
+
+.noResultsText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.noFileWarningStack {
+  display: flex;
+  flex-direction: column;
+  padding: 1.2rem;
+  background: var(--surface);
+  border-radius: 10px;
+  transition: all 0.2s;
+  gap: 1rem;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.noFileWarningStack2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  flex: 1;
+}
+
+.noFileWarningRow {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.8rem;
+}
+
+.noFileWarningStack3 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.subheading {
+  margin: 0;
+  color: var(--text);
+  font-size: 1.05rem;
+  font-weight: 600;
+  line-height: 1.2;
+}
+
+.noFileWarningLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  margin-top: 0.2rem;
+}
+
+.catalogBadgeLabel {
+  background: rgba(var(--violet-rgb), 0.15);
+  color: var(--violet);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.65rem;
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  align-self: flex-start;
+}
+
+.techniqueFallbackRow {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  font-size: 0.85rem;
+}
+
+.techniqueFallbackLabel {
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.label {
+  color: rgba(255,255,255,0.2);
+}
+
+.difficultyLabel {
+  color: var(--muted);
+}
+
+.addButton {
+  width: 100%;
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.2s;
+  font-size: 0.9rem;
+  margin-top: auto;
+}
+
+.searchPlaceholderInput:focus {
+  border-color: var(--gold);
+}
+
+.addButton:hover {
+  background: var(--gold);
+  color: #111;
+  border-color: var(--gold);
+}
+
+.noFile {
+  border-color: rgba(var(--danger-rgb), 0.2);
+}
+
+.noFileWarningStack:hover {
+  border-color: rgba(var(--gold-rgb), 0.3);
+}

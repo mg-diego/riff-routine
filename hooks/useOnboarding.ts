@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useLocale } from 'next-intl';
 import { ONBOARDING_STEPS, OnboardingStep } from './onboardingSteps';
 

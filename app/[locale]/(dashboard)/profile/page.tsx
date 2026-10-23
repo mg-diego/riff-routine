@@ -2,13 +2,18 @@
 
 import React, { useState, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import { APP_EVENTS, emitAppEvent } from '@/lib/events';
+import { SubscriptionTier } from '@/lib/constants';
 import { useRouter } from 'next/navigation';
 import { useLocale } from 'next-intl';
 import { supabase } from '@/lib/supabase';
 import { compressImage } from '@/lib/utils';
+import styles from './page.module.css';
+import { TEACHER_MODE_ENABLED } from '@/lib/features';
+import { cx } from '@/lib/cx';
 
 type SaveState = 'idle' | 'saving' | 'saved' | 'error';
-type Tier = 'free' | 'pro' | 'lifetime';
+type Tier = SubscriptionTier;
 
 const TIER_CONFIG: Record<Tier, { label: string; bg: string; color: string; border: string }> = {
   free: { label: 'FREE', bg: 'rgba(255,255,255,0.07)', color: 'rgba(255,255,255,0.45)', border: 'rgba(255,255,255,0.1)' },
@@ -19,12 +24,7 @@ const TIER_CONFIG: Record<Tier, { label: string; bg: string; color: string; bord
 function TierPill({ tier }: { tier: Tier }) {
   const c = TIER_CONFIG[tier];
   return (
-    <span style={{
-      background: c.bg, color: c.color, border: `1px solid ${c.border}`,
-      fontSize: '0.65rem', fontWeight: 800, letterSpacing: '0.1em',
-      padding: '3px 8px', borderRadius: '6px', fontFamily: 'DM Sans, sans-serif',
-      textTransform: 'uppercase', whiteSpace: 'nowrap',
-    }}>
+    <span className={styles.label} style={{ background: c.bg, color: c.color, border: `1px solid ${c.border}` }}>
       {c.label}
     </span>
   );
@@ -48,15 +48,12 @@ function Section({ id, title, description, isDanger, accent, children }: {
   const descColor = isDanger ? 'rgba(231,76,60,0.8)' : 'var(--muted)';
 
   return (
-    <section id={id} style={{
-      background: 'var(--surface)', borderRadius: '12px',
-      border: `1px solid ${borderColor}`, overflow: 'hidden',
-    }}>
-      <div style={{ padding: '1.25rem 1.5rem', borderBottom: headerBorder }}>
-        <h2 style={{ color: titleColor, fontSize: '0.95rem', fontWeight: 700, margin: 0 }}>{title}</h2>
-        {description && <p style={{ color: descColor, fontSize: '0.8rem', margin: '0.2rem 0 0' }}>{description}</p>}
+    <section id={id} className={styles.section} style={{ border: `1px solid ${borderColor}` }}>
+      <div className={styles.block} style={{ borderBottom: headerBorder }}>
+        <h2 className={styles.heading} style={{ color: titleColor }}>{title}</h2>
+        {description && <p className={styles.text} style={{ color: descColor }}>{description}</p>}
       </div>
-      <div style={{ padding: '1.25rem 1.5rem', display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+      <div className={styles.stack}>
         {children}
       </div>
     </section>
@@ -65,10 +62,10 @@ function Section({ id, title, description, isDanger, accent, children }: {
 
 function Row({ label, description, children }: { label: string; description?: string; children: React.ReactNode }) {
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
+    <div className={styles.row}>
       <div>
-        <p style={{ color: 'var(--text)', fontSize: '0.875rem', fontWeight: 500, margin: 0 }}>{label}</p>
-        {description && <p style={{ color: 'var(--muted)', fontSize: '0.78rem', margin: '0.15rem 0 0' }}>{description}</p>}
+        <p className={styles.text2}>{label}</p>
+        {description && <p className={styles.descriptionText}>{description}</p>}
       </div>
       {children}
     </div>
@@ -77,48 +74,11 @@ function Row({ label, description, children }: { label: string; description?: st
 
 function Toggle({ checked, onChange }: { checked: boolean; onChange: (v: boolean) => void }) {
   return (
-    <button onClick={() => onChange(!checked)} style={{
-      width: '44px', height: '24px', borderRadius: '12px', border: 'none',
-      background: checked ? 'var(--gold)' : 'rgba(255,255,255,0.1)',
-      cursor: 'pointer', position: 'relative', flexShrink: 0, transition: 'background 0.2s',
-    }}>
-      <div style={{
-        position: 'absolute', top: '3px', left: checked ? '23px' : '3px',
-        width: '18px', height: '18px', borderRadius: '50%',
-        background: checked ? '#111' : 'rgba(255,255,255,0.5)',
-        transition: 'left 0.2s, background 0.2s',
-      }} />
+    <button onClick={() => onChange(!checked)} className={styles.button} style={{ background: checked ? 'var(--gold)' : 'rgba(255,255,255,0.1)' }}>
+      <div className={styles.layer} style={{ left: checked ? '23px' : '3px', background: checked ? '#111' : 'rgba(255,255,255,0.5)' }} />
     </button>
   );
 }
-
-const inputStyle: React.CSSProperties = {
-  background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-  borderRadius: '8px', padding: '0.55rem 0.85rem', color: 'var(--text)',
-  fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', outline: 'none',
-  width: '100%', boxSizing: 'border-box', transition: 'border-color 0.2s',
-};
-
-const btnPrimary: React.CSSProperties = {
-  padding: '0.55rem 1.1rem', background: 'var(--gold)', border: 'none',
-  borderRadius: '8px', color: '#111', fontWeight: 700, fontSize: '0.82rem',
-  fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'opacity 0.15s', flexShrink: 0,
-};
-
-const btnGhost: React.CSSProperties = {
-  padding: '0.55rem 1.1rem', background: 'rgba(255,255,255,0.04)',
-  border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px',
-  color: 'var(--muted)', fontWeight: 600, fontSize: '0.82rem',
-  fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
-};
-
-const btnPurple: React.CSSProperties = {
-  padding: '0.55rem 1.1rem',
-  background: 'rgba(167,139,250,0.15)',
-  border: '1px solid rgba(167,139,250,0.35)',
-  borderRadius: '8px', color: '#c4b5fd', fontWeight: 700, fontSize: '0.82rem',
-  fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
-};
 
 export default function ProfilePage() {
   const t = useTranslations('Profile');
@@ -184,11 +144,13 @@ export default function ProfilePage() {
       }
 
       // Check teacher profile
-      const { data: teacherProfile } = await supabase
-        .from('teacher_profiles')
-        .select('bio')
-        .eq('id', user.id)
-        .maybeSingle();
+      const { data: teacherProfile } = TEACHER_MODE_ENABLED
+        ? await supabase
+          .from('teacher_profiles')
+          .select('bio')
+          .eq('id', user.id)
+          .maybeSingle()
+        : { data: null };
 
       if (teacherProfile) {
         setIsTeacher(true);
@@ -295,7 +257,7 @@ export default function ProfilePage() {
       showToast(t('teacher.activateError'), 'error');
     } finally {
       setActivatingTeacher(false);
-      window.dispatchEvent(new CustomEvent('teacher-mode-changed'));
+      emitAppEvent(APP_EVENTS.TEACHER_MODE_CHANGED);
     }
   };
 
@@ -320,7 +282,7 @@ export default function ProfilePage() {
     setIsTeacher(false);
     localStorage.setItem('rr_app_mode', 'student');
     showToast(t('teacher.deactivateSuccess'), 'success');
-    window.dispatchEvent(new CustomEvent('teacher-mode-changed'));
+    emitAppEvent(APP_EVENTS.TEACHER_MODE_CHANGED);
   };
   // ────────────────────────────────────────────────────────────
 
@@ -350,43 +312,27 @@ export default function ProfilePage() {
     : null;
 
   return (
-    <div style={{ maxWidth: '680px', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div className={styles.labelStack}>
 
       {/* Header */}
       <div>
-        <p style={{ color: 'var(--gold)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 0.3rem', opacity: 0.7 }}>
+        <p className={styles.labelText}>
           {t('label')}
         </p>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
+        <h1 className={styles.title}>
           {t('title')}
         </h1>
       </div>
 
       {/* Avatar + username */}
-      <div style={{
-        background: 'var(--surface)', borderRadius: '12px',
-        border: '1px solid rgba(255,255,255,0.05)',
-        padding: '1.5rem', display: 'flex', alignItems: 'center', gap: '1.25rem', flexWrap: 'wrap',
-      }}>
-        <div style={{ position: 'relative', flexShrink: 0 }}>
-          <div onClick={() => fileInputRef.current?.click()} style={{
-            width: '72px', height: '72px', borderRadius: '50%',
-            background: displayAvatar ? 'transparent' : 'rgba(220,185,138,0.1)',
-            border: '2px solid rgba(220,185,138,0.3)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            cursor: 'pointer', overflow: 'hidden', position: 'relative',
-          }}>
+      <div className={styles.usernameRow}>
+        <div className={styles.initialsBlock}>
+          <div onClick={() => fileInputRef.current?.click()} className={styles.initialsRow} style={{ background: displayAvatar ? 'transparent' : 'rgba(220,185,138,0.1)' }}>
             {displayAvatar
-              ? <img src={displayAvatar} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              : <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.4rem', color: 'var(--gold)', letterSpacing: '0.05em' }}>{initials}</span>
+              ? <img src={displayAvatar} alt="avatar" className={styles.image} />
+              : <span className={styles.initialsLabel}>{initials}</span>
             }
-            <div style={{
-              position: 'absolute', inset: 0, background: 'rgba(0,0,0,0.5)',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              opacity: 0, transition: 'opacity 0.2s',
-            }}
-              onMouseEnter={e => e.currentTarget.style.opacity = '1'}
-              onMouseLeave={e => e.currentTarget.style.opacity = '0'}
+            <div className={styles.usernameRowInner}
             >
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                 <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z" />
@@ -394,24 +340,22 @@ export default function ProfilePage() {
               </svg>
             </div>
           </div>
-          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} style={{ display: 'none' }} />
+          <input ref={fileInputRef} type="file" accept="image/*" onChange={handleAvatarChange} className={styles.hiddenFileInput} />
         </div>
 
-        <div style={{ flex: 1, minWidth: '200px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
-            <label style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+        <div className={styles.username}>
+          <div className={styles.usernameRow2}>
+            <label className={styles.usernameFieldLabel}>
               {t('account.username')}
             </label>
             <TierPill tier={tier} />
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div className={styles.usernamePlaceholderStack}>
             <input type="text" value={username} onChange={e => setUsername(e.target.value)}
-              placeholder={t('account.usernamePlaceholder')} style={{ ...inputStyle, width: '100%' }}
-              onFocus={e => e.target.style.borderColor = 'rgba(220,185,138,0.4)'}
-              onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+              placeholder={t('account.usernamePlaceholder')} className={cx(styles.input, styles.usernamePlaceholderInput)}
             />
             <button onClick={handleSaveUsername} disabled={usernameSave === 'saving'}
-              style={{ ...btnPrimary, opacity: usernameSave === 'saving' ? 0.6 : 1, width: '100%' }}>
+              className={cx(styles.btnPrimary, styles.usernamePlaceholderInput)} style={{ opacity: usernameSave === 'saving' ? 0.6 : 1 }}>
               {saveLabel(usernameSave)}
             </button>
           </div>
@@ -429,25 +373,25 @@ export default function ProfilePage() {
         {tier === 'lifetime' && (
           <Row label={t('subscription.lifetime')} description={t('subscription.lifetimeDesc')}><div /></Row>
         )}
-        <div style={{ display: 'flex', gap: '0.6rem', flexWrap: 'wrap', paddingTop: '0.25rem' }}>
+        <div className={styles.upgradeRow}>
           {tier === 'free' && (
-            <button onClick={() => router.push(`/${locale}/pro`)} style={btnPrimary}>
+            <button onClick={() => router.push(`/${locale}/pro`)} className={styles.btnPrimary}>
               {t('subscription.upgrade')} →
             </button>
           )}
           {tier === 'pro' && (
             <>
               <button onClick={handleManageSubscription} disabled={portalLoading}
-                style={{ ...btnGhost, opacity: portalLoading ? 0.6 : 1 }}>
+                className={styles.btnGhost} style={{ opacity: portalLoading ? 0.6 : 1 }}>
                 {portalLoading ? t('subscription.loading') : t('subscription.manage')}
               </button>
-              <button onClick={() => router.push(`/${locale}/pro`)} style={btnPrimary}>
+              <button onClick={() => router.push(`/${locale}/pro`)} className={styles.btnPrimary}>
                 {t('subscription.upgradeLifetime')} →
               </button>
             </>
           )}
           {tier === 'lifetime' && (
-            <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: 0 }}>
+            <p className={styles.lifetimeManageText}>
               {t('subscription.lifetimeManage')}
             </p>
           )}
@@ -455,7 +399,7 @@ export default function ProfilePage() {
       </Section>
 
       {/* ── Teacher mode ── */}
-      {isProOrLifetime && (
+      {TEACHER_MODE_ENABLED && isProOrLifetime && (
         <Section
           id="teacher"
           title={t('teacher.title')}
@@ -464,32 +408,28 @@ export default function ProfilePage() {
         >
           {!isTeacher ? (
             /* Not yet activated */
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className={styles.feature1Stack}>
+              <div className={styles.usernamePlaceholderStack}>
                 {[
                   t('teacher.feature1'),
                   t('teacher.feature2'),
                   t('teacher.feature3'),
                 ].map((f, i) => (
-                  <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <div style={{
-                      width: '18px', height: '18px', borderRadius: '50%', flexShrink: 0,
-                      background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.3)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    }}>
+                  <div key={i} className={styles.usernamePlaceholderStackRow}>
+                    <div className={styles.usernamePlaceholderStackRowInner}>
                       <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                         <polyline points="20 6 9 17 4 12" />
                       </svg>
                     </div>
-                    <span style={{ fontSize: '0.82rem', color: 'var(--muted)' }}>{f}</span>
+                    <span className={styles.usernamePlaceholderStackLabel}>{f}</span>
                   </div>
                 ))}
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-start', paddingTop: '0.25rem' }}>
+              <div className={styles.activatingRow}>
                 <button
                   onClick={handleActivateTeacher}
                   disabled={activatingTeacher}
-                  style={{ ...btnPurple, opacity: activatingTeacher ? 0.6 : 1 }}
+                  className={styles.btnPurple} style={{ opacity: activatingTeacher ? 0.6 : 1 }}
                 >
                   {activatingTeacher ? t('teacher.activating') : t('teacher.activate')}
                 </button>
@@ -498,27 +438,19 @@ export default function ProfilePage() {
           ) : (
             /* Already a teacher */
             <>
-              <div style={{
-                display: 'flex', alignItems: 'center', gap: '0.6rem',
-                background: 'rgba(167,139,250,0.08)', border: '1px solid rgba(167,139,250,0.2)',
-                borderRadius: '8px', padding: '0.65rem 0.85rem',
-              }}>
-                <div style={{
-                  width: '20px', height: '20px', borderRadius: '50%', flexShrink: 0,
-                  background: 'rgba(167,139,250,0.2)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
+              <div className={styles.activeRow}>
+                <div className={styles.activeRowInner}>
                   <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#c4b5fd" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
                 </div>
-                <span style={{ fontSize: '0.82rem', color: '#c4b5fd', fontWeight: 600 }}>
+                <span className={styles.activeLabel}>
                   {t('teacher.active')}
                 </span>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                <label style={{ color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase' }}>
+              <div className={styles.usernamePlaceholderStack}>
+                <label className={styles.usernameFieldLabel}>
                   {t('teacher.bioLabel')}
                 </label>
                 <textarea
@@ -526,26 +458,21 @@ export default function ProfilePage() {
                   onChange={e => setTeacherBio(e.target.value)}
                   placeholder={t('teacher.bioPlaceholder')}
                   rows={3}
-                  style={{
-                    ...inputStyle, resize: 'vertical', lineHeight: 1.6,
-                    fontFamily: 'DM Sans, sans-serif',
-                  }}
-                  onFocus={e => e.target.style.borderColor = 'rgba(167,139,250,0.4)'}
-                  onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  className={cx(styles.input, styles.bioPlaceholderTextarea)}
                 />
               </div>
 
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+              <div className={styles.deactivateRow}>
                 <button
                   onClick={handleDeactivateTeacher}
-                  style={{ ...btnGhost, fontSize: '0.78rem', color: 'rgba(167,139,250,0.5)', borderColor: 'rgba(167,139,250,0.15)' }}
+                  className={cx(styles.btnGhost, styles.deactivateButton)}
                 >
                   {t('teacher.deactivate')}
                 </button>
                 <button
                   onClick={handleSaveTeacherBio}
                   disabled={teacherSave === 'saving'}
-                  style={{ ...btnPurple, opacity: teacherSave === 'saving' ? 0.6 : 1 }}
+                  className={styles.btnPurple} style={{ opacity: teacherSave === 'saving' ? 0.6 : 1 }}
                 >
                   {saveLabel(teacherSave)}
                 </button>
@@ -557,21 +484,17 @@ export default function ProfilePage() {
 
       {/* Security */}
       <Section title={t('security.title')} description={t('security.description')}>
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+        <div className={styles.newPasswordStack}>
           <input type="password" value={newPassword} onChange={e => setNewPassword(e.target.value)}
-            placeholder={t('security.newPassword')} style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'rgba(220,185,138,0.4)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+            placeholder={t('security.newPassword')} className={`${styles.input} ${styles.inputFocusable}`}
           />
           <input type="password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-            placeholder={t('security.confirmPassword')} style={inputStyle}
-            onFocus={e => e.target.style.borderColor = 'rgba(220,185,138,0.4)'}
-            onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
+            placeholder={t('security.confirmPassword')} className={`${styles.input} ${styles.confirmPasswordFocusable}`}
           />
-          {passwordError && <p style={{ color: '#e74c3c', fontSize: '0.78rem', margin: 0 }}>{passwordError}</p>}
-          <div style={{ display: 'flex', justifyContent: 'flex-end' }}>
+          {passwordError && <p className={styles.passwordErrorText}>{passwordError}</p>}
+          <div className={styles.passwordSaveRow}>
             <button onClick={handleSavePassword} disabled={passwordSave === 'saving'}
-              style={{ ...btnPrimary, opacity: passwordSave === 'saving' ? 0.6 : 1 }}>
+              className={styles.btnPrimary} style={{ opacity: passwordSave === 'saving' ? 0.6 : 1 }}>
               {saveLabel(passwordSave)}
             </button>
           </div>
@@ -581,32 +504,26 @@ export default function ProfilePage() {
       {/* Preferences */}
       <Section title={t('preferences.title')} description={t('preferences.description')}>
         <Row label={t('preferences.language')} description={t('preferences.languageDesc')}>
-          <button onClick={handleLanguageSwitch} style={btnGhost}>
+          <button onClick={handleLanguageSwitch} className={styles.btnGhost}>
             {locale === 'es' ? 'Switch to English' : 'Cambiar a Español'}
           </button>
         </Row>
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1.25rem' }} />
+        <div className={styles.labelStackBlock} />
         <Row label={t('preferences.leftyMode')} description={t('preferences.leftyModeDesc')}>
           <Toggle checked={leftyMode} onChange={setLeftyMode} />
         </Row>
         <Row label={t('preferences.defaultView')} description={t('preferences.defaultViewDesc')}>
-          <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <div className={styles.labelStackRow}>
             {(['notes', 'intervals'] as const).map(v => (
-              <button key={v} onClick={() => setDefaultView(v)} style={{
-                padding: '0.4rem 0.85rem', borderRadius: '6px', fontSize: '0.78rem', fontWeight: 600,
-                fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.15s',
-                background: defaultView === v ? 'var(--gold)' : 'rgba(255,255,255,0.04)',
-                color: defaultView === v ? '#111' : 'var(--muted)',
-                border: defaultView === v ? 'none' : '1px solid rgba(255,255,255,0.08)',
-              }}>
+              <button key={v} onClick={() => setDefaultView(v)} className={styles.labelStackButton} style={{ background: defaultView === v ? 'var(--gold)' : 'rgba(255,255,255,0.04)', color: defaultView === v ? '#111' : 'var(--muted)', border: defaultView === v ? 'none' : '1px solid rgba(255,255,255,0.08)' }}>
                 {t(`preferences.${v}`)}
               </button>
             ))}
           </div>
         </Row>
-        <div style={{ display: 'flex', justifyContent: 'flex-end', borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '1rem' }}>
+        <div className={styles.prefsSaveRow}>
           <button onClick={handleSavePrefs} disabled={prefsSave === 'saving'}
-            style={{ ...btnPrimary, opacity: prefsSave === 'saving' ? 0.6 : 1 }}>
+            className={styles.btnPrimary} style={{ opacity: prefsSave === 'saving' ? 0.6 : 1 }}>
             {saveLabel(prefsSave)}
           </button>
         </div>
@@ -617,16 +534,16 @@ export default function ProfilePage() {
         <Row label={t('danger.deleteAccount')} description={t('danger.deleteDescription')}>
           {!showDeleteConfirm ? (
             <button onClick={() => setShowDeleteConfirm(true)}
-              style={{ ...btnGhost, color: '#e74c3c', borderColor: 'rgba(231,76,60,0.3)' }}>
+              className={cx(styles.btnGhost, styles.deleteButton)}>
               {t('danger.deleteButton')}
             </button>
           ) : (
-            <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-              <span style={{ color: 'var(--muted)', fontSize: '0.78rem' }}>{t('danger.deleteConfirm')}</span>
-              <button onClick={handleDeleteAccount} style={{ ...btnPrimary, background: '#e74c3c' }}>
+            <div className={styles.deleteConfirmRow}>
+              <span className={styles.deleteConfirmLabel}>{t('danger.deleteConfirm')}</span>
+              <button onClick={handleDeleteAccount} className={cx(styles.btnPrimary, styles.confirmYesButton)}>
                 {t('danger.confirmYes')}
               </button>
-              <button onClick={() => setShowDeleteConfirm(false)} style={btnGhost}>
+              <button onClick={() => setShowDeleteConfirm(false)} className={styles.btnGhost}>
                 {t('danger.confirmNo')}
               </button>
             </div>
@@ -636,13 +553,7 @@ export default function ProfilePage() {
 
       {/* Toast */}
       {toast && (
-        <div style={{
-          position: 'fixed', bottom: '24px', right: '24px',
-          background: toast.type === 'success' ? '#2ecc71' : '#e74c3c',
-          color: '#fff', padding: '12px 20px', borderRadius: '8px',
-          fontWeight: 600, fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif',
-          boxShadow: '0 4px 12px rgba(0,0,0,0.2)', zIndex: 9998,
-        }}>
+        <div className={styles.block4} style={{ background: toast.type === 'success' ? '#2ecc71' : '#e74c3c' }}>
           {toast.msg}
         </div>
       )}

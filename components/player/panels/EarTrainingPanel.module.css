@@ -1,0 +1,271 @@
+@keyframes et-fadeInUp  { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+@keyframes et-slideDown { from { opacity:0; transform:translateY(-6px); } to { opacity:1; transform:translateY(0); } }
+@keyframes et-ripple    { 0% { transform:translate(-50%,-50%) scale(0.5); opacity:0.6; } 100% { transform:translate(-50%,-50%) scale(2.8); opacity:0; } }
+@keyframes et-pulse     { 0%,100% { box-shadow:0 0 0 0 rgba(var(--gold-rgb), 0.4); } 50% { box-shadow:0 0 0 12px rgba(var(--gold-rgb), 0); } }
+@keyframes et-shake     { 0%,100% { transform:translateX(0); } 20%,60% { transform:translateX(-4px); } 40%,80% { transform:translateX(4px); } }
+@keyframes et-pop       { 0% { transform:scale(1); } 40% { transform:scale(1.06); } 100% { transform:scale(1); } }
+.et-btn { transition: background 0.15s, border-color 0.15s, color 0.15s, transform 0.15s; }
+.et-btn:hover:not(:disabled) { transform: translateY(-1px); }
+.et-success { animation: et-pop 0.25s ease; }
+.et-error   { animation: et-shake 0.3s ease; }
+
+.titleBox {
+  background: var(--surface);
+  border-radius: 12px;
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  overflow: hidden;
+}
+
+.titleRow {
+  padding: 1.1rem 1.75rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.75rem;
+}
+
+.titleHeading {
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.8rem;
+  margin: 0;
+  letter-spacing: 0.04em;
+  line-height: 1;
+}
+
+.text {
+  color: var(--muted);
+  margin: 0.15rem 0 0;
+  font-size: 0.75rem;
+}
+
+.levelRow {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.levelRow2 {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.levelButton {
+  padding: 0.3rem 0.75rem;
+  border-radius: 100px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  font-weight: 700;
+  transition: all 0.2s;
+}
+
+.currentStreak {
+  border-left: 1px solid rgba(255,255,255,0.06);
+  padding-left: 1.25rem;
+  text-align: right;
+}
+
+.currentStreak2 {
+  font-size: 0.55rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+}
+
+.block {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  line-height: 1;
+}
+
+.label {
+  font-size: 0.9rem;
+  margin-left: 2px;
+}
+
+.record {
+  font-size: 0.55rem;
+  color: rgba(var(--gold-rgb), 0.4);
+}
+
+.tapToListenGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+}
+
+.tapToListenStack {
+  padding: 2rem 1.75rem;
+  border-right: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+}
+
+.row {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.layer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--gold-rgb), 0.5);
+  animation: et-ripple 1s ease-out forwards;
+}
+
+.tapToListenStackLayer {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--gold-rgb), 0.3);
+  animation: et-ripple 1s ease-out 0.2s forwards;
+}
+
+.button {
+  width: 96px;
+  height: 96px;
+  border-radius: 50%;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  background: rgba(var(--gold-rgb), 0.06);
+  border: 2px solid var(--gold);
+  color: var(--gold);
+  cursor: pointer;
+}
+
+.button:hover {
+  background: rgba(var(--gold-rgb), 0.14);
+}
+
+.buttonLoading,
+.buttonLoading:hover {
+  background: rgba(255,255,255,0.03);
+  border-color: rgba(255,255,255,0.15);
+  color: var(--muted);
+  cursor: wait;
+  opacity: 0.5;
+}
+
+.buttonPlaying {
+  animation: et-pulse 1s ease infinite;
+}
+
+.dot {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  border: 2px solid rgba(var(--gold-rgb), 0.2);
+  border-top-color: var(--gold);
+  animation: et-ripple 0.7s linear infinite;
+}
+
+.tapToListenText {
+  color: var(--muted);
+  font-size: 0.75rem;
+  margin: 0;
+  font-style: italic;
+  text-align: center;
+}
+
+.tapToListen {
+  width: 100%;
+  animation: et-slideDown 0.3s ease;
+}
+
+.chordLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.65rem;
+}
+
+.box {
+  height: 1px;
+  flex: 1;
+  background: rgba(255,255,255,0.06);
+}
+
+.chordLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.3rem;
+  letter-spacing: 0.04em;
+}
+
+.tapToListenBox {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 1.25rem;
+  text-align: center;
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
+.listenFirstStack {
+  padding: 2rem 1.75rem;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.9rem;
+}
+
+.listenFirstText {
+  color: var(--muted);
+  font-size: 0.75rem;
+  text-align: center;
+  margin: 0 0 0.25rem;
+  font-style: italic;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0.6rem;
+  transition: opacity 0.2s;
+}
+
+.listenFirstStackButton {
+  padding: 1rem 0.75rem;
+  border-radius: 10px;
+  font-weight: 700;
+  font-size: 0.88rem;
+  font-family: var(--font-body), sans-serif;
+}
+
+.nextChordButton {
+  padding: 0.75rem;
+  border-radius: 100px;
+  background: var(--gold);
+  color: #111;
+  border: none;
+  font-weight: 800;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-body), sans-serif;
+  letter-spacing: 0.04em;
+  box-shadow: 0 4px 14px rgba(var(--gold-rgb), 0.25);
+  animation: et-fadeInUp 0.25s ease;
+  transition: opacity 0.15s;
+  margin-top: 0.25rem;
+}
+
+.nextChordButton:hover {
+  opacity: 0.85;
+}

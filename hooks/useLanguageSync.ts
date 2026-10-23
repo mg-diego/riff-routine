@@ -24,7 +24,8 @@ export function useLanguageSync() {
         .single();
 
       if (profile?.language && profile.language !== locale && isMounted) {
-        const newPath = pathname.replace(`/${locale}`, `/${profile.language}`);
+        // keep the query string (e.g. /practice?mode=scales) when switching locale
+        const newPath = pathname.replace(`/${locale}`, `/${profile.language}`) + window.location.search;
         router.replace(newPath);
       }
     };

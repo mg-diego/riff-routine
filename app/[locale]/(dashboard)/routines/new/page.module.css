@@ -1,0 +1,305 @@
+/* Base styles (element-specific classes below override them) */
+.input {
+  width: 100%;
+  padding: 1rem;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  outline: none;
+  transition: all 0.2s;
+  box-sizing: border-box;
+}
+
+.backButton {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.titleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  align-items: start;
+}
+
+.titleStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.routineNameStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.routineNameFieldLabel {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 0.5rem;
+}
+
+.optionalLabel {
+  color: var(--muted);
+  font-weight: 400;
+}
+
+.descriptionTextarea {
+  resize: vertical;
+}
+
+.title {
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding-top: 2rem;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 1.5rem;
+}
+
+.titleHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.8rem;
+  color: var(--text);
+  margin: 0;
+  line-height: 1;
+}
+
+.label {
+  background: var(--gold);
+  color: #111;
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+}
+
+.emptyStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.emptyBox {
+  padding: 2rem;
+  background: rgba(0,0,0,0.2);
+  border-radius: 8px;
+  border: 1px dashed rgba(255,255,255,0.1);
+  text-align: center;
+}
+
+.emptyText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.noFileWarningBox {
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.noFileWarningRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 0.5rem;
+}
+
+.noFileWarning {
+  flex: 1;
+}
+
+.label2 {
+  font-size: 0.7rem;
+  color: var(--muted);
+  font-weight: 700;
+}
+
+.noFileWarningRow2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.text {
+  color: var(--text);
+  margin: 0;
+  font-weight: 600;
+}
+
+.noFileWarningLabel {
+  font-size: 0.9rem;
+  cursor: help;
+}
+
+.button {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 0.2rem;
+}
+
+.minutesGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.minutesStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.minutesFieldLabel {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.smallInput {
+  width: 100%;
+  padding: 0.6rem;
+  border-radius: 4px;
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  outline: none;
+}
+
+.block {
+  margin-top: 1.5rem;
+}
+
+.savingButton {
+  width: 100%;
+  padding: 1rem;
+  background: var(--gold);
+  color: #111;
+  margin-top: 1.5rem;
+  border: none;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: var(--font-body), sans-serif;
+  transition: background 0.2s;
+}
+
+.titleGridStack {
+  position: sticky;
+  top: 2rem;
+  height: calc(100vh - 4rem);
+  display: flex;
+  flex-direction: column;
+}
+
+.titleGridHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.8rem;
+  color: var(--text);
+  margin: 0 0 1.5rem 0;
+  line-height: 1;
+}
+
+.searchInput {
+  margin-bottom: 1rem;
+  padding: 0.8rem 1rem;
+}
+
+.loadingStack {
+  flex: 1;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding-right: 0.5rem;
+}
+
+.loadingText {
+  color: var(--muted);
+  text-align: center;
+  padding: 2rem 0;
+}
+
+.noCategoryRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1rem;
+  border-radius: 8px;
+  transition: all 0.2s;
+  background: rgba(255,255,255,0.02);
+  cursor: pointer;
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.noCategoryStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.noCategoryStackText {
+  color: var(--text);
+  margin: 0;
+  font-weight: 600;
+  font-size: 0.95rem;
+}
+
+.noCategoryText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.8rem;
+}
+
+.noGpLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+}
+
+.noCategoryRowButton {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  border: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.inputFocusable:focus {
+  border-color: var(--gold);
+}
+
+.noCategoryRow:not(.selected):hover {
+  background: rgba(255,255,255,0.05);
+}
+
+.selected {
+  cursor: default;
+  border: 1px solid var(--gold);
+  opacity: 0.5;
+}
+
+.descriptionTextarea:focus {
+  border-color: var(--gold);
+}

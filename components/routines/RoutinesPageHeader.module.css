@@ -1,0 +1,44 @@
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.newRoutineButton {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  transition: all 0.2s;
+  white-space: nowrap;
+  width: fit-content;
+  flex-shrink: 0;
+  background: var(--gold);
+  color: #111;
+  border: none;
+  box-shadow: 0 4px 14px rgba(var(--gold-rgb), 0.25);
+}
+
+.newRoutineButton:hover {
+  background: var(--gold-dark);
+}
+
+/* Free tier limit reached: outlined button that leads to the pro modal */
+.locked {
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  box-shadow: none;
+}
+
+.locked:hover {
+  background: rgba(var(--gold-rgb), 0.1);
+}

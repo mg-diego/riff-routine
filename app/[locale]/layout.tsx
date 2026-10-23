@@ -2,7 +2,8 @@ import type { Metadata } from "next";
 import "../globals.css";
 import { NextIntlClientProvider } from 'next-intl';
 import { getMessages, getTranslations, setRequestLocale } from 'next-intl/server';
-import { LanguageSync } from '../../components/ui/LanguageSync';
+import { LanguageSync } from '@/components/ui/LanguageSync';
+import { bodyFont, displayFont } from '../fonts';
 
 export async function generateMetadata(
   { params }: { params: Promise<{ locale: string }> }
@@ -32,9 +33,13 @@ export default async function LocaleLayout({
   const messages = await getMessages();
 
   return (
-    <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
-      <LanguageSync />
-      {children}
-    </NextIntlClientProvider>
+    <html lang={locale} className={`${displayFont.variable} ${bodyFont.variable}`}>
+      <body>
+        <NextIntlClientProvider locale={locale} messages={messages} key={locale}>
+          <LanguageSync />
+          {children}
+        </NextIntlClientProvider>
+      </body>
+    </html>
   );
 }

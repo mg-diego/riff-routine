@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { PieChart, Pie, Cell, ResponsiveContainer, Tooltip, Legend } from 'recharts';
-import { getStartDate } from '../../lib/utils';
+import { getStartDate } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
 import { Exercise } from '@/lib/types';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import styles from './CategoryDistribution.module.css';
 
 interface DistributionData { name: string; value: number; }
 const COLORS = ['#dcb98a', '#a78bfa', '#34d399', '#f87171', '#fbbf24', '#818cf8'];
@@ -102,7 +103,7 @@ export function CategoryDistribution({ dateFilter }: Props) {
         dominantBaseline="central" 
         fontSize="0.75rem" 
         fontWeight="600"
-        fontFamily="DM Sans, sans-serif"
+        style={{ fontFamily: 'var(--font-body), sans-serif' }}
       >
         {`${name} ${(percent * 100).toFixed(0)}%`}
       </text>
@@ -117,21 +118,15 @@ export function CategoryDistribution({ dateFilter }: Props) {
         : 0;
 
       return (
-        <div style={{
-          background: '#111',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '8px',
-          padding: '0.8rem 1rem',
-          boxShadow: '0 8px 16px rgba(0,0,0,0.4)'
-        }}>
-          <p style={{ margin: '0 0 0.5rem 0', color: 'var(--muted)', fontSize: '0.85rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className={styles.box}>
+          <p className={styles.text}>
             {categoryData.name}
           </p>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-            <span style={{ color: 'var(--gold)', fontSize: '1.2rem', fontWeight: 700, fontFamily: 'Bebas Neue, sans-serif', letterSpacing: '0.05em' }}>
+          <div className={styles.row}>
+            <span className={styles.label}>
               {formatTime(categoryData.value)}
             </span>
-            <span style={{ color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600 }}>
+            <span className={styles.percentageLabel}>
               ({percentage}%)
             </span>
           </div>
@@ -142,24 +137,24 @@ export function CategoryDistribution({ dateFilter }: Props) {
   };
 
   if (loading) return (
-    <div style={{ background: 'var(--surface)', borderRadius: '12px', height: 450, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className={styles.row2}>
       <span className="loader" />
     </div>
   );
 
   if (data.length === 0) return (
-    <div style={{ background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: 450, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-      <span style={{ fontSize: '2rem' }}>🎸</span>
-      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: 0 }}>{t('noData')}</p>
+    <div className={styles.noDataStack}>
+      <span className={styles.noDataStackLabel}>🎸</span>
+      <p className={styles.noDataText}>{t('noData')}</p>
     </div>
   );
 
   return (
-    <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: 450, display: 'flex', flexDirection: 'column' }}>
-      <h3 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+    <div className={styles.titleStack}>
+      <h3 className={styles.titleSubheading}>
         {t('title')}
       </h3>
-      <div style={{ flex: 1, width: '100%' }}>
+      <div className={styles.block}>
         <ResponsiveContainer width="100%" height="100%">
           <PieChart margin={{ top: 20, right: 30, bottom: 20, left: 30 }}>
             <Pie 

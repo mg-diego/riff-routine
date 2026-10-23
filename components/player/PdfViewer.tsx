@@ -5,6 +5,7 @@ import { Document, Page, pdfjs } from 'react-pdf';
 import 'react-pdf/dist/Page/AnnotationLayer.css';
 import 'react-pdf/dist/Page/TextLayer.css';
 import { useTranslations } from 'next-intl';
+import styles from './PdfViewer.module.css';
 
 pdfjs.GlobalWorkerOptions.workerSrc = new URL(
   'pdfjs-dist/build/pdf.worker.min.mjs',
@@ -27,71 +28,64 @@ export function PdfViewer({ url }: PdfViewerProps) {
     }
 
     return (
-        <div style={{ display: 'flex', flexDirection: 'column', height: '100%', background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+        <div className={styles.stack}>
+            <div className={styles.row}>
+                <div className={styles.pageNumberRow}>
                     <button 
                         onClick={() => setPageNumber(p => Math.max(1, p - 1))} 
                         disabled={pageNumber <= 1}
-                        style={{ background: 'rgba(255,255,255,0.05)', color: pageNumber <= 1 ? 'var(--muted)' : 'var(--text)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: pageNumber <= 1 ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}
+                        className={styles.button} style={{ color: pageNumber <= 1 ? 'var(--muted)' : 'var(--text)', cursor: pageNumber <= 1 ? 'not-allowed' : 'pointer' }}
                     >
                         ←
                     </button>
-                    <span style={{ color: 'var(--muted)', fontSize: '0.9rem', fontFamily: 'DM Sans, sans-serif', minWidth: '80px', textAlign: 'center' }}>
+                    <span className={styles.label}>
                         {pageNumber} / {numPages || '-'}
                     </span>
                     <button 
                         onClick={() => setPageNumber(p => Math.min(numPages || 1, p + 1))} 
                         disabled={pageNumber >= (numPages || 1)}
-                        style={{ background: 'rgba(255,255,255,0.05)', color: pageNumber >= (numPages || 1) ? 'var(--muted)' : 'var(--text)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: pageNumber >= (numPages || 1) ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}
+                        className={styles.button} style={{ color: pageNumber >= (numPages || 1) ? 'var(--muted)' : 'var(--text)', cursor: pageNumber >= (numPages || 1) ? 'not-allowed' : 'pointer' }}
                     >
                         →
                     </button>
                 </div>
 
-                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                <div className={styles.row3}>
                     <button 
                         onClick={() => setScale(s => Math.max(0.5, s - 0.2))}
-                        style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer' }}
+                        className={styles.button2}
                     >
                         -
                     </button>
-                    <span style={{ color: 'var(--gold)', fontSize: '0.9rem', display: 'flex', alignItems: 'center', width: '45px', justifyContent: 'center' }}>
+                    <span className={styles.label2}>
                         {Math.round(scale * 100)}%
                     </span>
                     <button 
                         onClick={() => setScale(s => Math.min(3.0, s + 0.2))}
-                        style={{ background: 'rgba(255,255,255,0.05)', color: 'var(--text)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer' }}
+                        className={styles.button2}
                     >
                         +
                     </button>
                 </div>
             </div>
 
-            <div style={{ flex: 1, overflow: 'auto', padding: '1rem', display: 'flex', justifyContent: 'center', background: '#1a1a1a' }}>
+            <div className={styles.row4}>
                 <Document 
                     file={url} 
                     onLoadSuccess={onDocumentLoadSuccess}
-                    loading={<div style={{ color: 'var(--gold)', padding: '2rem' }}>Cargando partitura...</div>}
-                    error={<div style={{ color: '#e74c3c', padding: '2rem' }}>Error al cargar el PDF.</div>}
+                    loading={<div className={styles.block}>Cargando partitura...</div>}
+                    error={<div className={styles.block2}>Error al cargar el PDF.</div>}
                 >
                     <Page 
                         pageNumber={pageNumber} 
                         scale={scale} 
                         renderTextLayer={true} 
                         renderAnnotationLayer={true} 
-                        className="pdf-page-custom"
+                        className={styles['pdf-page-custom']}
                     />
                 </Document>
             </div>
 
-            <style>{`
-                .pdf-page-custom {
-                    box-shadow: 0 4px 24px rgba(0,0,0,0.4);
-                    border-radius: 4px;
-                    overflow: hidden;
-                }
-            `}</style>
         </div>
     );
 }

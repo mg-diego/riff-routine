@@ -1,0 +1,670 @@
+.row {
+  height: 40px;
+  display: flex;
+  align-items: center;
+}
+
+.label {
+  font-size: 0.72rem;
+  color: rgba(255,255,255,0.2);
+}
+
+.icon {
+  overflow: visible;
+}
+
+.back {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.performanceIn {
+  margin-bottom: 2rem;
+}
+
+.performanceInTitle {
+  font-family: var(--font-display), sans-serif;
+  font-size: 3rem;
+  color: var(--text);
+  margin: 0 0 0.5rem 0;
+  line-height: 1;
+}
+
+.routineNameLabel {
+  color: var(--gold);
+}
+
+.sessionsCompletedText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.statsRow {
+  display: flex;
+  gap: 1rem;
+  margin-bottom: 2rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 1rem;
+}
+
+.statsButton {
+  border: none;
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.block {
+  margin-bottom: 1.5rem;
+}
+
+.backBlock {
+  font-size: 3rem;
+  margin-bottom: 1rem;
+}
+
+.titleText {
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.descriptionText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.completedSessionsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: fadeIn 0.3s ease;
+}
+
+.completedSessionsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
+}
+
+.box {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.completedSessionsGridLabel {
+  font-size: 0.72rem;
+  color: var(--muted);
+  text-transform: uppercase;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+}
+
+.text {
+  font-size: 2.2rem;
+  margin: 0.2rem 0 0;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1;
+}
+
+.completedSessionsGridText {
+  margin: 0.2rem 0 0;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.minutesPerSessionHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin: 0 0 1.5rem 0;
+  letter-spacing: 0.05em;
+}
+
+.completedSessionsStackBlock {
+  height: 250px;
+}
+
+.exerciseProgressHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  color: var(--text);
+  margin: 0 0 1rem 0;
+  letter-spacing: 0.05em;
+}
+
+.lastPracticeGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 1rem;
+}
+
+.lastPracticeStack {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.subheading {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.lastPracticeLabel {
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+
+.bpmEvolutionLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(var(--gold-rgb), 0.5);
+  display: block;
+  margin-bottom: 0.35rem;
+}
+
+.insufficientDataSparkRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.bpmDeltaLabel {
+  font-size: 0.8rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 100px;
+}
+
+.totalTimeShortGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.5rem;
+  border-top: 1px solid rgba(255,255,255,0.04);
+  padding-top: 0.85rem;
+}
+
+.totalTimeShortLabel {
+  font-size: 0.6rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.3);
+  display: block;
+}
+
+.totalSecondsLabel {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--text);
+  font-family: var(--font-display), sans-serif;
+}
+
+.totalTimeShortGridLabel {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--success);
+  font-family: var(--font-display), sans-serif;
+}
+
+.label7 {
+  font-size: 0.95rem;
+  font-weight: 700;
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+}
+
+.towardsGoalRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 0.3rem;
+}
+
+.towardsGoalLabel {
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.3);
+  font-weight: 600;
+}
+
+.pctOfGoalLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+
+.lastPracticeStackBox {
+  height: 4px;
+  background: rgba(255,255,255,0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+
+.lastPracticeStackBlock {
+  height: 100%;
+  border-radius: 99px;
+  transition: width 0.5s ease;
+}
+
+.progressMatrix {
+  overflow-x: auto;
+}
+
+.exercise {
+  min-width: 800px;
+}
+
+.exerciseRow {
+  display: flex;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.exercise2 {
+  width: 250px;
+  flex-shrink: 0;
+  font-weight: 700;
+  color: var(--muted);
+  font-size: 0.8rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.exerciseRowInner {
+  display: flex;
+  flex: 1;
+  gap: 0.5rem;
+}
+
+.exerciseRowBlock {
+  flex: 1;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.exerciseStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.exerciseRow2 {
+  display: flex;
+  align-items: center;
+}
+
+.exercise3 {
+  width: 250px;
+  flex-shrink: 0;
+  padding-right: 1rem;
+}
+
+.exerciseText {
+  margin: 0;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.exerciseStackText {
+  margin: 0;
+  color: rgba(255,255,255,0.3);
+  font-size: 0.7rem;
+}
+
+.notPracticedStack {
+  flex: 1;
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 6px;
+  height: 40px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 0.85rem;
+  transition: all 0.2s;
+}
+
+.notPracticedStackRow {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.notPracticedStackLabel {
+  color: #111;
+}
+
+.diffLabel {
+  font-size: 0.65rem;
+  background: rgba(255,255,255,0.6);
+  padding: 1px 3px;
+  border-radius: 3px;
+  line-height: 1;
+}
+
+.label11 {
+  color: rgba(255,255,255,0.15);
+}
+
+.lessGoalRow {
+  display: flex;
+  justify-content: flex-end;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 2rem;
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.lessGoalRowInner {
+  display: flex;
+  gap: 0.2rem;
+}
+
+.lessGoalRowBlock {
+  width: 20px;
+  height: 20px;
+  border-radius: 4px;
+}
+
+.dateTimeBox {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  overflow: hidden;
+  animation: fadeIn 0.3s ease;
+}
+
+.dateTimeTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+}
+
+.dateTimeTr {
+  background: rgba(0,0,0,0.2);
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.th {
+  padding: 1.2rem 1.5rem;
+  font-weight: 700;
+  width: 40px;
+}
+
+.actionsTh {
+  padding: 1.2rem 1.5rem;
+  font-weight: 700;
+  text-align: right;
+}
+
+.minTr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+.td {
+  padding: 1rem 0 1rem 1.5rem;
+  color: var(--muted);
+}
+
+.minTrIcon {
+  transition: transform 0.2s;
+}
+
+.dateTimeStrTd {
+  padding: 1rem 1.5rem;
+  color: var(--text);
+  font-weight: 500;
+}
+
+.minTd {
+  padding: 1rem 1.5rem;
+  color: var(--gold);
+  font-weight: 700;
+}
+
+.exercisesCountTd {
+  padding: 1rem 1.5rem;
+  color: var(--muted);
+}
+
+.deleteTd {
+  padding: 1rem 1.5rem;
+  text-align: right;
+}
+
+.deleteButton {
+  background: rgba(var(--danger-rgb), 0.1);
+  color: var(--danger);
+  border: 1px solid rgba(var(--danger-rgb), 0.2);
+  padding: 0.5rem 0.8rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.deleteButton:hover {
+  background: rgba(var(--danger-rgb), 0.2);
+}
+
+.practicedExercisesTr {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+}
+
+.practicedExercisesTd {
+  padding: 0;
+}
+
+.practicedExercisesBox {
+  background: rgba(0,0,0,0.3);
+  padding: 1.5rem 1.5rem 1.5rem 4rem;
+  border-top: 1px solid rgba(255,255,255,0.03);
+}
+
+.practicedExercisesSubheading {
+  margin: 0 0 1rem 0;
+  color: var(--muted);
+  font-size: 0.85rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.noExercisesText {
+  color: var(--muted);
+  font-size: 0.9rem;
+  margin: 0;
+}
+
+.exerciseTable {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  background: rgba(255,255,255,0.02);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.exerciseTr {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.exerciseTh {
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+}
+
+.actionsTh2 {
+  padding: 0.8rem 1rem;
+  font-weight: 600;
+  text-align: right;
+}
+
+.exerciseTableTr {
+  border-bottom: 1px solid rgba(255,255,255,0.02);
+}
+
+.exerciseTableTd {
+  padding: 0.8rem 1rem;
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.exerciseTableTrTd {
+  padding: 0.6rem 1rem;
+}
+
+.input {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.4rem;
+  border-radius: 4px;
+  width: 70px;
+  outline: none;
+  font-family: var(--font-body), sans-serif;
+}
+
+.minRow {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.minRowInput {
+  background: var(--surface);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.2);
+  padding: 0.4rem;
+  border-radius: 4px;
+  width: 60px;
+  outline: none;
+  font-family: var(--font-body), sans-serif;
+}
+
+.minLabel {
+  color: var(--muted);
+  font-size: 0.8rem;
+}
+
+.td6 {
+  padding: 0.6rem 1rem;
+  text-align: right;
+}
+
+.exerciseTableRow {
+  display: flex;
+  gap: 0.4rem;
+  justify-content: flex-end;
+}
+
+.button {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.4rem;
+  border-radius: 4px;
+}
+
+.exerciseTableButton {
+  background: rgba(var(--success-rgb), 0.1);
+  color: var(--success);
+  border: 1px solid rgba(var(--success-rgb), 0.3);
+  padding: 0.4rem 0.6rem;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+  min-width: 32px;
+}
+
+.exerciseTableIcon {
+  animation: spin 0.7s linear infinite;
+}
+
+.td7 {
+  padding: 0.8rem 1rem;
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.td8 {
+  padding: 0.8rem 1rem;
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 0.9rem;
+}
+
+.minTd2 {
+  padding: 0.8rem 1rem;
+  color: var(--muted);
+  font-size: 0.9rem;
+}
+
+.td9 {
+  padding: 0.8rem 1rem;
+  text-align: right;
+}
+
+.exerciseTableTrButton {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  cursor: pointer;
+  padding: 0.3rem;
+  transition: color 0.2s;
+}
+
+.exerciseTableTrButton:hover {
+  color: var(--gold);
+}
+
+.sessionRow {
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  background: transparent;
+}
+
+.sessionRow:hover,
+.expanded {
+  background: rgba(255,255,255,0.02);
+}
+
+.expanded {
+  border-bottom: none;
+}

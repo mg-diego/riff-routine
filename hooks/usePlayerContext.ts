@@ -1,11 +1,20 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
-import { Exercise } from '../lib/types';
+import { supabase } from '@/lib/supabase';
+import { Exercise } from '@/lib/types';
+import { PracticeMode, SYSTEM_EXERCISE_TITLES, isSpecialMode } from '@/lib/practiceModes';
+
+export interface RoutineListItem {
+    id: string;
+    routine_id: string;
+    target_bpm: number | null;
+    target_duration_seconds: number | null;
+    exercises: Exercise;
+}
 
 export function usePlayerContext() {
     const [isReady, setIsReady] = useState(false);
-    const [mode, setMode] = useState<'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords' | 'rhythm' | 'earTraining' | 'harmonization'>('free');
-    const [routineList, setRoutineList] = useState<any[]>([]);
+    const [mode, setMode] = useState<PracticeMode>('free');
+    const [routineList, setRoutineList] = useState<RoutineListItem[]>([]);
     const [currentIndex, setCurrentIndex] = useState(0);
     const [activeExercise, setActiveExercise] = useState<Exercise | null>(null);
     const [fileName, setFileName] = useState<string | null>(null);
@@ -59,18 +68,23 @@ export function usePlayerContext() {
                     setMode('free');
                 }
                 setInitialUrlToLoad(decodedUrl);
-            } else if (modeParam) {
-                setMode(modeParam as any);
+            } else if (idParam) {
+                // Opened by id: exercises without a file (metronome-only) and freshly forked copies
+                const { data } = await supabase.from('exercises').select('*').eq('id', idParam).single();
 
-                const sysTitles: Record<string, string> = {
-                    scales: 'sys_scales_title',
-                    improvisation: 'sys_improvisation_title',
-                    composition: 'sys_composition_title',
-                    chords: 'sys_chords_title'
-                };
+                if (data) {
+                    setMode('library');
+                    setActiveExercise(data);
+                    setFileName(data.title);
+                } else {
+                    setMode('free');
+                }
+                setInitialUrlToLoad(data?.file_url || null);
+            } else if (modeParam) {
+                setMode(modeParam as PracticeMode);
 
                 setActiveExercise({
-                    title: sysTitles[modeParam] || modeParam,
+                    title: isSpecialMode(modeParam) ? SYSTEM_EXERCISE_TITLES[modeParam] : modeParam,
                     user_id: null,
                     has_bpm: false,
                 } as unknown as Exercise);

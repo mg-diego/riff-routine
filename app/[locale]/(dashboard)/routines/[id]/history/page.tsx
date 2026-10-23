@@ -2,14 +2,20 @@
 
 import React, { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import {
   LineChart, Line, XAxis, Tooltip, ResponsiveContainer, YAxis,
   ReferenceLine
 } from 'recharts';
 import { useTranslations, useLocale } from 'next-intl';
+import { SortableHeader } from '@/components/ui/SortableHeader';
+import { TablePagination } from '@/components/ui/TablePagination';
+import { formatClock, formatKpiTime } from '@/lib/utils';
 import { Exercise } from '@/lib/types';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import styles from './page.module.css';
+import { cx } from '@/lib/cx';
+import ui from '@/components/ui/ui.module.css';
 
 interface RoutineHistoryProps {
   params: Promise<{ id: string }>;
@@ -19,8 +25,8 @@ type SortKey = 'date' | 'duration' | 'exercises';
 
 function Sparkline({ data, color = '#dcb98a', emptyText }: { data: number[]; color?: string; emptyText: string }) {
   if (data.length < 2) return (
-    <div style={{ height: 40, display: 'flex', alignItems: 'center' }}>
-      <span style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)' }}>{emptyText}</span>
+    <div className={styles.row}>
+      <span className={styles.label}>{emptyText}</span>
     </div>
   );
   const min = Math.min(...data);
@@ -34,7 +40,7 @@ function Sparkline({ data, color = '#dcb98a', emptyText }: { data: number[]; col
   }).join(' ');
 
   return (
-    <svg width={w} height={h} style={{ overflow: 'visible' }}>
+    <svg width={w} height={h} className={styles.icon}>
       <polyline points={pts} fill="none" stroke={color} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       {(() => {
         const last = pts.split(' ').pop()!.split(',');
@@ -265,18 +271,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
     return `rgba(220,185,138,${0.1 + ratio * 0.9})`;
   };
 
-  const formatTime = (seconds: number) => {
-    const m = Math.floor(seconds / 60);
-    const s = seconds % 60;
-    return `${m}:${s.toString().padStart(2, '0')}`;
-  };
-
-  const formatKpiTime = (totalSecs: number) => {
-    if (!totalSecs) return `0 ${t('table.min')}`;
-    const h = Math.floor(totalSecs / 3600);
-    const m = Math.floor((totalSecs % 3600) / 60);
-    return h > 0 ? `${h}h ${m}m` : `${m} ${t('table.min')}`;
-  };
+  const formatKpi = (totalSecs: number) => formatKpiTime(totalSecs, t('table.min'));
 
   const handleSort = (key: SortKey) => {
     setSortConfig(prev => ({ key, direction: prev.key === key && prev.direction === 'asc' ? 'desc' : 'asc' }));
@@ -284,15 +279,7 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
   };
 
   const renderSortableHeader = (label: string, key: SortKey) => (
-    <th onClick={() => handleSort(key)} style={{ padding: '1.2rem 1.5rem', fontWeight: 700, cursor: 'pointer', userSelect: 'none' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-        {label}
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1px' }}>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: sortConfig.key === key && sortConfig.direction === 'asc' ? 1 : 0.2, marginBottom: '-4px' }}><polyline points="18 15 12 9 6 15" /></svg>
-          <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="4" strokeLinecap="round" strokeLinejoin="round" style={{ opacity: sortConfig.key === key && sortConfig.direction === 'desc' ? 1 : 0.2 }}><polyline points="6 9 12 15 18 9" /></svg>
-        </div>
-      </div>
-    </th>
+    <SortableHeader label={label} sortKey={key} sortConfig={sortConfig} onSort={handleSort} />
   );
 
   const getTableData = () => sessions.map(session => {
@@ -326,25 +313,25 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
     return logs && Object.values(logs).some(l => l.bpm !== null && l.bpm !== undefined);
   });
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><span className="loader" /></div>;
+  if (loading) return <div className="loader-container"><span className="loader" /></div>;
 
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
-      <button onClick={() => router.back()} style={{ background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem', padding: 0, fontFamily: 'DM Sans, sans-serif', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}>
+    <div className={styles.back}>
+      <button onClick={() => router.back()} className={ui.backLink}>
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" /></svg>
         {t('back')}
       </button>
 
-      <div style={{ marginBottom: '2rem' }}>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--text)', margin: '0 0 0.5rem 0', lineHeight: 1 }}>
-          {t('performanceIn')} <span style={{ color: 'var(--gold)' }}>{routineName}</span>
+      <div className={styles.performanceIn}>
+        <h1 className={styles.performanceInTitle}>
+          {t('performanceIn')} <span className={styles.routineNameLabel}>{routineName}</span>
         </h1>
-        <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.95rem' }}>{totalSessions} {t('sessionsCompleted')}</p>
+        <p className={styles.sessionsCompletedText}>{totalSessions} {t('sessionsCompleted')}</p>
       </div>
 
-      <div style={{ display: 'flex', gap: '1rem', marginBottom: '2rem', borderBottom: '1px solid rgba(255,255,255,0.05)', paddingBottom: '1rem' }}>
+      <div className={styles.statsRow}>
         {(['stats', 'history'] as const).map(tab => (
-          <button key={tab} onClick={() => setActiveTab(tab)} style={{ background: activeTab === tab ? 'var(--gold)' : 'transparent', color: activeTab === tab ? '#111' : 'var(--muted)', border: 'none', padding: '0.6rem 1.2rem', borderRadius: '8px', fontFamily: 'DM Sans, sans-serif', fontWeight: 700, cursor: 'pointer', transition: 'all 0.2s', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <button key={tab} onClick={() => setActiveTab(tab)} className={styles.statsButton} style={{ background: activeTab === tab ? 'var(--gold)' : 'transparent', color: activeTab === tab ? '#111' : 'var(--muted)' }}>
             {tab === 'stats' ? (
               <><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2" /><line x1="3" y1="9" x2="21" y2="9" /><line x1="9" y1="21" x2="9" y2="9" /></svg>{t('tabs.stats')}</>
             ) : (
@@ -354,34 +341,34 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         ))}
       </div>
 
-      {error && <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1.5rem' }}>⚠ {error}</div>}
+      {error && <div className={`alert-error ${styles.block}`}>⚠ {error}</div>}
 
       {sessions.length === 0 ? (
-        <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '1rem' }}>📈</div>
-          <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>{t('noData.title')}</p>
-          <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('noData.description')}</p>
+        <div className="empty-state">
+          <div className={styles.backBlock}>📈</div>
+          <p className={styles.titleText}>{t('noData.title')}</p>
+          <p className={styles.descriptionText}>{t('noData.description')}</p>
         </div>
       ) : activeTab === 'stats' ? (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', animation: 'fadeIn 0.3s ease' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '1rem' }}>
+        <div className={styles.completedSessionsStack}>
+          <div className={styles.completedSessionsGrid}>
             {[
               { label: t('stats.completedSessions'), value: totalSessions, color: 'var(--gold)' },
-              { label: t('stats.totalTime'), value: formatKpiTime(totalSeconds), color: 'var(--text)' },
-              { label: t('stats.avgSession'), value: formatKpiTime(avgSeconds), color: 'var(--text)' },
-              { label: t('stats.bestSession'), value: bestSession ? formatKpiTime(bestSession.total_duration_seconds) : '—', color: '#4ade80', sub: bestSession ? new Date(bestSession.started_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : undefined },
+              { label: t('stats.totalTime'), value: formatKpi(totalSeconds), color: 'var(--text)' },
+              { label: t('stats.avgSession'), value: formatKpi(avgSeconds), color: 'var(--text)' },
+              { label: t('stats.bestSession'), value: bestSession ? formatKpi(bestSession.total_duration_seconds) : '—', color: '#4ade80', sub: bestSession ? new Date(bestSession.started_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: 'short', year: 'numeric' }) : undefined },
             ].map(({ label, value, color, sub }) => (
-              <div key={label} style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '10px', border: '1px solid rgba(255,255,255,0.03)' }}>
-                <span style={{ fontSize: '0.72rem', color: 'var(--muted)', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.05em' }}>{label}</span>
-                <p style={{ color, fontSize: '2.2rem', margin: '0.2rem 0 0', fontFamily: 'Bebas Neue, sans-serif', lineHeight: 1 }}>{value}</p>
-                {sub && <p style={{ margin: '0.2rem 0 0', fontSize: '0.75rem', color: 'var(--muted)' }}>{sub}</p>}
+              <div key={label} className={styles.box}>
+                <span className={styles.completedSessionsGridLabel}>{label}</span>
+                <p className={styles.text} style={{ color }}>{value}</p>
+                {sub && <p className={styles.completedSessionsGridText}>{sub}</p>}
               </div>
             ))}
           </div>
 
-          <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-            <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>{t('stats.minutesPerSession')}</h2>
-            <div style={{ height: 250 }}>
+          <div className="surface-card">
+            <h2 className={styles.minutesPerSessionHeading}>{t('stats.minutesPerSession')}</h2>
+            <div className={styles.completedSessionsStackBlock}>
               <ResponsiveContainer width="100%" height="100%">
                 <LineChart data={chartData} margin={{ top: 5, right: 20, bottom: 5, left: 0 }}>
                   <XAxis dataKey="name" stroke="rgba(255,255,255,0.2)" tickFormatter={v => chartData.find(d => d.name === v)?.shortDate || v} tick={{ fill: 'rgba(255,255,255,0.5)', fontSize: 12 }} tickLine={false} axisLine={false} dy={10} />
@@ -396,8 +383,8 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
 
           {exercises.length > 0 && (
             <div>
-              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1rem 0', letterSpacing: '0.05em' }}>{t('stats.exerciseProgress')}</h2>
-              <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              <h2 className={styles.exerciseProgressHeading}>{t('stats.exerciseProgress')}</h2>
+              <div className={styles.lastPracticeGrid}>
                 {exercises.map(ex => {
                   const st = exerciseStats[ex.exercise_id];
                   const ed = ex.exercises as any;
@@ -407,48 +394,48 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                   const targetBpm = ex.target_bpm;
                   const pctOfGoal = targetBpm && st.lastBpm ? Math.min(100, Math.round((st.lastBpm / targetBpm) * 100)) : null;
                   return (
-                    <div key={ex.exercise_id} style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '0.85rem' }}>
+                    <div key={ex.exercise_id} className={styles.lastPracticeStack}>
                       <div>
-                        <h3 style={{ margin: 0, fontSize: '1rem', fontWeight: 700, color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{title}</h3>
-                        {st.lastSessionDate && <span style={{ fontSize: '0.7rem', color: 'var(--muted)' }}>{t('stats.lastPractice')}: {st.lastSessionDate}</span>}
+                        <h3 className={styles.subheading}>{title}</h3>
+                        {st.lastSessionDate && <span className={styles.lastPracticeLabel}>{t('stats.lastPractice')}: {st.lastSessionDate}</span>}
                       </div>
                       {st.bpmHistory.length >= 2 ? (
                         <div>
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block', marginBottom: '0.35rem' }}>{t('stats.bpmEvolution')}</span>
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                          <span className={styles.bpmEvolutionLabel}>{t('stats.bpmEvolution')}</span>
+                          <div className={styles.insufficientDataSparkRow}>
                             <Sparkline data={st.bpmHistory} emptyText={t('errors.insufficientDataSpark')} />
                             {bpmDelta !== null && (
-                              <span style={{ fontSize: '0.8rem', fontWeight: 700, color: bpmDelta > 0 ? '#4ade80' : bpmDelta < 0 ? '#f87171' : 'var(--muted)', background: bpmDelta > 0 ? 'rgba(74,222,128,0.1)' : bpmDelta < 0 ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.05)', padding: '0.2rem 0.5rem', borderRadius: '100px' }}>
+                              <span className={styles.bpmDeltaLabel} style={{ color: bpmDelta > 0 ? '#4ade80' : bpmDelta < 0 ? '#f87171' : 'var(--muted)', background: bpmDelta > 0 ? 'rgba(74,222,128,0.1)' : bpmDelta < 0 ? 'rgba(248,113,113,0.1)' : 'rgba(255,255,255,0.05)' }}>
                                 {bpmDelta > 0 ? '+' : ''}{bpmDelta} BPM
                               </span>
                             )}
                           </div>
                         </div>
                       ) : (
-                        <div style={{ fontSize: '0.72rem', color: 'rgba(255,255,255,0.2)' }}>{t('stats.insufficientData')}</div>
+                        <div className={styles.label}>{t('stats.insufficientData')}</div>
                       )}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '0.5rem', borderTop: '1px solid rgba(255,255,255,0.04)', paddingTop: '0.85rem' }}>
+                      <div className={styles.totalTimeShortGrid}>
                         <div>
-                          <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block' }}>{t('stats.totalTimeShort')}</span>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif' }}>{formatKpiTime(st.totalSeconds)}</span>
+                          <span className={styles.totalTimeShortLabel}>{t('stats.totalTimeShort')}</span>
+                          <span className={styles.totalSecondsLabel}>{formatKpi(st.totalSeconds)}</span>
                         </div>
                         <div>
-                          <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block' }}>{t('stats.bestBpm')}</span>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: '#4ade80', fontFamily: 'Bebas Neue, sans-serif' }}>{st.bestBpm ?? '—'}</span>
+                          <span className={styles.totalTimeShortLabel}>{t('stats.bestBpm')}</span>
+                          <span className={styles.totalTimeShortGridLabel}>{st.bestBpm ?? '—'}</span>
                         </div>
                         <div>
-                          <span style={{ fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.3)', display: 'block' }}>{t('stats.lastBpm')}</span>
-                          <span style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--gold)', fontFamily: 'Bebas Neue, sans-serif' }}>{st.lastBpm ?? '—'}</span>
+                          <span className={styles.totalTimeShortLabel}>{t('stats.lastBpm')}</span>
+                          <span className={styles.label7}>{st.lastBpm ?? '—'}</span>
                         </div>
                       </div>
                       {pctOfGoal !== null && (
                         <div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                            <span style={{ fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', fontWeight: 600 }}>{t('stats.towardsGoal')} ({targetBpm} BPM)</span>
-                            <span style={{ fontSize: '0.65rem', fontWeight: 700, color: pctOfGoal >= 100 ? '#4ade80' : 'var(--gold)' }}>{pctOfGoal}%</span>
+                          <div className={styles.towardsGoalRow}>
+                            <span className={styles.towardsGoalLabel}>{t('stats.towardsGoal')} ({targetBpm} BPM)</span>
+                            <span className={styles.pctOfGoalLabel} style={{ color: pctOfGoal >= 100 ? '#4ade80' : 'var(--gold)' }}>{pctOfGoal}%</span>
                           </div>
-                          <div style={{ height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
-                            <div style={{ height: '100%', width: `${pctOfGoal}%`, background: pctOfGoal >= 100 ? '#4ade80' : 'var(--gold)', borderRadius: 99, transition: 'width 0.5s ease' }} />
+                          <div className={styles.lastPracticeStackBox}>
+                            <div className={styles.lastPracticeStackBlock} style={{ width: `${pctOfGoal}%`, background: pctOfGoal >= 100 ? '#4ade80' : 'var(--gold)' }} />
                           </div>
                         </div>
                       )}
@@ -460,38 +447,38 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
           )}
 
           {heatmapExercises.length > 0 && (
-            <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto' }}>
-              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--text)', margin: '0 0 1.5rem 0', letterSpacing: '0.05em' }}>{t('stats.progressMatrix')}</h2>
-              <div style={{ minWidth: 800 }}>
-                <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.1)', paddingBottom: '1rem', marginBottom: '1rem' }}>
-                  <div style={{ width: 250, flexShrink: 0, fontWeight: 700, color: 'var(--muted)', fontSize: '0.8rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('stats.exercise')}</div>
-                  <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
+            <div className={`surface-card ${styles.progressMatrix}`}>
+              <h2 className={styles.minutesPerSessionHeading}>{t('stats.progressMatrix')}</h2>
+              <div className={styles.exercise}>
+                <div className={styles.exerciseRow}>
+                  <div className={styles.exercise2}>{t('stats.exercise')}</div>
+                  <div className={styles.exerciseRowInner}>
                     {sessions.map(s => (
-                      <div key={s.id} style={{ flex: 1, textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)' }}>
+                      <div key={s.id} className={styles.exerciseRowBlock}>
                         {new Date(s.started_at).toLocaleDateString(locale === 'es' ? 'es-ES' : 'en-US', { day: '2-digit', month: '2-digit' })}
                       </div>
                     ))}
                   </div>
                 </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                <div className={styles.exerciseStack}>
                   {heatmapExercises.map(ex => (
-                    <div key={ex.exercise_id} style={{ display: 'flex', alignItems: 'center' }}>
-                      <div style={{ width: 250, flexShrink: 0, paddingRight: '1rem' }}>
-                        <p style={{ margin: 0, color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{(ex.exercises as any)?.title || t('stats.exercise')}</p>
-                        <p style={{ margin: 0, color: 'rgba(255,255,255,0.3)', fontSize: '0.7rem' }}>Obj: {ex.target_bpm ? `${ex.target_bpm} BPM` : '—'} • {formatTime(ex.target_duration_seconds || 0)}</p>
+                    <div key={ex.exercise_id} className={styles.exerciseRow2}>
+                      <div className={styles.exercise3}>
+                        <p className={styles.exerciseText}>{(ex.exercises as any)?.title || t('stats.exercise')}</p>
+                        <p className={styles.exerciseStackText}>Obj: {ex.target_bpm ? `${ex.target_bpm} BPM` : '—'} • {formatClock(ex.target_duration_seconds || 0)}</p>
                       </div>
-                      <div style={{ display: 'flex', flex: 1, gap: '0.5rem' }}>
+                      <div className={styles.exerciseRowInner}>
                         {sessions.map(session => {
                           const log = logsMatrix[ex.exercise_id]?.[session.id];
                           const diff = log && log.prevBpm !== null && log.bpm !== null ? log.bpm - log.prevBpm : 0;
                           return (
-                            <div key={session.id} style={{ flex: 1, background: log?.bpm != null ? getHeatmapColor(log.bpm, ex.target_bpm) : 'rgba(255,255,255,0.02)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '6px', height: 40, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', fontWeight: 800, fontSize: '0.85rem', transition: 'all 0.2s' }} title={log ? `BPM: ${log.bpm ?? 'N/A'}\nTiempo: ${formatTime(log.duration)}` : t('stats.notPracticed')}>
+                            <div key={session.id} className={styles.notPracticedStack} style={{ background: log?.bpm != null ? getHeatmapColor(log.bpm, ex.target_bpm) : 'rgba(255,255,255,0.02)' }} title={log ? `BPM: ${log.bpm ?? 'N/A'}\nTiempo: ${formatClock(log.duration)}` : t('stats.notPracticed')}>
                               {log?.bpm != null ? (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
-                                  <span style={{ color: '#111' }}>{log.bpm}</span>
-                                  {diff !== 0 && <span style={{ fontSize: '0.65rem', color: diff > 0 ? '#15803d' : '#b91c1c', background: 'rgba(255,255,255,0.6)', padding: '1px 3px', borderRadius: 3, lineHeight: 1 }}>{diff > 0 ? '↑' : '↓'}{Math.abs(diff)}</span>}
+                                <div className={styles.notPracticedStackRow}>
+                                  <span className={styles.notPracticedStackLabel}>{log.bpm}</span>
+                                  {diff !== 0 && <span className={styles.diffLabel} style={{ color: diff > 0 ? '#15803d' : '#b91c1c' }}>{diff > 0 ? '↑' : '↓'}{Math.abs(diff)}</span>}
                                 </div>
-                              ) : <span style={{ color: 'rgba(255,255,255,0.15)' }}>—</span>}
+                              ) : <span className={styles.label11}>—</span>}
                             </div>
                           );
                         })}
@@ -500,10 +487,10 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                   ))}
                 </div>
               </div>
-              <div style={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', gap: '1rem', marginTop: '2rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
+              <div className={styles.lessGoalRow}>
                 <span>{t('stats.lessGoal')}</span>
-                <div style={{ display: 'flex', gap: '0.2rem' }}>
-                  {[0.2, 0.5, 0.8, 1].map(o => <div key={o} style={{ width: 20, height: 20, borderRadius: 4, background: `rgba(220,185,138,${o})` }} />)}
+                <div className={styles.lessGoalRowInner}>
+                  {[0.2, 0.5, 0.8, 1].map(o => <div key={o} className={styles.lessGoalRowBlock} style={{ background: `rgba(220,185,138,${o})` }} />)}
                 </div>
                 <span>{t('stats.goalReached')}</span>
               </div>
@@ -512,93 +499,93 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
         </div>
 
       ) : (
-        <div style={{ background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflow: 'hidden', animation: 'fadeIn 0.3s ease' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left' }}>
+        <div className={styles.dateTimeBox}>
+          <table className={styles.dateTimeTable}>
             <thead>
-              <tr style={{ background: 'rgba(0,0,0,0.2)', borderBottom: '1px solid rgba(255,255,255,0.1)', color: 'var(--muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                <th style={{ padding: '1.2rem 1.5rem', fontWeight: 700, width: 40 }}></th>
+              <tr className={styles.dateTimeTr}>
+                <th className={styles.th}></th>
                 {renderSortableHeader(t('table.dateTime'), 'date')}
                 {renderSortableHeader(t('table.totalTime'), 'duration')}
                 {renderSortableHeader(t('table.exercises'), 'exercises')}
-                <th style={{ padding: '1.2rem 1.5rem', fontWeight: 700, textAlign: 'right' }}>{t('table.actions')}</th>
+                <th className={styles.actionsTh}>{t('table.actions')}</th>
               </tr>
             </thead>
             <tbody>
               {paginatedData.map(session => (
                 <React.Fragment key={session.id}>
-                  <tr onClick={() => setExpandedSessionId(expandedSessionId === session.id ? null : session.id)} style={{ borderBottom: expandedSessionId === session.id ? 'none' : '1px solid rgba(255,255,255,0.05)', cursor: 'pointer', background: expandedSessionId === session.id ? 'rgba(255,255,255,0.02)' : 'transparent', transition: 'background 0.2s' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'} onMouseLeave={e => e.currentTarget.style.background = expandedSessionId === session.id ? 'rgba(255,255,255,0.02)' : 'transparent'}>
-                    <td style={{ padding: '1rem 0 1rem 1.5rem', color: 'var(--muted)' }}>
-                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ transform: expandedSessionId === session.id ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}><polyline points="6 9 12 15 18 9" /></svg>
+                  <tr onClick={() => setExpandedSessionId(expandedSessionId === session.id ? null : session.id)} className={cx(styles.minTr, styles.sessionRow, expandedSessionId === session.id && styles.expanded)}>
+                    <td className={styles.td}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={styles.minTrIcon} style={{ transform: expandedSessionId === session.id ? 'rotate(180deg)' : 'rotate(0deg)' }}><polyline points="6 9 12 15 18 9" /></svg>
                     </td>
-                    <td style={{ padding: '1rem 1.5rem', color: 'var(--text)', fontWeight: 500 }}>{session.dateTimeStr}</td>
-                    <td style={{ padding: '1rem 1.5rem', color: 'var(--gold)', fontWeight: 700 }}>{session.minutos} {t('table.min')}</td>
-                    <td style={{ padding: '1rem 1.5rem', color: 'var(--muted)' }}>{session.exercisesCount}</td>
-                    <td style={{ padding: '1rem 1.5rem', textAlign: 'right' }}>
-                      <button onClick={e => { e.stopPropagation(); handleDeleteSession(session.id); }} style={{ background: 'rgba(231,76,60,0.1)', color: '#e74c3c', border: '1px solid rgba(231,76,60,0.2)', padding: '0.5rem 0.8rem', borderRadius: '6px', cursor: 'pointer', transition: 'all 0.2s', fontSize: '0.85rem', fontWeight: 600 }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(231,76,60,0.2)'} onMouseLeave={e => e.currentTarget.style.background = 'rgba(231,76,60,0.1)'}>
+                    <td className={styles.dateTimeStrTd}>{session.dateTimeStr}</td>
+                    <td className={styles.minTd}>{session.minutos} {t('table.min')}</td>
+                    <td className={styles.exercisesCountTd}>{session.exercisesCount}</td>
+                    <td className={styles.deleteTd}>
+                      <button onClick={e => { e.stopPropagation(); handleDeleteSession(session.id); }} className={styles.deleteButton}>
                         {t('table.delete')}
                       </button>
                     </td>
                   </tr>
                   {expandedSessionId === session.id && (
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                      <td colSpan={5} style={{ padding: 0 }}>
-                        <div style={{ background: 'rgba(0,0,0,0.3)', padding: '1.5rem 1.5rem 1.5rem 4rem', borderTop: '1px solid rgba(255,255,255,0.03)' }}>
-                          <h4 style={{ margin: '0 0 1rem 0', color: 'var(--muted)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('table.practicedExercises')}</h4>
+                    <tr className={styles.practicedExercisesTr}>
+                      <td colSpan={5} className={styles.practicedExercisesTd}>
+                        <div className={styles.practicedExercisesBox}>
+                          <h4 className={styles.practicedExercisesSubheading}>{t('table.practicedExercises')}</h4>
                           {(!sessionLogs[session.id] || sessionLogs[session.id].length === 0) ? (
-                            <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: 0 }}>{t('table.noExercises')}</p>
+                            <p className={styles.noExercisesText}>{t('table.noExercises')}</p>
                           ) : (
-                            <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', background: 'rgba(255,255,255,0.02)', borderRadius: '8px', overflow: 'hidden' }}>
+                            <table className={styles.exerciseTable}>
                               <thead>
-                                <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.05)', color: 'var(--muted)', fontSize: '0.8rem' }}>
-                                  <th style={{ padding: '0.8rem 1rem', fontWeight: 600 }}>{t('table.exercise')}</th>
-                                  <th style={{ padding: '0.8rem 1rem', fontWeight: 600 }}>{t('table.bpm')}</th>
-                                  <th style={{ padding: '0.8rem 1rem', fontWeight: 600 }}>{t('table.time')}</th>
-                                  <th style={{ padding: '0.8rem 1rem', fontWeight: 600, textAlign: 'right' }}>{t('table.actions')}</th>
+                                <tr className={styles.exerciseTr}>
+                                  <th className={styles.exerciseTh}>{t('table.exercise')}</th>
+                                  <th className={styles.exerciseTh}>{t('table.bpm')}</th>
+                                  <th className={styles.exerciseTh}>{t('table.time')}</th>
+                                  <th className={styles.actionsTh2}>{t('table.actions')}</th>
                                 </tr>
                               </thead>
                               <tbody>
                                 {sessionLogs[session.id].map(log => (
-                                  <tr key={log.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
+                                  <tr key={log.id} className={styles.exerciseTableTr}>
                                     {editingLogId === log.id ? (
                                       <>
-                                        <td style={{ padding: '0.8rem 1rem', color: 'var(--text)', fontSize: '0.9rem', fontWeight: 600 }}>{log.title}</td>
-                                        <td style={{ padding: '0.6rem 1rem' }}>
+                                        <td className={styles.exerciseTableTd}>{log.title}</td>
+                                        <td className={styles.exerciseTableTrTd}>
                                           <input
                                             type="number"
                                             value={editForm.bpm}
                                             onChange={e => setEditForm({ ...editForm, bpm: e.target.value })}
                                             disabled={savingLogId === log.id}
-                                            style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', borderRadius: '4px', width: 70, outline: 'none', fontFamily: 'DM Sans, sans-serif', opacity: savingLogId === log.id ? 0.5 : 1 }}
+                                            className={styles.input} style={{ opacity: savingLogId === log.id ? 0.5 : 1 }}
                                           />
                                         </td>
-                                        <td style={{ padding: '0.6rem 1rem' }}>
-                                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                        <td className={styles.exerciseTableTrTd}>
+                                          <div className={styles.minRow}>
                                             <input
                                               type="number"
                                               value={editForm.durationMinutes}
                                               onChange={e => setEditForm({ ...editForm, durationMinutes: e.target.value })}
                                               disabled={savingLogId === log.id}
-                                              style={{ background: 'var(--surface)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)', padding: '0.4rem', borderRadius: '4px', width: 60, outline: 'none', fontFamily: 'DM Sans, sans-serif', opacity: savingLogId === log.id ? 0.5 : 1 }}
+                                              className={styles.minRowInput} style={{ opacity: savingLogId === log.id ? 0.5 : 1 }}
                                             />
-                                            <span style={{ color: 'var(--muted)', fontSize: '0.8rem' }}>{t('table.min')}</span>
+                                            <span className={styles.minLabel}>{t('table.min')}</span>
                                           </div>
                                         </td>
-                                        <td style={{ padding: '0.6rem 1rem', textAlign: 'right' }}>
-                                          <div style={{ display: 'flex', gap: '0.4rem', justifyContent: 'flex-end' }}>
+                                        <td className={styles.td6}>
+                                          <div className={styles.exerciseTableRow}>
                                             <button
                                               onClick={cancelEditingLog}
                                               disabled={savingLogId === log.id}
-                                              style={{ background: 'transparent', color: 'var(--muted)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.4rem', borderRadius: '4px', cursor: savingLogId === log.id ? 'not-allowed' : 'pointer', opacity: savingLogId === log.id ? 0.4 : 1 }}
+                                              className={styles.button} style={{ cursor: savingLogId === log.id ? 'not-allowed' : 'pointer', opacity: savingLogId === log.id ? 0.4 : 1 }}
                                             >
                                               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                                             </button>
                                             <button
                                               onClick={e => handleSaveLog(log.id, session.id, e)}
                                               disabled={savingLogId === log.id}
-                                              style={{ background: 'rgba(74,222,128,0.1)', color: '#4ade80', border: '1px solid rgba(74,222,128,0.3)', padding: '0.4rem 0.6rem', borderRadius: '4px', cursor: savingLogId === log.id ? 'not-allowed' : 'pointer', display: 'flex', alignItems: 'center', gap: '0.3rem', minWidth: 32 }}
+                                              className={styles.exerciseTableButton} style={{ cursor: savingLogId === log.id ? 'not-allowed' : 'pointer' }}
                                             >
                                               {savingLogId === log.id ? (
-                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" style={{ animation: 'spin 0.7s linear infinite' }}>
+                                                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" className={styles.exerciseTableIcon}>
                                                   <path d="M21 12a9 9 0 1 1-6.219-8.56" />
                                                 </svg>
                                               ) : (
@@ -610,10 +597,10 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
                                       </>
                                     ) : (
                                       <>
-                                        <td style={{ padding: '0.8rem 1rem', color: 'var(--text)', fontSize: '0.9rem' }}>{log.title}</td>
-                                        <td style={{ padding: '0.8rem 1rem', color: 'var(--gold)', fontWeight: 700, fontSize: '0.9rem' }}>{log.bpm_used ?? '---'}</td>
-                                        <td style={{ padding: '0.8rem 1rem', color: 'var(--muted)', fontSize: '0.9rem' }}>{Math.floor(log.duration_seconds / 60)} {t('table.min')}</td>
-                                        <td style={{ padding: '0.8rem 1rem', textAlign: 'right' }}><button onClick={e => startEditingLog(log, e)} style={{ background: 'transparent', color: 'var(--muted)', border: 'none', cursor: 'pointer', padding: '0.3rem', transition: 'color 0.2s' }} onMouseEnter={e => e.currentTarget.style.color = 'var(--gold)'} onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></button></td>
+                                        <td className={styles.td7}>{log.title}</td>
+                                        <td className={styles.td8}>{log.bpm_used ?? '---'}</td>
+                                        <td className={styles.minTd2}>{Math.floor(log.duration_seconds / 60)} {t('table.min')}</td>
+                                        <td className={styles.td9}><button onClick={e => startEditingLog(log, e)} className={styles.exerciseTableTrButton}><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" /><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" /></svg></button></td>
                                       </>
                                     )}
                                   </tr>
@@ -630,22 +617,15 @@ export default function RoutineHistoryPage({ params }: RoutineHistoryProps) {
             </tbody>
           </table>
 
-          {totalPages > 1 && (
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '1rem 1.5rem', background: 'rgba(0,0,0,0.2)', borderTop: '1px solid rgba(255,255,255,0.05)' }}>
-              <span style={{ color: 'var(--muted)', fontSize: '0.9rem' }}>{t('table.page')} {currentPage} {t('table.of')} {totalPages}</span>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button onClick={() => setCurrentPage(p => Math.max(1, p - 1))} disabled={currentPage === 1} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: currentPage === 1 ? 'rgba(255,255,255,0.2)' : 'var(--text)', padding: '0.5rem 1rem', borderRadius: '6px', cursor: currentPage === 1 ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{t('table.prev')}</button>
-                <button onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))} disabled={currentPage === totalPages} style={{ background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: currentPage === totalPages ? 'rgba(255,255,255,0.2)' : 'var(--text)', padding: '0.5rem 1rem', borderRadius: '6px', cursor: currentPage === totalPages ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif' }}>{t('table.next')}</button>
-              </div>
-            </div>
-          )}
+          <TablePagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            onPageChange={setCurrentPage}
+            labels={{ page: t('table.page'), of: t('table.of'), prev: t('table.prev'), next: t('table.next') }}
+          />
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
+
     </div>
   );
 }

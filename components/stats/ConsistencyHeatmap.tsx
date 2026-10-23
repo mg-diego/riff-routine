@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useTranslations, useLocale } from 'next-intl';
+import styles from './ConsistencyHeatmap.module.css';
 
 interface HeatmapData {
   date: string;
@@ -106,45 +107,36 @@ export function ConsistencyHeatmap() {
   if (loading) return null;
 
   return (
-    <div data-onboarding="stats-chart" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', overflowX: 'auto' }}>
-      <h3 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', margin: '0 0 1.5rem 0' }}>
+    <div data-onboarding="stats-chart" className={styles.titleBox}>
+      <h3 className={styles.titleSubheading}>
         {t('title')}
       </h3>
       
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', minWidth: 'max-content' }}>
+      <div className={styles.monStack}>
         
-        <div style={{ 
-          display: 'grid', 
-          gridTemplateColumns: `repeat(${columnsCount}, 12px)`, 
-          gap: '4px', 
-          height: '1rem', 
-          position: 'relative', 
-          color: 'var(--muted)', 
-          fontSize: '0.75rem', 
-          marginLeft: '28px' 
-        }}>
+        <div className={styles.grid} style={{ gridTemplateColumns: `repeat(${columnsCount}, 12px)` }}>
           {monthLabels.map(label => (
-            <span key={label.colIndex} style={{ gridColumn: label.colIndex + 1, position: 'absolute', left: 0 }}>
+            <span key={label.colIndex} className={styles.label} style={{ gridColumn: label.colIndex + 1 }}>
               {label.text}
             </span>
           ))}
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 12px)', gap: '4px', color: 'var(--muted)', fontSize: '0.65rem', paddingRight: '0.2rem', textAlign: 'right', width: '20px' }}>
-            <span style={{ lineHeight: '12px' }}></span>
-            <span style={{ lineHeight: '12px' }}>{t('weekdays.mon')}</span>
-            <span style={{ lineHeight: '12px' }}></span>
-            <span style={{ lineHeight: '12px' }}>{t('weekdays.wed')}</span>
-            <span style={{ lineHeight: '12px' }}></span>
-            <span style={{ lineHeight: '12px' }}>{t('weekdays.fri')}</span>
-            <span style={{ lineHeight: '12px' }}></span>
+        <div className={styles.monRow}>
+          <div className={styles.monGrid}>
+            <span className={styles.monGridLabel}></span>
+            <span className={styles.monGridLabel}>{t('weekdays.mon')}</span>
+            <span className={styles.monGridLabel}></span>
+            <span className={styles.monGridLabel}>{t('weekdays.wed')}</span>
+            <span className={styles.monGridLabel}></span>
+            <span className={styles.monGridLabel}>{t('weekdays.fri')}</span>
+            <span className={styles.monGridLabel}></span>
           </div>
 
-          <div style={{ display: 'grid', gridTemplateRows: 'repeat(7, 12px)', gridAutoFlow: 'column', gap: '4px' }}>
+          <div className={styles.tooltipGrid}>
             {days.map((day, index) => {
               if (!day) {
-                return <div key={`empty-${index}`} style={{ width: '12px', height: '12px' }} />;
+                return <div key={`empty-${index}`} className={styles.block} />;
               }
 
               const dateKey = `${day.getFullYear()}-${String(day.getMonth() + 1).padStart(2, '0')}-${String(day.getDate()).padStart(2, '0')}`;
@@ -160,16 +152,7 @@ export function ConsistencyHeatmap() {
                 <div
                   key={dateKey}
                   title={t('tooltip', { date: dateStr, minutes: Math.round(minutes) })}
-                  style={{
-                    width: '12px',
-                    height: '12px',
-                    backgroundColor: getColor(minutes),
-                    borderRadius: '2px',
-                    transition: 'transform 0.1s',
-                    cursor: 'pointer'
-                  }}
-                  onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.2)'}
-                  onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+                  className={styles.tooltip} style={{ backgroundColor: getColor(minutes) }}
                 />
               );
             })}
@@ -177,14 +160,14 @@ export function ConsistencyHeatmap() {
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.5rem', marginTop: '1.5rem', fontSize: '0.75rem', color: 'var(--muted)' }}>
+      <div className={styles.lessRow}>
         <span>{t('legend.less')}</span>
-        <div style={{ display: 'flex', gap: '4px' }}>
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(255,255,255,0.03)' }} />
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(220,185,138,0.2)' }} />
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(220,185,138,0.5)' }} />
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'rgba(220,185,138,0.8)' }} />
-          <div style={{ width: '12px', height: '12px', borderRadius: '2px', backgroundColor: 'var(--gold)' }} />
+        <div className={styles.row}>
+          <div className={styles.box} />
+          <div className={styles.lessRowBox} />
+          <div className={styles.box3} />
+          <div className={styles.box4} />
+          <div className={styles.box5} />
         </div>
         <span>{t('legend.more')}</span>
       </div>

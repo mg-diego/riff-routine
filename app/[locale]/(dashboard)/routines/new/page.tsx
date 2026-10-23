@@ -2,10 +2,14 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../../../lib/supabase';
-import { Exercise } from '../../../../../lib/types';
+import { supabase } from '@/lib/supabase';
+import { Exercise } from '@/lib/types';
 import { useTranslations } from 'next-intl';
+import { APP_EVENTS, emitAppEvent } from '@/lib/events';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
+import { cx } from '@/lib/cx';
 
 interface SelectedExercise {
   id: string;
@@ -129,7 +133,7 @@ export default function CreateRoutinePage() {
         if (insertExercisesError) throw insertExercisesError;
       }
 
-      window.dispatchEvent(new CustomEvent('app:routine-created'));
+      emitAppEvent(APP_EVENTS.ROUTINE_CREATED);
       router.push(`/routines`);
     } catch (err) {
       setError(err instanceof Error ? err.message : String(err));
@@ -142,24 +146,11 @@ export default function CreateRoutinePage() {
     (ex.technique && ex.technique.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%', padding: '1rem', borderRadius: '8px',
-    background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.1)',
-    color: 'var(--text)', fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem',
-    outline: 'none', transition: 'all 0.2s', boxSizing: 'border-box',
-  };
-
   return (
-    <div style={{ maxWidth: '1200px', margin: '0 auto', paddingBottom: '4rem' }}>
+    <div className={styles.backButton}>
       <button
         onClick={() => router.push('/routines')}
-        style={{
-          background: 'transparent', border: 'none', color: 'var(--muted)', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '1.5rem', fontSize: '0.9rem',
-          padding: 0, fontFamily: 'DM Sans, sans-serif', transition: 'color 0.2s'
-        }}
-        onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-        onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+        className={ui.backLink}
       >
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
           <line x1="19" y1="12" x2="5" y2="12" /><polyline points="12 19 5 12 12 5" />
@@ -167,17 +158,17 @@ export default function CreateRoutinePage() {
         {t('backButton')}
       </button>
 
-      <div data-onboarding="routines-04" style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '2rem', alignItems: 'start' }}>
+      <div data-onboarding="routines-04" className={styles.titleGrid}>
 
-        <div data-onboarding="routines-02" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+        <div data-onboarding="routines-02" className={`surface-card ${styles.titleStack}`}>
           <div>
-            <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
+            <h1 className={ui.formTitle}>
               {t('title')}
             </h1>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+            <div className={styles.routineNameStack}>
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
+                <label className={styles.routineNameFieldLabel}>
                   {t('labels.routineName')}
                 </label>
                 <input
@@ -185,78 +176,74 @@ export default function CreateRoutinePage() {
                   value={title}
                   onChange={e => setTitle(e.target.value)}
                   placeholder={t('placeholders.routineName')}
-                  style={inputStyle}
-                  onFocus={e => e.currentTarget.style.borderColor = 'var(--gold)'}
-                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  className={`${styles.input} ${styles.inputFocusable}`}
                 />
               </div>
 
               <div>
-                <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 700, color: 'var(--text)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
-                  {t('labels.description')} <span style={{ color: 'var(--muted)', fontWeight: 400 }}>{t('labels.optional')}</span>
+                <label className={styles.routineNameFieldLabel}>
+                  {t('labels.description')} <span className={styles.optionalLabel}>{t('labels.optional')}</span>
                 </label>
                 <textarea
                   value={description}
                   onChange={e => setDescription(e.target.value)}
                   placeholder={t('placeholders.description')}
                   rows={3}
-                  style={{ ...inputStyle, resize: 'vertical' }}
-                  onFocus={e => e.currentTarget.style.borderColor = 'var(--gold)'}
-                  onBlur={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.1)'}
+                  className={cx(styles.input, styles.descriptionTextarea)}
                 />
               </div>
             </div>
           </div>
 
-          <div style={{ borderTop: '1px solid rgba(255,255,255,0.05)', paddingTop: '2rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '1.5rem' }}>
-              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', color: 'var(--text)', margin: 0, lineHeight: 1 }}>
+          <div className={styles.title}>
+            <div className={styles.titleRow}>
+              <h2 className={styles.titleHeading}>
                 {t('selectedExercises.title')}
               </h2>
-              <span style={{ background: 'var(--gold)', color: '#111', padding: '0.2rem 0.6rem', borderRadius: '12px', fontSize: '0.8rem', fontWeight: 700 }}>
+              <span className={styles.label}>
                 {selectedExercises.length}
               </span>
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <div className={styles.emptyStack}>
               {selectedExercises.length === 0 ? (
-                <div style={{ padding: '2rem', background: 'rgba(0,0,0,0.2)', borderRadius: '8px', border: '1px dashed rgba(255,255,255,0.1)', textAlign: 'center' }}>
-                  <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('selectedExercises.empty')}</p>
+                <div className={styles.emptyBox}>
+                  <p className={styles.emptyText}>{t('selectedExercises.empty')}</p>
                 </div>
               ) : (
                 selectedExercises.map((ex, index) => (
-                  <div key={ex.id} style={{ background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px', padding: '1rem' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
-                      <div style={{ flex: 1 }}>
-                        <span style={{ fontSize: '0.7rem', color: 'var(--muted)', fontWeight: 700 }}>#{index + 1}</span>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                          <p style={{ color: 'var(--text)', margin: 0, fontWeight: 600 }}>{ex.title}</p>
-                          {!ex.hasFile && <span title={t('selectedExercises.noFileWarning')} style={{ fontSize: '0.9rem', cursor: 'help' }}>⚠️</span>}
+                  <div key={ex.id} className={styles.noFileWarningBox}>
+                    <div className={styles.noFileWarningRow}>
+                      <div className={styles.noFileWarning}>
+                        <span className={styles.label2}>#{index + 1}</span>
+                        <div className={styles.noFileWarningRow2}>
+                          <p className={styles.text}>{ex.title}</p>
+                          {!ex.hasFile && <span title={t('selectedExercises.noFileWarning')} className={styles.noFileWarningLabel}>⚠️</span>}
                         </div>
                       </div>
-                      <button onClick={() => handleRemoveExercise(ex.id)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer', padding: '0.2rem' }}>
+                      <button onClick={() => handleRemoveExercise(ex.id)} className={styles.button}>
                         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
                       </button>
                     </div>
 
-                    <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('labels.minutes')}</label>
+                    <div className={styles.minutesGrid}>
+                      <div className={styles.minutesStack}>
+                        <label className={styles.minutesFieldLabel}>{t('labels.minutes')}</label>
                         <input
                           type="number"
                           value={ex.durationMinutes}
                           onChange={e => handleUpdateExercise(ex.id, 'durationMinutes', e.target.value)}
-                          style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none' }}
+                          className={styles.smallInput}
                         />
                       </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                        <label style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>{t('labels.targetBpm')}</label>
+                      <div className={styles.minutesStack}>
+                        <label className={styles.minutesFieldLabel}>{t('labels.targetBpm')}</label>
                         <input
                           type="number"
                           value={ex.targetBpm}
                           onChange={e => handleUpdateExercise(ex.id, 'targetBpm', e.target.value)}
                           placeholder={t('placeholders.targetBpm')}
-                          style={{ width: '100%', padding: '0.6rem', borderRadius: '4px', background: 'var(--surface2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', outline: 'none' }}
+                          className={styles.smallInput}
                         />
                       </div>
                     </div>
@@ -266,7 +253,7 @@ export default function CreateRoutinePage() {
             </div>
 
             {error && (
-              <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginTop: '1.5rem' }}>
+              <div className={`alert-error ${styles.block}`}>
                 ⚠ {error}
               </div>
             )}
@@ -274,20 +261,15 @@ export default function CreateRoutinePage() {
             <button
               onClick={handleSubmit}
               disabled={saving}
-              style={{
-                width: '100%', padding: '1rem', background: 'var(--gold)', color: '#111', marginTop: '1.5rem',
-                border: 'none', borderRadius: '8px', fontWeight: 700, fontSize: '1rem',
-                cursor: saving ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif',
-                opacity: saving ? 0.7 : 1, transition: 'background 0.2s'
-              }}
+              className={styles.savingButton} style={{ cursor: saving ? 'not-allowed' : 'pointer', opacity: saving ? 0.7 : 1 }}
             >
               {saving ? t('buttons.saving') : t('buttons.save')}
             </button>
           </div>
         </div>
 
-        <div data-onboarding="routines-03" style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', position: 'sticky', top: '2rem', height: 'calc(100vh - 4rem)', display: 'flex', flexDirection: 'column' }}>
-          <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.8rem', color: 'var(--text)', margin: '0 0 1.5rem 0', lineHeight: 1 }}>
+        <div data-onboarding="routines-03" className={`surface-card ${styles.titleGridStack}`}>
+          <h2 className={styles.titleGridHeading}>
             {t('library.title')}
           </h2>
 
@@ -296,14 +278,14 @@ export default function CreateRoutinePage() {
             placeholder={t('placeholders.search')}
             value={searchTerm}
             onChange={e => setSearchTerm(e.target.value)}
-            style={{ ...inputStyle, marginBottom: '1rem', padding: '0.8rem 1rem' }}
+            className={cx(styles.input, styles.searchInput)}
           />
 
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.5rem', paddingRight: '0.5rem' }}>
+          <div className={styles.loadingStack}>
             {loadingExercises ? (
-              <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '2rem 0' }}>{t('library.loading')}</p>
+              <p className={styles.loadingText}>{t('library.loading')}</p>
             ) : filteredExercises.length === 0 ? (
-              <p style={{ color: 'var(--muted)', textAlign: 'center', padding: '2rem 0' }}>{t('library.notFound')}</p>
+              <p className={styles.loadingText}>{t('library.notFound')}</p>
             ) : (
               filteredExercises.map(ex => {
                 const isSelected = selectedExercises.some(item => item.id === ex.id);
@@ -313,26 +295,18 @@ export default function CreateRoutinePage() {
                   <div
                     key={ex.id}
                     onClick={() => { if (!isSelected) handleAddExercise(ex); }}
-                    style={{
-                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                      padding: '1rem', borderRadius: '8px', cursor: isSelected ? 'default' : 'pointer', transition: 'all 0.2s',
-                      background: 'rgba(255,255,255,0.02)',
-                      border: isSelected ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)',
-                      opacity: isSelected ? 0.5 : 1
-                    }}
-                    onMouseEnter={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.05)'; }}
-                    onMouseLeave={e => { if (!isSelected) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
+                    className={cx(styles.noCategoryRow, isSelected && styles.selected)}
                   >
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
-                      <p style={{ color: 'var(--text)', margin: 0, fontWeight: 600, fontSize: '0.95rem' }}>
+                    <div className={styles.noCategoryStack}>
+                      <p className={styles.noCategoryStackText}>
                         {ex.title}
                       </p>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                        <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.8rem' }}>
+                      <div className={styles.noFileWarningRow2}>
+                        <p className={styles.noCategoryText}>
                           {ex.technique || t('labels.noCategory')}
                         </p>
                         {hasNoFile && (
-                          <span style={{ fontSize: '0.65rem', fontWeight: 700, color: '#e74c3c', display: 'flex', alignItems: 'center', gap: '0.2rem' }}>
+                          <span className={styles.noGpLabel}>
                             ⚠️ {t('library.noGp')}
                           </span>
                         )}
@@ -341,12 +315,7 @@ export default function CreateRoutinePage() {
 
                     <button
                       disabled={isSelected}
-                      style={{
-                        width: '32px', height: '32px', borderRadius: '8px', border: 'none',
-                        background: isSelected ? 'transparent' : 'var(--gold)',
-                        color: isSelected ? 'var(--gold)' : '#111',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: isSelected ? 'default' : 'pointer'
-                      }}
+                      className={styles.noCategoryRowButton} style={{ background: isSelected ? 'transparent' : 'var(--gold)', color: isSelected ? 'var(--gold)' : '#111', cursor: isSelected ? 'default' : 'pointer' }}
                     >
                       {isSelected ? (
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>

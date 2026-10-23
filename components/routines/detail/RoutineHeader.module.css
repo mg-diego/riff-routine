@@ -1,0 +1,87 @@
+.textarea {
+  display: block;
+}
+
+.label {
+  opacity: 0.35;
+}
+
+.editableLabel {
+  transition: opacity 0.15s;
+  color: rgba(var(--gold-rgb), 0.6);
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.backButton {
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+}
+
+.titlePlaceholderRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.titlePlaceholder {
+  flex: 1;
+  min-width: 0;
+}
+
+.estimatedTimeRow {
+  display: flex;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.estimatedTimeLabel {
+  background: rgba(255,255,255,0.05);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+
+.strong {
+  color: var(--gold);
+}
+
+.addExerciseRow {
+  display: flex;
+  gap: 1rem;
+}
+
+.addExerciseButton {
+  background: transparent;
+  color: var(--text);
+  padding: 0.8rem 1.5rem;
+  border-radius: 8px;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.95rem;
+  border: 1px solid rgba(255,255,255,0.2);
+}
+
+/* Editable fields: pencil icon appears on hover */
+.editableLabel {
+  opacity: 0;
+}
+
+.editable:hover .editableLabel {
+  opacity: 1;
+}

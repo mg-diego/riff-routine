@@ -2,6 +2,8 @@
 
 import Link from 'next/link';
 import { useEffect, useRef } from 'react';
+import styles from './not-found.module.css';
+import { bodyFont, displayFont } from './fonts';
 
 export default function NotFound() {
     const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -68,170 +70,36 @@ export default function NotFound() {
         return () => clearInterval(interval);
     }, []);
 
+    // Unmatched routes skip the [locale] layout, so this page renders its own document
     return (
-        <>
-            <style href="not-found-styles" precedence="default">{`
-                @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;600&display=swap');
+        <html lang="en" className={`${displayFont.variable} ${bodyFont.variable}`}>
+        <body>
 
-                .nf-root {
-                    min-height: 100vh;
-                    background: #0a0a0a;
-                    display: flex;
-                    flex-direction: column;
-                    align-items: center;
-                    justify-content: center;
-                    position: relative;
-                    overflow: hidden;
-                    font-family: 'DM Sans', sans-serif;
-                    padding: 2rem;
-                }
-                .nf-canvas {
-                    position: absolute;
-                    inset: 0;
-                    width: 100%;
-                    height: 100%;
-                    pointer-events: none;
-                }
-                .nf-frets {
-                    position: absolute;
-                    inset: 0;
-                    pointer-events: none;
-                }
-                .nf-fret {
-                    position: absolute;
-                    top: 0; bottom: 0;
-                    width: 1px;
-                    background: rgba(255,255,255,0.025);
-                }
-                .nf-content {
-                    position: relative;
-                    z-index: 10;
-                    text-align: center;
-                    max-width: 480px;
-                }
-                .nf-code {
-                    font-family: 'Bebas Neue', sans-serif;
-                    font-size: clamp(7rem, 20vw, 12rem);
-                    line-height: 0.9;
-                    color: transparent;
-                    -webkit-text-stroke: 1px rgba(220,185,138,0.3);
-                    letter-spacing: 0.05em;
-                    margin: 0 0 0.5rem;
-                    position: relative;
-                }
-                .nf-code::after {
-                    content: '404';
-                    position: absolute;
-                    inset: 0;
-                    color: rgba(220,185,138,0.06);
-                    -webkit-text-stroke: 0;
-                    transform: translate(3px, 3px);
-                    z-index: -1;
-                }
-                .nf-label {
-                    font-family: 'Bebas Neue', sans-serif;
-                    font-size: clamp(1.2rem, 4vw, 1.8rem);
-                    color: #dcc18a;
-                    letter-spacing: 0.15em;
-                    margin: 0 0 1rem;
-                    opacity: 0.9;
-                }
-                .nf-divider {
-                    width: 40px;
-                    height: 1px;
-                    background: rgba(220,185,138,0.25);
-                    margin: 0 auto 2rem;
-                }
-                .nf-desc {
-                    font-size: 0.95rem;
-                    color: rgba(240,232,220,0.45);
-                    line-height: 1.7;
-                    margin: 0 0 2.5rem;
-                    font-weight: 300;
-                }
-                .nf-actions {
-                    display: flex;
-                    gap: 0.75rem;
-                    justify-content: center;
-                    flex-wrap: wrap;
-                }
-                .nf-btn-primary {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem 1.5rem;
-                    background: #dcc18a;
-                    color: #111;
-                    font-family: 'DM Sans', sans-serif;
-                    font-size: 0.875rem;
-                    font-weight: 600;
-                    border-radius: 8px;
-                    text-decoration: none;
-                    transition: all 0.2s ease;
-                }
-                .nf-btn-primary:hover {
-                    background: #c9a676;
-                    transform: translateY(-1px);
-                }
-                .nf-btn-secondary {
-                    display: inline-flex;
-                    align-items: center;
-                    gap: 0.5rem;
-                    padding: 0.75rem 1.5rem;
-                    background: transparent;
-                    color: rgba(240,232,220,0.6);
-                    font-family: 'DM Sans', sans-serif;
-                    font-size: 0.875rem;
-                    font-weight: 500;
-                    border-radius: 8px;
-                    text-decoration: none;
-                    transition: all 0.2s ease;
-                    border: 1px solid rgba(255,255,255,0.1);
-                }
-                .nf-btn-secondary:hover {
-                    background: rgba(255,255,255,0.05);
-                    color: rgba(240,232,220,0.9);
-                    border-color: rgba(255,255,255,0.2);
-                }
-                @keyframes nf-fadein {
-                    from { opacity: 0; transform: translateY(16px); }
-                    to   { opacity: 1; transform: translateY(0); }
-                }
-                .nf-content > * {
-                    animation: nf-fadein 0.6s ease both;
-                }
-                .nf-content > *:nth-child(1) { animation-delay: 0.1s; }
-                .nf-content > *:nth-child(2) { animation-delay: 0.2s; }
-                .nf-content > *:nth-child(3) { animation-delay: 0.3s; }
-                .nf-content > *:nth-child(4) { animation-delay: 0.35s; }
-                .nf-content > *:nth-child(5) { animation-delay: 0.4s; }
-            `}</style>
+            <div className={styles['nf-root']}>
+                <canvas ref={canvasRef} className={styles['nf-canvas']} />
 
-            <div className="nf-root">
-                <canvas ref={canvasRef} className="nf-canvas" />
-
-                <div className="nf-frets">
+                <div className={styles['nf-frets']}>
                     {[15, 28, 42, 57, 72, 85].map((pct) => (
-                        <div key={pct} className="nf-fret" style={{ left: `${pct}%` }} />
+                        <div key={pct} className={styles['nf-fret']} style={{ left: `${pct}%` }} />
                     ))}
                 </div>
 
-                <div className="nf-content">
-                    <h1 className="nf-code">404</h1>
-                    <p className="nf-label">String not found</p>
-                    <div className="nf-divider" />
-                    <p className="nf-desc">
+                <div className={styles['nf-content']}>
+                    <h1 className={styles['nf-code']}>404</h1>
+                    <p className={styles['nf-label']}>String not found</p>
+                    <div className={styles['nf-divider']} />
+                    <p className={styles['nf-desc']}>
                         Looks like this fret doesn't exist.<br />
                         Maybe you took a wrong turn at the 12th position.
                     </p>
-                    <div className="nf-actions">
-                        <Link href="/home" className="nf-btn-primary">
+                    <div className={styles['nf-actions']}>
+                        <Link href="/home" className={styles['nf-btn-primary']}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/>
                             </svg>
                             Back to home
                         </Link>
-                        <Link href="/routines" className="nf-btn-secondary">
+                        <Link href="/routines" className={styles['nf-btn-secondary']}>
                             <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                 <path d="M17 3a2.85 2.83 0 1 1 4 4L7.5 20.5 2 22l1.5-5.5Z"/>
                             </svg>
@@ -240,6 +108,7 @@ export default function NotFound() {
                     </div>
                 </div>
             </div>
-        </>
+        </body>
+        </html>
     );
 }

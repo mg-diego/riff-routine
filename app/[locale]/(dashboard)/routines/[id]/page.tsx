@@ -2,13 +2,15 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams, useRouter } from 'next/navigation';
-import { supabase } from '../../../../../lib/supabase';
-import { Routine, Exercise } from '../../../../../lib/types';
-import { RoutineHeader } from '../../../../../components/routines/detail/RoutineHeader';
-import { AddExerciseModal } from '../../../../../components/routines/detail/AddExerciseModal';
-import { RoutineExerciseItem } from '../../../../../components/routines/detail/RoutineExerciseItem';
+import { supabase } from '@/lib/supabase';
+import { Routine, Exercise } from '@/lib/types';
+import { RoutineHeader } from '@/components/routines/detail/RoutineHeader';
+import { AddExerciseModal } from '@/components/routines/detail/AddExerciseModal';
+import { RoutineExerciseItem } from '@/components/routines/detail/RoutineExerciseItem';
 import { useTranslations } from 'next-intl';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
 
 interface RoutineExerciseDetail {
   id: string;
@@ -222,8 +224,8 @@ export default function RoutineDetailsPage() {
     setRoutineExercises(newList.sort((a, b) => a.order_index - b.order_index));
   };
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', padding: '4rem' }}><span className="loader" /></div>;
-  if (!routine) return <div style={{ color: 'var(--text)' }}>{t('errors.notFound')}</div>;
+  if (loading) return <div className="loader-container"><span className="loader" /></div>;
+  if (!routine) return <div className={styles.notFound}>{t('errors.notFound')}</div>;
 
   const totalDuration = routineExercises.reduce((acc, curr) => acc + (curr.target_duration_seconds || 0), 0);
 
@@ -242,40 +244,29 @@ export default function RoutineDetailsPage() {
       />
 
       {error && (
-        <div style={{ background: 'rgba(231,76,60,0.12)', border: '1px solid rgba(231,76,60,0.35)', borderRadius: '8px', padding: '0.75rem 1rem', color: '#e74c3c', fontSize: '0.88rem', marginBottom: '1.5rem', display: 'flex', justifyContent: 'space-between' }}>
+        <div className={`alert-error ${styles.row}`}>
           <span>⚠ {error}</span>
-          <button onClick={() => setError(null)} style={{ background: 'none', border: 'none', color: '#e74c3c', cursor: 'pointer' }}>✕</button>
+          <button onClick={() => setError(null)} className={ui.dangerTextButton}>✕</button>
         </div>
       )}
 
       {hasUnsavedChanges && (
-        <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-          background: 'rgba(220,185,138,0.07)', border: '1px solid rgba(220,185,138,0.25)',
-          borderRadius: '10px', padding: '0.75rem 1.25rem', marginBottom: '1.5rem',
-          gap: '1rem',
-        }}>
-          <span style={{ fontSize: '0.88rem', color: 'var(--gold)', fontWeight: 600 }}>
+        <div className={styles.labelRow}>
+          <span className={styles.label}>
             ● {t('unsavedChanges.label')}
           </span>
-          <div style={{ display: 'flex', gap: '0.75rem' }}>
+          <div className={styles.discardRow}>
             <button
               onClick={fetchData}
               disabled={saving}
-              style={{ padding: '0.45rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.1)', background: 'transparent', color: 'var(--muted)', cursor: 'pointer', fontSize: '0.85rem', fontFamily: 'DM Sans, sans-serif' }}
+              className={styles.discardButton}
             >
               {t('unsavedChanges.discard')}
             </button>
             <button
               onClick={handleSaveAll}
               disabled={saving}
-              style={{
-                padding: '0.45rem 1.25rem', borderRadius: '8px', border: 'none',
-                background: saving ? 'rgba(220,185,138,0.5)' : 'var(--gold)',
-                color: '#111', cursor: saving ? 'not-allowed' : 'pointer',
-                fontSize: '0.85rem', fontWeight: 700, fontFamily: 'DM Sans, sans-serif',
-                transition: 'all 0.2s',
-              }}
+              className={styles.savingButton} style={{ background: saving ? 'rgba(220,185,138,0.5)' : 'var(--gold)', cursor: saving ? 'not-allowed' : 'pointer' }}
             >
               {saving ? t('unsavedChanges.saving') : t('unsavedChanges.save')}
             </button>
@@ -284,18 +275,18 @@ export default function RoutineDetailsPage() {
       )}
 
       {saveSuccess && !hasUnsavedChanges && (
-        <div style={{ background: 'rgba(74,222,128,0.08)', border: '1px solid rgba(74,222,128,0.25)', borderRadius: '10px', padding: '0.75rem 1.25rem', marginBottom: '1.5rem', color: '#4ade80', fontSize: '0.88rem', fontWeight: 600 }}>
+        <div className={styles.savedBox}>
           ✓ {t('success.saved')}
         </div>
       )}
 
       {routineExercises.length === 0 ? (
-        <div style={{ background: 'var(--surface)', padding: '4rem 2rem', borderRadius: '12px', border: '1px dashed rgba(220,185,138,0.3)', textAlign: 'center' }}>
-          <p style={{ color: 'var(--text)', margin: '0 0 0.5rem', fontWeight: 600 }}>{t('emptyState.title')}</p>
-          <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('emptyState.subtitle')}</p>
+        <div className="empty-state">
+          <p className={styles.titleText}>{t('emptyState.title')}</p>
+          <p className={styles.subtitleText}>{t('emptyState.subtitle')}</p>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.stack}>
           {routineExercises.map((re, index) => (
             <RoutineExerciseItem
               key={re.id}

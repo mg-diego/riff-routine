@@ -2,6 +2,8 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { useTranslations } from 'next-intl';
+import styles from './SpeedSelect.module.css';
+import { cx } from '@/lib/cx';
 
 const SPEEDS = ['0.25', '0.5', '0.75', '1', '1.25', '1.5'];
 
@@ -30,85 +32,40 @@ export function SpeedSelect({ value, onChange, disabled }: SpeedSelectProps) {
   };
 
   return (
-    <div ref={ref} style={{ position: 'relative', userSelect: 'none' }}>
+    <div ref={ref} className={styles.format}>
       <button
         onClick={() => !disabled && setOpen(o => !o)}
         disabled={disabled}
-        style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem',
-          background: 'rgba(255,255,255,0.05)',
-          border: `1px solid ${open ? 'rgba(220,185,138,0.4)' : 'rgba(255,255,255,0.1)'}`,
-          borderRadius: '8px',
-          color: disabled ? 'rgba(255,255,255,0.25)' : 'var(--text)',
-          padding: '0.45rem 0.75rem',
-          cursor: disabled ? 'not-allowed' : 'pointer',
-          fontSize: '0.85rem',
-          fontFamily: 'DM Sans, sans-serif',
-          fontWeight: 600,
-          minWidth: '80px',
-          transition: 'border-color 0.15s',
-        }}
+        className={styles.formatButton} style={{ border: `1px solid ${open ? 'rgba(220,185,138,0.4)' : 'rgba(255,255,255,0.1)'}`, color: disabled ? 'rgba(255,255,255,0.25)' : 'var(--text)', cursor: disabled ? 'not-allowed' : 'pointer' }}
       >
         <span>{t('format', { value: parseFloat(value).toFixed(2) })}</span>
         <svg
           width="12" height="12" viewBox="0 0 24 24" fill="none"
           stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"
-          style={{ opacity: 0.5, transform: open ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s', flexShrink: 0 }}
+          className={styles.icon} style={{ transform: open ? 'rotate(180deg)' : 'rotate(0deg)' }}
         >
           <polyline points="6 9 12 15 18 9" />
         </svg>
       </button>
 
       {open && (
-        <div style={{
-          position: 'absolute',
-          top: 'calc(100% + 6px)',
-          left: 0,
-          background: '#1a1a1a',
-          border: '1px solid rgba(255,255,255,0.1)',
-          borderRadius: '10px',
-          padding: '0.35rem',
-          zIndex: 100,
-          minWidth: '100%',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-          animation: 'fadeUp 0.12s ease',
-        }}>
+        <div className={styles.formatLayer}>
           {SPEEDS.map(s => {
             const isActive = s === value;
             return (
               <button
                 key={s}
                 onClick={() => handleSelect(s)}
-                style={{
-                  display: 'block', width: '100%', textAlign: 'left',
-                  background: isActive ? 'rgba(220,185,138,0.12)' : 'transparent',
-                  color: isActive ? 'var(--gold)' : 'var(--text)',
-                  border: 'none',
-                  borderRadius: '6px',
-                  padding: '0.45rem 0.75rem',
-                  cursor: 'pointer',
-                  fontSize: '0.85rem',
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontWeight: isActive ? 700 : 400,
-                  transition: 'background 0.1s',
-                }}
-                onMouseEnter={e => { if (!isActive) e.currentTarget.style.background = 'rgba(255,255,255,0.06)'; }}
-                onMouseLeave={e => { if (!isActive) e.currentTarget.style.background = 'transparent'; }}
+                className={cx(styles.formatLayerButton, isActive && styles.formatLayerButtonActive)}
               >
                 {t('format', { value: parseFloat(s).toFixed(2) })}
-                {isActive && <span style={{ float: 'right', opacity: 0.7 }}>✓</span>}
+                {isActive && <span className={styles.label}>✓</span>}
               </button>
             );
           })}
         </div>
       )}
-
-      <style>{`
-        @keyframes fadeUp {
-          from { opacity: 0; transform: translateY(4px); }
-          to   { opacity: 1; transform: translateY(0); }
-        }
-      `}</style>
+
     </div>
   );
 }

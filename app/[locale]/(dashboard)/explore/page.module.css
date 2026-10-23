@@ -1,0 +1,232 @@
+@keyframes toast-in-out {
+    0% { opacity: 0; transform: translate(-50%, 20px); }
+    15% { opacity: 1; transform: translate(-50%, 0); }
+    85% { opacity: 1; transform: translate(-50%, 0); }
+    100% { opacity: 0; transform: translate(-50%, -20px); }
+}
+
+.goalStack {
+  background: var(--surface);
+  padding: 1.5rem;
+  border-radius: 10px;
+  border: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  transition: border-color 0.2s;
+  position: relative;
+}
+
+.row {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.subheading {
+  color: var(--text);
+  margin: 0;
+  font-size: 1.1rem;
+  font-weight: 600;
+  padding-right: 2.5rem;
+}
+
+.goalStackRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+  margin-bottom: 0.5rem;
+}
+
+.label {
+  background: rgba(var(--gold-rgb), 0.1);
+  color: var(--gold);
+  border-radius: 20px;
+  padding: 0.15rem 0.5rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+}
+
+.text {
+  margin: 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.goalRow {
+  display: flex;
+  gap: 1rem;
+  margin-top: 0.8rem;
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.strong {
+  color: var(--violet);
+}
+
+.playButtonRow {
+  margin-top: auto;
+  padding-top: 1rem;
+  display: flex;
+  gap: 0.5rem;
+}
+
+.playButton {
+  flex: 1;
+  background: var(--gold);
+  color: #111;
+  border: none;
+  padding: 0.6rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.88rem;
+  font-weight: 700;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.2s;
+}
+
+.playButton:hover {
+  background: var(--gold-dark);
+}
+
+.alreadyAddedButton {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: 6px;
+  font-size: 0.88rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  background: rgba(255,255,255,0.03);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.alreadyAddedLabel {
+  font-size: 0.8rem;
+}
+
+.title {
+  padding-bottom: 4rem;
+  position: relative;
+}
+
+.addedToastRow {
+  position: fixed;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--success);
+  color: #111;
+  padding: 0.8rem 1.5rem;
+  border-radius: 100px;
+  font-weight: 700;
+  font-size: 0.9rem;
+  box-shadow: 0 10px 25px rgba(var(--success-rgb), 0.3);
+  z-index: 50;
+  animation: toast-in-out 3s forwards;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 3rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.displayErrorRow {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.emptyStateText {
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.toolsStack {
+  display: flex;
+  flex-direction: column;
+  gap: 4rem;
+}
+
+.toolsHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.2rem;
+  color: var(--text);
+  margin: 0 0 1.5rem 0;
+  letter-spacing: 0.02em;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 1.5rem;
+}
+
+.exercisesHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.2rem;
+  color: var(--text);
+  margin: 0 0 2rem 0;
+  letter-spacing: 0.02em;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  padding-bottom: 0.5rem;
+}
+
+.generalStack {
+  display: flex;
+  flex-direction: column;
+  gap: 3rem;
+}
+
+.generalSubheading {
+  color: var(--gold);
+  font-size: 1.2rem;
+  margin: 0 0 1rem 0;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.generalSubheadingLabel {
+  width: 8px;
+  height: 8px;
+  background: var(--gold);
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.goalStack:hover {
+  border-color: rgba(var(--gold-rgb), 0.2);
+}
+
+.alreadyAddedButton:hover:not(:disabled) {
+  background: rgba(255,255,255,0.08);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.added {
+  background: rgba(var(--success-rgb), 0.05);
+  color: var(--success);
+  border-color: rgba(var(--success-rgb), 0.2);
+}

@@ -1,0 +1,78 @@
+.titleBox {
+  background: var(--surface);
+  border: 1px solid rgba(var(--violet-rgb), 0.2);
+  border-radius: 14px;
+  padding: 1.75rem;
+  width: 100%;
+  max-width: 420px;
+  font-family: var(--font-body), sans-serif;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 1.25rem;
+}
+
+.titleSubheading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  color: var(--violet-light);
+  margin: 0 0 0.2rem;
+  letter-spacing: 0.04em;
+}
+
+.subtitleText {
+  color: var(--muted);
+  font-size: 0.8rem;
+  margin: 0;
+}
+
+.button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  padding: 2px;
+}
+
+.emailPlaceholderStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.emailPlaceholderInput {
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.65rem 0.85rem;
+  color: var(--text);
+  font-size: 0.875rem;
+  font-family: var(--font-body), sans-serif;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.text {
+  color: var(--danger);
+  font-size: 0.78rem;
+  margin: 0;
+}
+
+.sendingButton {
+  padding: 0.65rem;
+  border: 1px solid rgba(var(--violet-rgb), 0.35);
+  border-radius: 8px;
+  color: var(--violet-light);
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.2s;
+}
+
+.emailPlaceholderInput:focus {
+  border-color: rgba(var(--violet-rgb), 0.4);
+}

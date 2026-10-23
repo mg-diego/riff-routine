@@ -1,0 +1,258 @@
+.noFileRow {
+  background: var(--surface);
+  padding: 1rem 1.5rem;
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: all 0.2s;
+  flex-wrap: wrap;
+  position: relative;
+  overflow: hidden;
+}
+
+.layer {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, rgba(var(--danger-rgb), 0.8), transparent);
+}
+
+.noFile {
+  flex: 1 1 200px;
+  min-width: 0;
+}
+
+.noFileRow2 {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  margin-bottom: 0.6rem;
+}
+
+.noFileRow3 {
+  color: var(--danger);
+  display: flex;
+  align-items: center;
+}
+
+.subheading {
+  color: var(--text);
+  margin: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-family: var(--font-body), sans-serif;
+  display: flex;
+  align-items: center;
+}
+
+.levelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.levelLabel {
+  border-radius: 6px;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  white-space: nowrap;
+}
+
+.systemBadgeLabel {
+  font-size: 0.55rem;
+  letter-spacing: 0.05em;
+  background: rgba(var(--violet-rgb), 0.15);
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  color: var(--violet);
+  border: 1px solid rgba(var(--violet-rgb), 0.2);
+  font-weight: 800;
+  text-transform: uppercase;
+}
+
+.lockedBadgeLabel {
+  font-size: 0.7rem;
+  background: rgba(255,193,7,0.1);
+  padding: 0.2rem 0.5rem;
+  border-radius: 4px;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.lockedDescriptionText {
+  margin: 0.4rem 0 0 0;
+  font-size: 0.75rem;
+  color: var(--gold);
+  opacity: 0.8;
+}
+
+.row {
+  flex: 1 1 200px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.label {
+  background: rgba(255,255,255,0.03);
+  border: 1px solid rgba(255,255,255,0.08);
+  color: var(--muted);
+  border-radius: 4px;
+  padding: 0.25rem 0.6rem;
+  font-size: 0.7rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.noFileRowLabel {
+  color: var(--muted);
+  font-size: 0.72rem;
+  padding: 0.2rem 0.3rem;
+  font-weight: 600;
+}
+
+.currentStack {
+  flex: 1 1 180px;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.currentBox {
+  background: rgba(0,0,0,0.2);
+  padding: 0.6rem 0.8rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.03);
+}
+
+.currentRow {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.75rem;
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.currentRow2 {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.currentRowLabel {
+  color: var(--gold);
+}
+
+.strong {
+  color: var(--text);
+  font-size: 0.9rem;
+}
+
+.label4 {
+  color: var(--violet);
+}
+
+.box {
+  height: 4px;
+  background: rgba(255,255,255,0.08);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.block {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.lockedTooltipRow {
+  flex: 0 0 auto;
+  display: flex;
+  gap: 0.6rem;
+  margin-left: auto;
+  align-items: center;
+}
+
+.lockedTooltipButton {
+  padding: 0.6rem 1.2rem;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 800;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  height: 42px;
+}
+
+.lockedTooltipRow2 {
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+}
+
+/* Container states */
+.noFileRow {
+  border: 1px solid rgba(255,255,255,0.05);
+}
+
+.noFileRow:not(.readonly):hover {
+  border-color: rgba(var(--gold-rgb), 0.3);
+}
+
+.missing {
+  border-color: rgba(var(--danger-rgb), 0.15);
+}
+
+.missing:not(.readonly):hover {
+  border-color: rgba(var(--danger-rgb), 0.4);
+}
+
+.readonly {
+  opacity: 0.7;
+}
+
+/* Play button states */
+.lockedTooltipButton {
+  background: var(--gold);
+  color: #111;
+  border: none;
+  cursor: pointer;
+}
+
+.lockedTooltipButton:hover {
+  background: #c9a676;
+  transform: translateY(-2px);
+}
+
+.playMissing {
+  background: rgba(255,255,255,0.05);
+  color: var(--text);
+  border: 1px solid rgba(255,255,255,0.1);
+}
+
+.playMissing:hover {
+  background: rgba(255,255,255,0.1);
+}
+
+.playReadonly,
+.playReadonly:hover {
+  background: rgba(255,255,255,0.05);
+  color: var(--muted);
+  border: 1px solid rgba(255,255,255,0.1);
+  cursor: not-allowed;
+  opacity: 0.5;
+  transform: none;
+}

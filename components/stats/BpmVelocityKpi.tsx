@@ -1,8 +1,9 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useTranslations } from 'next-intl';
+import styles from './BpmVelocityKpi.module.css';
 
 export function BpmVelocityKpi() {
   const t = useTranslations('BpmVelocityKpi');
@@ -74,8 +75,8 @@ export function BpmVelocityKpi() {
 
   if (loading) {
     return (
-      <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-        <span style={{ display: 'inline-block', width: 24, height: 24, border: '3px solid rgba(220,185,138,0.3)', borderTopColor: 'var(--gold)', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+      <div className={`surface-card ${styles.row}`}>
+        <span className={styles.label} />
       </div>
     );
   }
@@ -86,17 +87,17 @@ export function BpmVelocityKpi() {
   const sign = isPositive ? '+' : '';
 
   return (
-    <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-      <h3 style={{ color: 'var(--muted)', marginTop: 0, fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+    <div className="surface-card">
+      <h3 className={styles.titleSubheading}>
         {t('title')}
       </h3>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem' }}>
-        <p style={{ color: color, fontSize: '3rem', margin: 0, fontFamily: 'Bebas Neue, sans-serif', lineHeight: 1 }}>
+      <div className={styles.unitRow}>
+        <p className={styles.text} style={{ color: color }}>
           {sign}{velocity}
         </p>
-        <span style={{ fontSize: '1.2rem', color: 'var(--muted)', fontWeight: 600 }}>{t('unit')}</span>
+        <span className={styles.unitLabel}>{t('unit')}</span>
       </div>
-      <p style={{ margin: '0.5rem 0 0 0', fontSize: '0.8rem', color: 'var(--muted)' }}>
+      <p className={styles.descriptionText}>
         {t('description')}
       </p>
     </div>

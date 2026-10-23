@@ -1,9 +1,11 @@
+import { AppEventName } from '@/lib/events';
+
 export interface OnboardingStep {
     key: string;
     route?: string;
     target?: string;
     tooltipPosition?: 'top' | 'bottom' | 'left' | 'right';
-    waitForEvent?: 'app:exercise-created' | 'app:routine-created' | 'app:play-exercise' | 'app:play-routine' | 'app:open-new-exercise-modal' | 'app:open-new-routine-modal' | 'app:open-end-routine-modal' | 'app:end-routine-practice';
+    waitForEvent?: AppEventName;
 }
 
 export const ONBOARDING_STEPS: OnboardingStep[] = [

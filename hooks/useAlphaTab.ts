@@ -1,4 +1,8 @@
 import { useEffect, useRef, useState, RefObject, useCallback } from 'react';
+import type { AlphaTabApi, model, synth } from '@coderline/alphatab';
+import { ALPHATAB_CDN_URL, ALPHATAB_SCRIPT_URL } from '@/lib/constants';
+
+export type AlphaTabApiRef = RefObject<AlphaTabApi | null>;
 
 export function useAlphaTab(
     wrapperRef: RefObject<HTMLDivElement | null>,
@@ -6,10 +10,10 @@ export function useAlphaTab(
     scriptReady: boolean,
     setOriginalPlaybackBpm: (bpm: number) => void
 ) {
-    const apiRef = useRef<any>(null);
+    const apiRef = useRef<AlphaTabApi | null>(null);
     const [isLoaded, setIsLoaded] = useState(false);
     const [isPlaying, setIsPlaying] = useState(false);
-    const [tracks, setTracks] = useState<any[]>([]);
+    const [tracks, setTracks] = useState<model.Track[]>([]);
 
     const loadTokenRef = useRef(0);
     const destroyedRef = useRef(false);
@@ -17,19 +21,27 @@ export function useAlphaTab(
 
 
     useEffect(() => {
-        if (!scriptReady || !wrapperRef.current) return;
+        const alphaTab = window.alphaTab;
+        if (!scriptReady || !wrapperRef.current || !alphaTab) return;
 
         destroyedRef.current = false;
 
-        const api = new (window as any).alphaTab.AlphaTabApi(wrapperRef.current, {
-            core: { engine: 'html5', useWorkers: true },
-            display: { layoutMode: 'page', staveProfile: 'scoretab' },
+        const api = new alphaTab.AlphaTabApi(wrapperRef.current, {
+            core: {
+                engine: 'html5',
+                useWorkers: true,
+                // Explicit CDN paths: workers/worklets and the Bravura font are resolved from here
+                scriptFile: ALPHATAB_SCRIPT_URL,
+                fontDirectory: `${ALPHATAB_CDN_URL}/font/`,
+            },
+            display: { layoutMode: alphaTab.LayoutMode.Page, staveProfile: alphaTab.StaveProfile.ScoreTab },
             player: {
-                enablePlayer: true,
+                // Synthesizer only: GP8 audio backing tracks would ignore track mute/solo/volume
+                playerMode: alphaTab.PlayerMode.EnabledSynthesizer,
                 enableCursor: true,
                 enableElementHighlighting: true,
-                scrollElement: mainScrollRef.current,
-                soundFont: 'https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.3.0/dist/soundfont/sonivox.sf2',
+                scrollElement: mainScrollRef.current ?? undefined,
+                soundFont: `${ALPHATAB_CDN_URL}/soundfont/sonivox.sf2`,
             },
         });
 
@@ -38,14 +50,14 @@ export function useAlphaTab(
         // scoreLoaded dispara en cada carga — es la única fuente de verdad para isLoaded.
         // soundFontLoad no es fiable: en Strict Mode / remounts el evento puede no disparar
         // porque el soundfont ya está cacheado por el navegador.
-        const onScoreLoaded = (score: any) => {
+        const onScoreLoaded = (score: model.Score) => {
             setTracks(score.tracks);
             setOriginalPlaybackBpm(score.tempo);
             setIsLoaded(true);
         };
 
-        const onPlayerStateChanged = (args: any) => {
-            setIsPlaying(args.state === 1);
+        const onPlayerStateChanged = (args: synth.PlayerStateChangedEventArgs) => {
+            setIsPlaying(args.state === alphaTab.synth.PlayerState.Playing);
         };
 
         const onPlayerFinished = () => {
@@ -56,14 +68,12 @@ export function useAlphaTab(
         api.playerStateChanged.on(onPlayerStateChanged);
         api.playerFinished.on(onPlayerFinished);
 
-        // Reanudar AudioContext al volver de background
+        // Resume the AudioContext when coming back from background (public synth output API)
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && apiRef.current) {
-                try {
-                    const ctx = apiRef.current.player?.context || apiRef.current._playerContext;
-                    if (ctx && ctx.state === 'suspended') ctx.resume();
-                } catch { /* ignorar */ }
-            }
+            if (document.visibilityState !== 'visible') return;
+            try {
+                apiRef.current?.player?.output.activate();
+            } catch { /* ignorar */ }
         };
 
         document.addEventListener('visibilitychange', handleVisibilityChange);
@@ -80,8 +90,8 @@ export function useAlphaTab(
 
             document.removeEventListener('visibilitychange', handleVisibilityChange);
 
-            try { api.stop?.(); } catch { /* ignorar */ }
-            try { api.destroy?.(); } catch { /* ignorar */ }
+            try { api.stop(); } catch { /* ignorar */ }
+            try { api.destroy(); } catch { /* ignorar */ }
 
             apiRef.current = null;
             setIsLoaded(false);

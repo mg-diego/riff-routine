@@ -2,6 +2,8 @@
 
 import React from 'react';
 import { useTranslations } from 'next-intl';
+import styles from './RoutinesPageHeader.module.css';
+import { cx } from '@/lib/cx';
 
 interface RoutinesPageHeaderProps {
   count: number;
@@ -14,33 +16,16 @@ export function RoutinesPageHeader({ count, loading, canCreateRoutine, onCreateC
   const t = useTranslations('RoutinesPageHeader');
 
   return (
-    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+    <div className={styles.titleRow}>
       <div>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
+        <h1 className="page-title">
           {t('title')}
         </h1>
-        <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
+        <p className="page-subtitle">
           {loading ? t('loading') : t('routineCount', { count })}
         </p>
       </div>
-      <button data-onboarding="routines-01" onClick={onCreateClick} style={{
-        display: 'flex', alignItems: 'center', gap: '0.6rem',
-        background: canCreateRoutine ? 'var(--gold)' : 'transparent',
-        color: canCreateRoutine ? '#111' : 'var(--gold)',
-        padding: '0.8rem 1.5rem',
-        borderRadius: '8px', fontWeight: 700, cursor: 'pointer',
-        fontFamily: 'DM Sans, sans-serif', fontSize: '0.95rem',
-        border: canCreateRoutine ? 'none' : '1px solid var(--gold)',
-        boxShadow: canCreateRoutine ? '0 4px 14px rgba(220,185,138,0.25)' : 'none',
-        transition: 'all 0.2s', whiteSpace: 'nowrap',
-        width: 'fit-content', flexShrink: 0
-      }}
-        onMouseEnter={e => {
-          e.currentTarget.style.background = canCreateRoutine ? 'var(--gold-dark)' : 'rgba(220,185,138,0.1)';
-        }}
-        onMouseLeave={e => {
-          e.currentTarget.style.background = canCreateRoutine ? 'var(--gold)' : 'transparent';
-        }}
+      <button data-onboarding="routines-01" onClick={onCreateClick} className={cx(styles.newRoutineButton, !canCreateRoutine && styles.locked)}
       >
         {canCreateRoutine ? (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

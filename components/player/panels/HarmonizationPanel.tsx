@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import { CHROMATIC_NOTES, ROOTS, SCALES, NORMALIZE_ROOT, INTERVAL_OFFSET, SHARP_NOTES, FLAT_NOTES, FLAT_ROOTS } from '@/lib/constants';
 import { useTranslations } from 'next-intl';
+import styles from './HarmonizationPanel.module.css';
 
 const CATEGORY_ORDER = [
   'major-scale-modes',
@@ -85,17 +86,17 @@ export function HarmonizationPanel() {
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', width: '100%', height: '100%' }}>
-      <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
-        <h3 style={{ color: 'var(--gold)', margin: '0 0 1.5rem 0', fontSize: '1.2rem' }}>
+    <div className={styles.controlsTitleStack}>
+      <div className="surface-card">
+        <h3 className={styles.controlsTitleSubheading}>
           {t('controlsTitle')}
         </h3>
         
-        <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap' }}>
+        <div className={styles.triadsRow}>
           <select 
             value={globalRoot} 
             onChange={(e) => setGlobalRoot(e.target.value)}
-            style={{ flex: 1, minWidth: '150px', background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '6px', outline: 'none', fontWeight: 'bold', fontSize: '1rem' }}
+            className={styles.select}
           >
             {CHROMATIC_NOTES.map(note => <option key={note} value={note}>{note}</option>)}
           </select>
@@ -103,7 +104,7 @@ export function HarmonizationPanel() {
           <select 
             value={chordType} 
             onChange={(e) => setChordType(e.target.value as 'triads' | 'tetrads')}
-            style={{ flex: 1, minWidth: '150px', background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '6px', outline: 'none', fontWeight: 'bold', fontSize: '1rem' }}
+            className={styles.select}
           >
             <option value="triads">{t('triads')}</option>
             <option value="tetrads">{t('tetrads')}</option>
@@ -114,20 +115,20 @@ export function HarmonizationPanel() {
             placeholder={t('searchPlaceholder')}
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            style={{ flex: 2, minWidth: '250px', background: 'var(--surface2)', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.1)', padding: '0.8rem', borderRadius: '6px', outline: 'none', fontFamily: 'DM Sans, sans-serif', fontSize: '1rem' }}
+            className={styles.searchPlaceholderInput}
           />
         </div>
       </div>
 
-      <div style={{ background: 'var(--surface)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', overflowX: 'auto' }}>
-        <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', whiteSpace: 'nowrap' }}>
+      <div className={`surface-card ${styles.scaleOrMode}`}>
+        <table className={styles.scaleOrModeTable}>
           <thead>
             <tr>
-              <th style={{ padding: '1rem', borderBottom: '2px solid rgba(255,255,255,0.1)', color: 'var(--gold)', fontWeight: 800, letterSpacing: '0.05em' }}>
+              <th className={styles.scaleOrModeTh}>
                 {t('scaleOrMode')}
               </th>
               {Array.from({ length: maxDegrees }).map((_, idx) => (
-                <th key={idx} style={{ padding: '1rem', borderBottom: '2px solid rgba(255,255,255,0.1)', color: 'var(--gold)', fontWeight: 800, textAlign: 'center' }}>
+                <th key={idx} className={styles.th}>
                   {romanNumerals[idx]}
                 </th>
               ))}
@@ -137,12 +138,12 @@ export function HarmonizationPanel() {
             {groupedByCategory.map((group) => (
               <React.Fragment key={group.category}>
                 <tr>
-                  <td colSpan={maxDegrees + 1} style={{ padding: '2rem 1rem 0.5rem' }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                      <span style={{ color: 'var(--gold)', fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.1em', fontSize: '0.85rem' }}>
+                  <td colSpan={maxDegrees + 1} className={styles.td}>
+                    <div className={styles.row}>
+                      <span className={styles.label}>
                         {mc(`categories.${group.category}`)}
                       </span>
-                      <div style={{ flex: 1, height: '1px', background: 'rgba(220,185,138,0.2)' }} />
+                      <div className={styles.box} />
                     </div>
                   </td>
                 </tr>
@@ -150,9 +151,9 @@ export function HarmonizationPanel() {
                   const scaleName = mc(`scales.${scaleKey}.name`);
 
                   return (
-                    <tr key={scaleKey} style={{ borderBottom: '1px solid rgba(255,255,255,0.03)' }}>
-                      <td style={{ padding: '1rem' }}>
-                        <div style={{ fontWeight: 'bold', fontSize: '1.05rem', color: 'var(--text)' }}>
+                    <tr key={scaleKey} className={styles.tr}>
+                      <td className={styles.scaleNameTd}>
+                        <div className={styles.block}>
                           {scaleName}
                         </div>
                       </td>
@@ -165,34 +166,17 @@ export function HarmonizationPanel() {
                         return (
                           <td 
                             key={idx} 
-                            style={{ 
-                              padding: '1rem', 
-                              textAlign: 'center',
-                              transition: 'all 0.2s ease'
-                            }}
+                            className={styles.chordStrTd}
                           >
                             {chordStr !== '-' ? (
                               <div 
                                 onClick={() => handleChordClick(chordStr)}
-                                style={{ 
-                                  display: 'inline-block',
-                                  background: isMatch ? 'var(--gold)' : 'rgba(255,255,255,0.03)',
-                                  color: isMatch ? '#111' : isFaded ? 'rgba(255,255,255,0.2)' : 'var(--text)',
-                                  padding: '0.5rem 0.8rem',
-                                  borderRadius: '6px',
-                                  fontWeight: isMatch ? 800 : 500,
-                                  fontFamily: 'DM Sans, sans-serif',
-                                  fontSize: '1rem',
-                                  letterSpacing: '0.01em',
-                                  border: isMatch ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)',
-                                  transform: isMatch ? 'scale(1.05)' : 'scale(1)',
-                                  cursor: 'pointer'
-                                }}
+                                className={styles.chordStrBlock} style={{ background: isMatch ? 'var(--gold)' : 'rgba(255,255,255,0.03)', color: isMatch ? '#111' : isFaded ? 'rgba(255,255,255,0.2)' : 'var(--text)', fontWeight: isMatch ? 800 : 500, border: isMatch ? '1px solid var(--gold)' : '1px solid rgba(255,255,255,0.05)', transform: isMatch ? 'scale(1.05)' : 'scale(1)' }}
                               >
                                 {chordStr}
                               </div>
                             ) : (
-                              <span style={{ color: 'rgba(255,255,255,0.1)' }}>-</span>
+                              <span className={styles.scaleOrModeTableLabel}>-</span>
                             )}
                           </td>
                         );

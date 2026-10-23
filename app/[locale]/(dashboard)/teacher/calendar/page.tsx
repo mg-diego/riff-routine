@@ -4,6 +4,9 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
+import { PageSpinner } from '@/components/ui/Spinner';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
 
 // Representa una fila de la tabla "teacher_students"
 interface TeacherStudent {
@@ -159,40 +162,37 @@ export default function TeacherCalendarPage() {
     };
 
     if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh' }}>
-            <div style={{ width: '32px', height: '32px', borderRadius: '50%', border: '2px solid rgba(167,139,250,0.15)', borderTopColor: '#c4b5fd', animation: 'spin 0.8s linear infinite' }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
+        <PageSpinner color="#c4b5fd" trackColor="rgba(167,139,250,0.15)" />
     );
 
     return (
-        <div style={{ maxWidth: '1200px', margin: '0 auto', display: 'flex', flexDirection: 'column', gap: '1.5rem', fontFamily: 'DM Sans, sans-serif' }}>
+        <div className={styles.labelStack}>
 
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem', marginBottom: '1rem' }}>
+            <div className={styles.labelRow}>
                 <div>
-                    <p style={{ color: '#c4b5fd', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 0.3rem', opacity: 0.7 }}>
+                    <p className={ui.teacherEyebrow}>
                         {t('label', { fallback: 'Teacher Tools' })}
                     </p>
-                    <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#c4b5fd', margin: 0, lineHeight: 1 }}>
+                    <h1 className={ui.teacherTitle}>
                         {t('title', { fallback: 'Calendario' })}
                     </h1>
                 </div>
             </div>
 
-            <div style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-                <div style={{ display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)', borderBottom: '1px solid rgba(255,255,255,0.05)', background: 'rgba(0,0,0,0.2)' }}>
-                    <div style={{ padding: '1rem', borderRight: '1px solid rgba(255,255,255,0.05)' }}></div>
+            <div className={styles.stack}>
+                <div className={styles.grid}>
+                    <div className={styles.block}></div>
                     {DAYS.map(day => (
-                        <div key={day.id} style={{ padding: '1rem', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.05)', fontWeight: 700, fontSize: '0.85rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                        <div key={day.id} className={styles.labelStackBlock}>
                             {day.label}
                         </div>
                     ))}
                 </div>
 
-                <div style={{ display: 'flex', flexDirection: 'column', maxHeight: '600px', overflowY: 'auto' }}>
+                <div className={styles.hourStack}>
                     {HOURS.map(hour => (
-                        <div key={hour} style={{ display: 'grid', gridTemplateColumns: '60px repeat(7, 1fr)', borderBottom: '1px solid rgba(255,255,255,0.02)' }}>
-                            <div style={{ padding: '1rem 0.5rem', textAlign: 'center', borderRight: '1px solid rgba(255,255,255,0.05)', color: 'var(--muted)', fontSize: '0.75rem', fontWeight: 600, display: 'flex', alignItems: 'flex-start', justifyContent: 'center' }}>
+                        <div key={hour} className={styles.hourGrid}>
+                            <div className={styles.row}>
                                 {hour}:00
                             </div>
                             {DAYS.map(day => {
@@ -201,35 +201,16 @@ export default function TeacherCalendarPage() {
                                     <div
                                         key={`${day.id}-${hour}`}
                                         onClick={() => handleSlotClick(day.id, hour)}
-                                        style={{
-                                            borderRight: '1px solid rgba(255,255,255,0.02)',
-                                            minHeight: '60px',
-                                            padding: '4px',
-                                            cursor: 'pointer',
-                                            transition: 'background 0.2s',
-                                            background: 'transparent'
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.02)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                        className={styles.box}
                                     >
                                         {slotEvent && (
-                                            <div style={{
-                                                background: 'rgba(167,139,250,0.15)',
-                                                border: '1px solid rgba(167,139,250,0.3)',
-                                                borderRadius: '6px',
-                                                padding: '0.4rem',
-                                                height: '100%',
-                                                boxSizing: 'border-box',
-                                                display: 'flex',
-                                                flexDirection: 'column',
-                                                justifyContent: 'space-between'
-                                            }}>
-                                                <span style={{ fontSize: '0.75rem', fontWeight: 600, color: '#c4b5fd', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                            <div className={styles.studentNameStack}>
+                                                <span className={styles.label}>
                                                     {slotEvent.student_name}
                                                 </span>
                                                 <button
                                                     onClick={(e) => handleRemoveEvent(e, slotEvent.id)}
-                                                    style={{ background: 'none', border: 'none', color: 'rgba(231,76,60,0.7)', cursor: 'pointer', padding: 0, alignSelf: 'flex-end' }}
+                                                    className={styles.button}
                                                 >
                                                     <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                                                 </button>
@@ -244,39 +225,31 @@ export default function TeacherCalendarPage() {
             </div>
 
             {isModalOpen && (
-                <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 200, padding: '1rem' }}>
-                    <div style={{ background: 'var(--surface)', border: '1px solid rgba(167,139,250,0.2)', borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '400px' }}>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
-                            <h3 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.6rem', color: '#c4b5fd', margin: 0, letterSpacing: '0.04em' }}>
+                <div className={ui.overlay}>
+                    <div className={styles.titleBox}>
+                        <div className={styles.titleRow}>
+                            <h3 className={styles.titleSubheading}>
                                 {t('modal.title', { fallback: 'Asignar Alumno' })}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer' }}>
+                            <button onClick={() => setIsModalOpen(false)} className={styles.titleRowButton}>
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
                             </button>
                         </div>
 
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', maxHeight: '300px', overflowY: 'auto' }}>
+                        <div className={styles.titleBoxStack}>
                             {students.length === 0 ? (
-                                <p style={{ color: 'var(--muted)', fontSize: '0.85rem', textAlign: 'center', padding: '1rem 0' }}>No tienes alumnos activos.</p>
+                                <p className={styles.text}>No tienes alumnos activos.</p>
                             ) : (
                                 students.map(student => (
                                     <button
                                         key={student.id}
                                         onClick={() => handleAssignStudent(student)}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '0.75rem',
-                                            padding: '0.75rem', background: 'rgba(255,255,255,0.03)',
-                                            border: '1px solid rgba(255,255,255,0.05)', borderRadius: '8px',
-                                            cursor: 'pointer', color: 'var(--text)', textAlign: 'left',
-                                            transition: 'background 0.2s'
-                                        }}
-                                        onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.08)'}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'rgba(255,255,255,0.03)'}
+                                        className={styles.titleBoxButton}
                                     >
-                                        <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(167,139,250,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#c4b5fd', fontSize: '0.75rem', fontWeight: 'bold' }}>
+                                        <div className={styles.titleBoxRow}>
                                             {student.username.slice(0, 2).toUpperCase()}
                                         </div>
-                                        <span style={{ fontSize: '0.9rem', fontWeight: 600 }}>{student.username}</span>
+                                        <span className={styles.usernameLabel}>{student.username}</span>
                                     </button>
                                 ))
                             )}

@@ -2,11 +2,12 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTranslations } from 'next-intl';
-import { DEFAULT_INTERVAL_COLORS } from '@/lib/constants';
+import { getIntervalColor as resolveIntervalColor } from '@/lib/constants';
 import { Fretboard } from './Fretboard';
 import { useScaleLogic } from '@/hooks/useScaleLogic';
 import { supabase } from '@/lib/supabase';
 import { useAudioSynth } from '@/hooks/useAudioSynth';
+import styles from './SmartFretboard.module.css';
 
 interface SmartFretboardProps {
   rootNote: string;
@@ -77,8 +78,7 @@ export function SmartFretboard({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [viewMode, positionsData]);
 
-  const getIntervalColor = (interval: number) =>
-    customIntervalColors[interval] || DEFAULT_INTERVAL_COLORS[interval] || '#7f8c8d';
+  const getIntervalColor = (interval: number) => resolveIntervalColor(interval, customIntervalColors);
 
   const fretboardProps = {
     rootNote,
@@ -102,15 +102,15 @@ export function SmartFretboard({
   };
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem', width: '100%' }}>
+    <div className={styles.fullStack}>
       {/* Toolbar */}
-      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', alignItems: 'center', justifyContent: 'space-between', background: 'var(--surface2)', padding: '0.8rem', borderRadius: '8px' }}>
+      <div className={styles.fullRow}>
 
         {/* View mode — positions disabled in compare mode */}
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div className={styles.fullRow2}>
           <button
             onClick={() => setViewMode('full')}
-            style={{ background: viewMode === 'full' ? 'var(--gold)' : 'transparent', color: viewMode === 'full' ? '#111' : 'var(--muted)', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}
+            className={styles.fullButton} style={{ background: viewMode === 'full' ? 'var(--gold)' : 'transparent', color: viewMode === 'full' ? '#111' : 'var(--muted)' }}
           >
             {t('viewMode.full')}
           </button>
@@ -118,55 +118,55 @@ export function SmartFretboard({
             onClick={() => !compareMode && setViewMode('positions')}
             disabled={compareMode}
             title={compareMode ? t('viewMode.positionsDisabledInCompare') : undefined}
-            style={{ background: viewMode === 'positions' ? 'var(--gold)' : 'transparent', color: compareMode ? 'rgba(255,255,255,0.2)' : viewMode === 'positions' ? '#111' : 'var(--muted)', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: compareMode ? 'not-allowed' : 'pointer', fontSize: '0.85rem', fontWeight: 'bold', transition: 'all 0.2s' }}
+            className={styles.button} style={{ background: viewMode === 'positions' ? 'var(--gold)' : 'transparent', color: compareMode ? 'rgba(255,255,255,0.2)' : viewMode === 'positions' ? '#111' : 'var(--muted)', cursor: compareMode ? 'not-allowed' : 'pointer' }}
           >
             {t('viewMode.positions')}
           </button>
         </div>
 
         {/* Label & lefty */}
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+        <div className={styles.notesRow}>
           {/* In compare mode, only note names make sense */}
           {!compareMode && (
             <>
-              <button onClick={() => setLabelMode('notes')} style={{ background: labelMode === 'notes' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'notes' ? '#fff' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+              <button onClick={() => setLabelMode('notes')} className={styles.notesButton} style={{ background: labelMode === 'notes' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'notes' ? '#fff' : 'var(--muted)' }}>
                 {t('labelMode.notes')}
               </button>
-              <button onClick={() => setLabelMode('intervals')} style={{ background: labelMode === 'intervals' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'intervals' ? '#fff' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+              <button onClick={() => setLabelMode('intervals')} className={styles.notesButton} style={{ background: labelMode === 'intervals' ? 'rgba(255,255,255,0.1)' : 'transparent', color: labelMode === 'intervals' ? '#fff' : 'var(--muted)' }}>
                 {t('labelMode.intervals')}
               </button>
-              <div style={{ width: '1px', height: '16px', background: 'rgba(255,255,255,0.2)', margin: '0 4px' }} />
+              <div className={styles.box} />
             </>
           )}
-          <button onClick={() => setLeftyMode(!leftyMode)} style={{ background: leftyMode ? 'var(--gold)' : 'transparent', color: leftyMode ? '#111' : 'var(--muted)', border: 'none', padding: '0.4rem 0.8rem', borderRadius: '6px', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold', transition: 'all 0.2s' }}>
+          <button onClick={() => setLeftyMode(!leftyMode)} className={styles.notesButton} style={{ background: leftyMode ? 'var(--gold)' : 'transparent', color: leftyMode ? '#111' : 'var(--muted)' }}>
             {t('leftyMode')}
           </button>
         </div>
       </div>
 
       {/* Fretboard */}
-      <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+      <div className={styles.stack}>
         {viewMode === 'full' ? (
           <Fretboard {...fretboardProps} />
         ) : (
           <>
             {(positionsData?.length ?? 0) > 0 && (
-              <div style={{ width: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '1rem', marginBottom: '1.5rem', background: 'rgba(0,0,0,0.3)', padding: '0.8rem 1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+              <div className={styles.stack}>
+                <div className={styles.row}>
                   <button
                     onClick={() => setCarouselIndex(prev => Math.max(0, prev - 1))}
                     disabled={carouselIndex === 0}
-                    style={{ background: 'transparent', color: carouselIndex === 0 ? 'rgba(255,255,255,0.2)' : 'var(--gold)', border: 'none', cursor: carouselIndex === 0 ? 'default' : 'pointer', fontSize: '1.5rem', fontWeight: 'bold', padding: '0 0.5rem' }}
+                    className={styles.fullStackButton} style={{ color: carouselIndex === 0 ? 'rgba(255,255,255,0.2)' : 'var(--gold)', cursor: carouselIndex === 0 ? 'default' : 'pointer' }}
                   >
                     &lt;
                   </button>
 
-                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                  <div className={styles.fullStackRow}>
                     {positionsData?.map((pos: any, idx: number) => (
                       <button
                         key={idx}
                         onClick={() => setCarouselIndex(idx)}
-                        style={{ width: '32px', height: '32px', borderRadius: '50%', background: carouselIndex === idx ? 'var(--gold)' : 'rgba(255,255,255,0.1)', color: carouselIndex === idx ? '#111' : '#fff', border: 'none', fontWeight: 'bold', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', fontSize: '0.9rem' }}
+                        className={styles.fullStackRowButton} style={{ background: carouselIndex === idx ? 'var(--gold)' : 'rgba(255,255,255,0.1)', color: carouselIndex === idx ? '#111' : '#fff' }}
                       >
                         {idx + 1}
                       </button>
@@ -176,13 +176,13 @@ export function SmartFretboard({
                   <button
                     onClick={() => setCarouselIndex(prev => Math.min((positionsData?.length ?? 1) - 1, prev + 1))}
                     disabled={carouselIndex === (positionsData?.length ?? 1) - 1}
-                    style={{ background: 'transparent', color: carouselIndex === (positionsData?.length ?? 1) - 1 ? 'rgba(255,255,255,0.2)' : 'var(--gold)', border: 'none', cursor: carouselIndex === (positionsData?.length ?? 1) - 1 ? 'default' : 'pointer', fontSize: '1.5rem', fontWeight: 'bold', padding: '0 0.5rem' }}
+                    className={styles.fullStackButton} style={{ color: carouselIndex === (positionsData?.length ?? 1) - 1 ? 'rgba(255,255,255,0.2)' : 'var(--gold)', cursor: carouselIndex === (positionsData?.length ?? 1) - 1 ? 'default' : 'pointer' }}
                   >
                     &gt;
                   </button>
                 </div>
 
-                <div style={{ textAlign: 'center', marginBottom: '1rem', color: 'var(--gold)', fontWeight: 'bold', fontSize: '1.1rem' }}>
+                <div className={styles.block}>
                   {positionsData?.[carouselIndex]?.title || `Posición ${carouselIndex + 1}`}
                 </div>
 

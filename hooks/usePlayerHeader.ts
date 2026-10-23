@@ -4,11 +4,14 @@ import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { supabase } from '@/lib/supabase';
 import { useMetronome } from './useMetronome';
+import { useExerciseActions } from './useExerciseActions';
 import { Exercise } from '@/lib/types';
+import { APP_EVENTS, emitAppEvent } from '@/lib/events';
+import { PracticeMode } from '@/lib/practiceModes';
 import { useTranslations } from 'next-intl';
 
 interface UsePlayerHeaderOptions {
-    mode: string;
+    mode: PracticeMode;
     exercise: Exercise | null | undefined;
     routineTargetBpm: number | null;
     routineTargetDuration: number | null;
@@ -48,6 +51,7 @@ export function usePlayerHeader({
 }: UsePlayerHeaderOptions) {
     const router = useRouter();
     const t = useTranslations('PlayerHeader');
+    const { checkLimitAndFork } = useExerciseActions();
 
     const isRoutine = mode === 'routine';
     const isFree = mode === 'free';
@@ -195,17 +199,15 @@ export function usePlayerHeader({
     }, [t]);
 
     const _autoSave = async (secs: number, cur: string, goal: string) => {
-        console.log("[HOOK] _autoSave disparado", { secs, cur, goal, exerciseId: exercise?.id });
         if (!exercise || secs < 5 || isPreviewMode) return;
         const parsedCur = parseInt(cur);
         const bpmUsed = !isNaN(parsedCur) && parsedCur > 0 ? parsedCur : (originalBpm || exercise.bpm_goal || null);
         const bpmGoalVal = goal ? parseInt(goal) : null;
-        console.log("[HOOK] Llamando a onSaveExerciseLog", { bpmUsed, bpmGoalVal, secs });
         await onSaveExerciseLog(
             disableBpmInputs || !showBpmInputs ? null : bpmUsed,
             disableBpmInputs || !showBpmInputs || isNaN(bpmGoalVal as number) ? null : bpmGoalVal,
             secs,
-        ).catch(err => { console.error("[HOOK] Error", err) });
+        ).catch(err => { console.error('Error auto-saving exercise log:', err); });
     };
 
     const handleNext = async (onNext: () => void) => {
@@ -228,7 +230,7 @@ export function usePlayerHeader({
         if (isTimerRunning) onToggleTimer();
         if (!isPreviewMode) await _autoSave(displaySeconds, bpmCurrent, bpmGoal);
         if (!sessionId) { onEndSession(); return; }
-        window.dispatchEvent(new CustomEvent('app:open-end-routine-modal'));
+        emitAppEvent(APP_EVENTS.OPEN_END_ROUTINE_MODAL);
         setShowEndModal(true);
     };
 
@@ -257,23 +259,9 @@ export function usePlayerHeader({
 
     const handleSaveToLibrary = async () => {
         if (!exercise) return;
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) throw new Error('Auth error');
-            const { count } = await supabase.from('exercises').select('*', { count: 'exact', head: true }).eq('user_id', user.id);
-            const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', user.id).single();
-            if (profile?.subscription_tier === 'free' && count && count >= 10) {
-                window.dispatchEvent(new CustomEvent('app:show-pro-modal')); return;
-            }
-            const { data: newEx, error } = await supabase.from('exercises').insert({
-                user_id: user.id, title: exercise.title, technique: exercise.technique,
-                file_url: exercise.file_url, is_system: false,
-                bpm_suggested: exercise.bpm_suggested, bpm_goal: null,
-                difficulty: exercise.difficulty, notes: exercise.notes,
-            }).select().single();
-            if (error) throw error;
-            router.push(`/practice?id=${newEx.id}`);
-        } catch (err) { console.error('Error forking exercise:', err); }
+        // Reuses the library fork flow: tier limits, pro modal and de-duplication of existing copies
+        const newId = await checkLimitAndFork(exercise);
+        if (newId) router.push(`/practice?id=${newId}`);
     };
 
     return {

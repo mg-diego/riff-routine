@@ -1,0 +1,101 @@
+.block {
+  margin-bottom: 2.5rem;
+}
+
+.heading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  color: var(--gold);
+  margin: 0 0 0.75rem 0;
+  letter-spacing: 0.03em;
+}
+
+.block2 {
+  border-left: 3px solid rgba(var(--gold-rgb), 0.25);
+  padding-left: 1.25rem;
+}
+
+.text {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.75;
+  margin: 0 0 0.75rem 0;
+}
+
+.list {
+  margin: 0.5rem 0;
+  padding-left: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.item {
+  color: var(--muted);
+  font-size: 0.95rem;
+  line-height: 1.7;
+}
+
+.labelStack {
+  width: 100%;
+  max-width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.label {
+  margin-bottom: 2rem;
+  flex-shrink: 0;
+}
+
+.lastUpdatedText {
+  color: var(--muted);
+  margin: 0.5rem 0 0;
+  font-size: 0.85rem;
+}
+
+.introBox {
+  background: var(--surface);
+  border-radius: 12px;
+  border: 1px solid rgba(255,255,255,0.05);
+  padding: 2.5rem;
+  max-width: 780px;
+  width: 100%;
+}
+
+.introBoxBlock {
+  border-top: 1px solid rgba(255,255,255,0.06);
+  margin: 2rem 0;
+}
+
+.block4 {
+  margin-bottom: 1rem;
+}
+
+.introBoxText {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.25rem 0;
+}
+
+.purposeBox {
+  background: rgba(var(--gold-rgb), 0.05);
+  border: 1px solid rgba(var(--gold-rgb), 0.15);
+  border-radius: 8px;
+  padding: 0.85rem 1.1rem;
+  margin-top: 0.75rem;
+}
+
+.purposeBoxText {
+  color: var(--gold);
+  font-weight: 700;
+  font-size: 0.85rem;
+  margin: 0 0 0.2rem 0;
+}
+
+.purposeText {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0;
+}

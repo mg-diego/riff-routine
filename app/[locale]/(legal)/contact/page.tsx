@@ -2,6 +2,9 @@
 
 import React, { useState } from 'react';
 import { useTranslations } from 'next-intl';
+import styles from './page.module.css';
+import ui from '@/components/ui/ui.module.css';
+import { cx } from '@/lib/cx';
 
 const CONTACT_EMAIL = 'hello@riffRoutine.com';
 
@@ -28,20 +31,6 @@ export default function ContactPage() {
     }
   };
 
-  const inputStyle: React.CSSProperties = {
-    width: '100%',
-    padding: '0.7rem 0.9rem',
-    background: 'rgba(255,255,255,0.04)',
-    border: '1px solid rgba(255,255,255,0.08)',
-    borderRadius: '8px',
-    color: 'var(--text)',
-    fontSize: '0.9rem',
-    fontFamily: 'DM Sans, sans-serif',
-    outline: 'none',
-    boxSizing: 'border-box',
-    transition: 'border-color 0.2s',
-  };
-
   const labelStyle: React.CSSProperties = {
     display: 'block',
     color: 'var(--muted)',
@@ -52,46 +41,39 @@ export default function ContactPage() {
   };
 
   return (
-    <div style={{ width: '100%', maxWidth: '100%', display: 'flex', flexDirection: 'column' }}>
+    <div className={styles.labelStack}>
 
       {/* Hero */}
-      <div style={{ marginBottom: '2rem', flexShrink: 0 }}>
-        <p style={{ color: 'var(--gold)', fontSize: '0.75rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 0.4rem 0', opacity: 0.7 }}>
+      <div className={styles.label}>
+        <p className={ui.eyebrow}>
           {t('hero.label')}
         </p>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
+        <h1 className="page-title">
           {t('hero.title')}
         </h1>
-        <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
+        <p className="page-subtitle">
           {t('hero.subtitle')}
         </p>
       </div>
 
-      <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap', alignItems: 'flex-start' }}>
+      <div className={styles.titleRow}>
 
         {/* Form card */}
-        <div style={{
-          background: 'var(--surface)',
-          borderRadius: '12px',
-          border: '1px solid rgba(255,255,255,0.05)',
-          padding: '2rem',
-          flex: '1 1 480px',
-          minWidth: 0,
-        }}>
+        <div className={styles.titleBox}>
           {formState === 'success' ? (
-            <div style={{ textAlign: 'center', padding: '3rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ width: '60px', height: '60px', borderRadius: '50%', background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.3)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.5rem' }}>
+            <div className={styles.titleStack}>
+              <div className={styles.row}>
                 ✓
               </div>
-              <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', color: 'var(--gold)', margin: 0 }}>
+              <h2 className={styles.titleHeading}>
                 {t('form.success.title')}
               </h2>
-              <p style={{ color: 'var(--muted)', fontSize: '0.95rem', margin: 0, maxWidth: '360px' }}>
+              <p className={styles.descriptionText}>
                 {t('form.success.description')}
               </p>
             </div>
           ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '1.25rem' }}>
+            <div className={styles.titleBoxStack}>
 
               {/* Name */}
               <div>
@@ -101,7 +83,7 @@ export default function ContactPage() {
                   value={name}
                   onChange={e => setName(e.target.value)}
                   placeholder={t('form.name.placeholder')}
-                  style={inputStyle}
+                  className={styles.input}
                   disabled={formState === 'submitting'}
                 />
               </div>
@@ -114,7 +96,7 @@ export default function ContactPage() {
                   value={email}
                   onChange={e => setEmail(e.target.value)}
                   placeholder={t('form.email.placeholder')}
-                  style={inputStyle}
+                  className={styles.input}
                   disabled={formState === 'submitting'}
                 />
               </div>
@@ -125,7 +107,7 @@ export default function ContactPage() {
                 <select
                   value={subject}
                   onChange={e => setSubject(e.target.value)}
-                  style={{ ...inputStyle, appearance: 'none', cursor: 'pointer' }}
+                  className={cx(styles.input, styles.defaultSelect)}
                   disabled={formState === 'submitting'}
                 >
                   <option value="">{t('form.subject.options.default')}</option>
@@ -145,14 +127,14 @@ export default function ContactPage() {
                   onChange={e => setMessage(e.target.value)}
                   placeholder={t('form.message.placeholder')}
                   rows={5}
-                  style={{ ...inputStyle, resize: 'vertical', minHeight: '120px' }}
+                  className={cx(styles.input, styles.placeholderTextarea)}
                   disabled={formState === 'submitting'}
                 />
               </div>
 
               {/* Error */}
               {formState === 'error' && (
-                <p style={{ color: '#e74c3c', fontSize: '0.85rem', margin: 0 }}>
+                <p className={styles.errorText}>
                   {t('form.error', { email: CONTACT_EMAIL })}
                 </p>
               )}
@@ -161,19 +143,7 @@ export default function ContactPage() {
               <button
                 onClick={handleSubmit}
                 disabled={formState === 'submitting' || !name || !email || !subject || !message}
-                style={{
-                  padding: '0.75rem 1.5rem',
-                  background: 'var(--gold)',
-                  color: '#111',
-                  border: 'none',
-                  borderRadius: '8px',
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontSize: '0.9rem',
-                  fontWeight: 700,
-                  cursor: 'pointer',
-                  opacity: (!name || !email || !subject || !message || formState === 'submitting') ? 0.5 : 1,
-                  transition: 'opacity 0.2s',
-                }}
+                className={styles.submittingButton} style={{ opacity: (!name || !email || !subject || !message || formState === 'submitting') ? 0.5 : 1 }}
               >
                 {formState === 'submitting' ? t('form.submitting') : t('form.submit')}
               </button>
@@ -182,40 +152,30 @@ export default function ContactPage() {
         </div>
 
         {/* Side info */}
-        <div style={{ flex: '0 1 260px', display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+        <div className={styles.titleRowStack}>
 
           {/* Email alternative */}
-          <div style={{
-            background: 'var(--surface)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.05)',
-            padding: '1.25rem 1.5rem',
-          }}>
-            <p style={{ color: 'var(--gold)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.1rem', margin: '0 0 0.4rem 0', letterSpacing: '0.03em' }}>
+          <div className={styles.titleRowBox}>
+            <p className={styles.titleText}>
               {t('alternative.title')}
             </p>
-            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 0.5rem 0' }}>
+            <p className={styles.descriptionText2}>
               {t('alternative.description')}
             </p>
             <a
               href={`mailto:${CONTACT_EMAIL}`}
-              style={{ color: 'var(--gold)', fontSize: '0.85rem', fontWeight: 600, textDecoration: 'none' }}
+              className={styles.link}
             >
               {CONTACT_EMAIL}
             </a>
           </div>
 
           {/* Response time */}
-          <div style={{
-            background: 'var(--surface)',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.05)',
-            padding: '1.25rem 1.5rem',
-          }}>
-            <p style={{ color: 'var(--gold)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.1rem', margin: '0 0 0.4rem 0', letterSpacing: '0.03em' }}>
+          <div className={styles.titleRowBox}>
+            <p className={styles.titleText}>
               {t('response.title')}
             </p>
-            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: 0 }}>
+            <p className={styles.descriptionText3}>
               {t('response.description')}
             </p>
           </div>

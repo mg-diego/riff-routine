@@ -1,9 +1,12 @@
 "use client";
 
 import { useState, useEffect } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useTranslations } from 'next-intl';
-import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
+import { APP_EVENTS, emitAppEvent } from '@/lib/events';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import styles from './EndSessionModal.module.css';
+import ui from '@/components/ui/ui.module.css';
 
 interface EndSessionModalProps {
     sessionId: string;
@@ -121,7 +124,7 @@ export function EndSessionModal({
                     created_at: new Date().toISOString()
                 });
             }
-            window.dispatchEvent(new CustomEvent('app:end-routine-practice'));
+            emitAppEvent(APP_EVENTS.END_ROUTINE_PRACTICE);
             onEndSession(totalRoutineSeconds);
         } catch (e) { 
         } finally {
@@ -130,52 +133,50 @@ export function EndSessionModal({
     };
 
     return (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9998, background: 'rgba(0,0,0,0.85)', backdropFilter: 'blur(5px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-            <div data-onboarding="practice-06" style={{ background: '#141414', border: '1px solid rgba(220,185,138,0.2)', borderRadius: '12px', padding: '2rem', width: '100%', maxWidth: '500px', boxShadow: '0 20px 40px rgba(0,0,0,0.8)', fontFamily: 'DM Sans, sans-serif', display: 'flex', flexDirection: 'column', maxHeight: '90vh' }}>
-                <div style={{ flexShrink: 0, marginBottom: '1.2rem' }}>
-                    <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: 'var(--gold)', margin: '0 0 0.2rem 0', lineHeight: 1 }}>{t('title')}</h2>
-                    <p style={{ color: 'var(--muted)', margin: 0, fontSize: '0.9rem' }}>{t('subtitle')}</p>
+        <div className={ui.overlayBlur}>
+            <div data-onboarding="practice-06" className={styles.titleStack}>
+                <div className={styles.title}>
+                    <h2 className={styles.titleHeading}>{t('title')}</h2>
+                    <p className={styles.subtitleText}>{t('subtitle')}</p>
                 </div>
-                <div className="logs-scroll" style={{ overflowY: 'auto', paddingRight: '0.5rem', flex: 1, display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                <div className={`logs-scroll ${styles.loadingStack}`}>
                     {loadingLogs ? (
-                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>{t('loading')}</div>
+                        <div className={styles.loading}>{t('loading')}</div>
                     ) : finalLogs.length === 0 ? (
-                        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--muted)' }}>{t('noData')}</div>
+                        <div className={styles.loading}>{t('noData')}</div>
                     ) : (
                         finalLogs.map((log, i) => (
-                            <div data-onboarding="practice-05" key={log.exercise_id} style={{ background: 'rgba(255,255,255,0.03)', padding: '0.8rem 1rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.06)' }}>
-                                <p style={{ margin: '0 0 0.8rem 0', color: 'var(--text)', fontWeight: 600, fontSize: '0.95rem', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                            <div data-onboarding="practice-05" key={log.exercise_id} className={styles.bpmFinalLabelBox}>
+                                <p className={styles.text}>
                                     {log.title}
                                 </p>
 
-                                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr auto', gap: '0.8rem', alignItems: 'flex-end' }}>
+                                <div className={styles.bpmFinalLabelGrid}>
                                     <div>
                                         {log.hasBpm ? (
                                             <>
-                                                <label style={{ display: 'block', fontSize: '0.6rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem', fontWeight: 700 }}>{t('bpmFinalLabel')}</label>
-                                                <input type="number" placeholder="-" value={log.bpm_used} onChange={e => updateFinalLog(i, 'bpm_used', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--gold)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', fontSize: '1rem', fontWeight: 700, outline: 'none', boxSizing: 'border-box', height: '36px' }} />
+                                                <label className={styles.bpmFinalLabelFieldLabel}>{t('bpmFinalLabel')}</label>
+                                                <input type="number" placeholder="-" value={log.bpm_used} onChange={e => updateFinalLog(i, 'bpm_used', e.target.value)} className={styles.input} />
                                             </>
                                         ) : (
-                                            <div style={{ display: 'flex', alignItems: 'flex-end', height: '100%', paddingBottom: '0.5rem' }}>
-                                                <span style={{ color: 'var(--muted)', fontSize: '0.75rem', fontStyle: 'italic' }}>{t('noBpmLog')}</span>
+                                            <div className={styles.noBpmLogRow}>
+                                                <span className={styles.noBpmLogLabel}>{t('noBpmLog')}</span>
                                             </div>
                                         )}
                                     </div>
                                     <div>
-                                        <label style={{ display: 'block', fontSize: '0.6rem', color: 'rgba(220,185,138,0.6)', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.3rem', fontWeight: 700 }}>{t('timeLabel')}</label>
-                                        <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
-                                            <input type="number" placeholder="0" value={log.minutes} onChange={e => updateFinalLog(i, 'minutes', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1rem', boxSizing: 'border-box', height: '36px' }} />
-                                            <span style={{ color: 'var(--muted)', fontWeight: 'bold' }}>:</span>
-                                            <input type="number" placeholder="00" value={log.seconds} onChange={e => updateFinalLog(i, 'seconds', e.target.value)} style={{ width: '100%', background: 'rgba(0,0,0,0.2)', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.5rem', borderRadius: '6px', textAlign: 'center', outline: 'none', fontSize: '1rem', boxSizing: 'border-box', height: '36px' }} />
+                                        <label className={styles.bpmFinalLabelFieldLabel}>{t('timeLabel')}</label>
+                                        <div className={styles.row}>
+                                            <input type="number" placeholder="0" value={log.minutes} onChange={e => updateFinalLog(i, 'minutes', e.target.value)} className={styles.bpmFinalLabelGridInput} />
+                                            <span className={styles.label}>:</span>
+                                            <input type="number" placeholder="00" value={log.seconds} onChange={e => updateFinalLog(i, 'seconds', e.target.value)} className={styles.bpmFinalLabelGridInput} />
                                         </div>
                                     </div>
                                     
                                     <button 
                                         onClick={() => clearLog(i)}
                                         title={t('clearLog')}
-                                        style={{ background: 'transparent', border: '1px solid rgba(239, 68, 68, 0.3)', color: '#ef4444', cursor: 'pointer', padding: '0', width: '36px', height: '36px', borderRadius: '6px', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', flexShrink: 0 }}
-                                        onMouseEnter={e => { e.currentTarget.style.background = 'rgba(239, 68, 68, 0.1)'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.6)'; }}
-                                        onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'rgba(239, 68, 68, 0.3)'; }}
+                                        className={styles.clearLogButton}
                                     >
                                         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <polyline points="3 6 5 6 21 6"></polyline>
@@ -187,11 +188,11 @@ export function EndSessionModal({
                         ))
                     )}
                 </div>
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1.5rem', flexShrink: 0 }}>
-                    <button onClick={() => { onClose(); if (!isTimerRunning) onToggleTimer(); }} disabled={isSaving} style={{ flex: 1, background: 'transparent', border: '1px solid rgba(255,255,255,0.1)', color: 'var(--text)', padding: '0.8rem', borderRadius: '8px', cursor: 'pointer', fontWeight: 600, transition: 'all 0.2s', fontSize: '0.9rem' }} onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'} onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                <div className={styles.backToPracticeRow}>
+                    <button onClick={() => { onClose(); if (!isTimerRunning) onToggleTimer(); }} disabled={isSaving} className={styles.backToPracticeButton}>
                         {t('actions.backToPractice')}
                     </button>
-                    <button onClick={confirmEndSession} disabled={isSaving} style={{ flex: 1, background: 'var(--gold)', border: 'none', color: '#111', padding: '0.8rem', borderRadius: '8px', cursor: isSaving ? 'not-allowed' : 'pointer', fontWeight: 700, opacity: isSaving ? 0.5 : 1, transition: 'all 0.2s', fontSize: '0.9rem' }} onMouseEnter={e => e.currentTarget.style.background = 'var(--gold-dark, #c9a676)'} onMouseLeave={e => e.currentTarget.style.background = 'var(--gold)'}>
+                    <button onClick={confirmEndSession} disabled={isSaving} className={styles.savingButton} style={{ cursor: isSaving ? 'not-allowed' : 'pointer', opacity: isSaving ? 0.5 : 1 }}>
                         {isSaving ? t('actions.saving') : t('actions.saveAndExit')}
                     </button>
                 </div>

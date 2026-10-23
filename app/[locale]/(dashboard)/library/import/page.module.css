@@ -1,0 +1,274 @@
+.back {
+  max-width: 900px;
+  margin: 0 auto;
+  padding-bottom: 4rem;
+}
+
+.text {
+  margin-bottom: 1.5rem;
+}
+
+.textText {
+  color: var(--muted);
+  margin: 0 0 0.5rem;
+  font-size: 0.9rem;
+}
+
+.formatRequiredBox {
+  background: rgba(255,255,255,0.03);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.08);
+}
+
+.formatRequiredText {
+  margin: 0 0 0.5rem;
+  color: var(--gold);
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.formatExampleCode {
+  color: var(--text);
+  background: #111;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.85rem;
+}
+
+.example1Code {
+  color: var(--muted);
+  font-size: 0.85rem;
+}
+
+.allowedTechniques {
+  margin: 0.8rem 0 0;
+}
+
+.allowedTechniquesText {
+  color: var(--gold);
+  margin: 0 0 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+
+.label {
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--muted);
+  padding: 0.2rem 0.6rem;
+  border-radius: 12px;
+  font-size: 0.75rem;
+  white-space: nowrap;
+}
+
+.placeholderTextarea {
+  width: 100%;
+  height: 200px;
+  background: rgba(0,0,0,0.2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 1rem;
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  resize: vertical;
+  margin-bottom: 1rem;
+  outline: none;
+}
+
+.block {
+  margin-bottom: 1rem;
+}
+
+.analyzeButton {
+  width: 100%;
+  background: var(--surface2);
+  color: var(--text);
+  padding: 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  font-weight: 600;
+  transition: background 0.2s;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.titleSubheading {
+  color: var(--text);
+  margin: 0;
+}
+
+.backToTextButton {
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: 0.85rem;
+}
+
+.titleStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
+  margin-bottom: 2rem;
+}
+
+.titleGrid {
+  display: grid;
+  grid-template-columns: 2fr 2fr 1fr auto;
+  gap: 0.8rem;
+  align-items: start;
+  padding: 1rem;
+  border-radius: 8px;
+}
+
+.titleGridStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.titleFieldLabel {
+  font-size: 0.75rem;
+  color: var(--muted);
+}
+
+.input {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: var(--surface);
+  color: var(--text);
+  outline: none;
+}
+
+.techniqueStack {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  position: relative;
+}
+
+.overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9;
+}
+
+.selectButton {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: var(--surface);
+  outline: none;
+  cursor: pointer;
+  text-align: left;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  min-height: 34px;
+}
+
+.selectLabel {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.icon {
+  transition: transform 0.2s;
+  flex-shrink: 0;
+}
+
+.layer {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 8px;
+  padding: 0.5rem;
+  z-index: 10;
+  max-height: 200px;
+  overflow-y: auto;
+  box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+}
+
+.fieldLabel {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  cursor: pointer;
+  border-radius: 4px;
+  color: var(--text);
+  font-size: 0.85rem;
+}
+
+.techniqueStackInput {
+  accent-color: var(--gold);
+}
+
+.errorLabel {
+  color: var(--danger);
+  font-size: 0.7rem;
+}
+
+.optionalInput {
+  width: 100%;
+  padding: 0.5rem;
+  border-radius: 4px;
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  outline: none;
+}
+
+.deleteRow {
+  display: flex;
+  align-items: center;
+  height: 100%;
+  padding-top: 1.2rem;
+}
+
+.deleteRowButton {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+  padding: 0.5rem;
+}
+
+.savingButton {
+  width: 100%;
+  background: var(--gold);
+  color: #111;
+  padding: 1rem;
+  border-radius: 8px;
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: all 0.2s;
+}
+
+.fieldLabel:hover {
+  background: rgba(255,255,255,0.03);
+}
+
+.analyzeButton:hover:not(:disabled) {
+  background: rgba(255,255,255,0.1);
+}

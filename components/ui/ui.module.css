@@ -1,0 +1,86 @@
+/* Shared UI primitives used across features (import ui from '@/components/ui/ui.module.css') */
+
+.dangerTextButton {
+  background: none;
+  border: none;
+  color: var(--danger);
+  cursor: pointer;
+}
+
+.formTitle {
+  color: var(--gold);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.5rem;
+  line-height: 1;
+  margin: 0 0 1.5rem 0;
+}
+
+.overlayBlur {
+  align-items: center;
+  backdrop-filter: blur(5px);
+  background: rgba(0,0,0,0.85);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 9998;
+}
+
+.overlay {
+  align-items: center;
+  background: rgba(0,0,0,0.7);
+  display: flex;
+  inset: 0;
+  justify-content: center;
+  padding: 1rem;
+  position: fixed;
+  z-index: 200;
+}
+
+.teacherEyebrow {
+  color: var(--violet-light);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.3rem;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.teacherTitle {
+  color: var(--violet-light);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2.5rem;
+  line-height: 1;
+  margin: 0;
+}
+
+.eyebrow {
+  color: var(--gold);
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  margin: 0 0 0.4rem 0;
+  opacity: 0.7;
+  text-transform: uppercase;
+}
+
+.backLink {
+  align-items: center;
+  background: transparent;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.9rem;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  padding: 0;
+  transition: color 0.2s;
+}
+
+.backLink:hover {
+  color: var(--text);
+}

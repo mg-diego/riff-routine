@@ -17,6 +17,26 @@ export const formatTime = (totalMinutes: number) => {
     return parts.slice(0, 2);
 };
 
+// 125 -> "2:05"
+export const formatClock = (totalSeconds: number) => {
+  const m = Math.floor(totalSeconds / 60);
+  const s = totalSeconds % 60;
+  return `${m}:${s.toString().padStart(2, '0')}`;
+};
+
+// 5400 -> "1h 30m", 600 -> "10 <minLabel>"
+export const formatKpiTime = (totalSecs: number, minLabel: string) => {
+  if (!totalSecs) return `0 ${minLabel}`;
+  const h = Math.floor(totalSecs / 3600);
+  const m = Math.floor((totalSecs % 3600) / 60);
+  return h > 0 ? `${h}h ${m}m` : `${m} ${minLabel}`;
+};
+
+export const getYoutubeId = (url: string) => {
+  const m = url.match(/^.*(youtu.be\/|v\/|u\/\w\/|embed\/|watch\?v=|&v=)([^#&?]*).*/);
+  return (m && m[2].length === 11) ? m[2] : null;
+};
+
 export function getStartDate(filter: string): string | null {
   if (filter === 'all') return null;
   const days = parseInt(filter);

@@ -1,0 +1,82 @@
+.titleStack {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  padding-bottom: 4rem;
+  overflow-x: hidden;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  margin-bottom: 2.5rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.block {
+  margin-top: 2rem;
+  margin-bottom: 3rem;
+}
+
+.detailedAnalysisTitleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.detailedAnalysisTitleHeading {
+  color: var(--text);
+  font-family: var(--font-display), sans-serif;
+  font-size: 2rem;
+  margin: 0;
+  line-height: 1;
+}
+
+.detailedAnalysisSubtitleText {
+  color: var(--muted);
+  margin: 0.3rem 0 0;
+  font-size: 0.85rem;
+}
+
+.row {
+  display: flex;
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 10px;
+  padding: 0.3rem;
+  gap: 0.25rem;
+}
+
+.button {
+  border: none;
+  padding: 0.45rem 0.9rem;
+  border-radius: 7px;
+  cursor: pointer;
+  font-size: 0.82rem;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.15s;
+  white-space: nowrap;
+  display: flex;
+  align-items: center;
+  gap: 0.3rem;
+}
+
+.icon {
+  color: var(--gold);
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+  gap: 2.5rem;
+  align-items: start;
+}
+
+.titleStackBlock {
+  min-width: 0;
+}

@@ -1,0 +1,201 @@
+.block {
+  width: 100%;
+  margin-bottom: 3rem;
+}
+
+.row {
+  display: flex;
+  margin-bottom: 1rem;
+  padding: 0 1rem;
+  align-items: center;
+}
+
+.row2 {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.subheading {
+  color: var(--gold);
+  margin: 0;
+}
+
+.row3 {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.button {
+  background: var(--danger);
+  color: #fff;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.button2 {
+  background: #34d399;
+  color: #111;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+  font-weight: bold;
+}
+
+.button3 {
+  background: transparent;
+  color: var(--muted);
+  border: 1px solid var(--muted);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.button4 {
+  background: transparent;
+  color: var(--muted);
+  border: 1px dashed rgba(255,255,255,0.2);
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.7rem;
+  text-transform: uppercase;
+}
+
+.button5 {
+  background: rgba(var(--gold-rgb), 0.1);
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 0.4rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: all 0.2s;
+}
+
+.button5:hover {
+  background: var(--gold);
+  color: #111;
+}
+
+.openNoteBlock {
+  width: 100%;
+  padding-bottom: 1rem;
+}
+
+.grid {
+  position: relative;
+  display: grid;
+  background: #2a1a0a;
+  border-radius: 8px;
+  padding: 1% 1% 1% 0;
+  width: 100%;
+  transition: border 0.2s;
+}
+
+.openNoteBlockRow {
+  display: flex;
+  justify-content: center;
+  align-items: flex-end;
+  padding-bottom: 10px;
+  color: var(--gold);
+  font-size: clamp(8px, 1.2vw, 14px);
+  font-weight: bold;
+}
+
+.openNoteRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  color: #fff;
+  font-weight: bold;
+  font-size: clamp(10px, 1.5vw, 16px);
+  padding-right: 8px;
+}
+
+.label {
+  width: 16px;
+  text-align: center;
+  line-height: 1;
+}
+
+.displayTextRow {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-right: clamp(1px, 0.2vw, 3px) solid silver;
+  height: clamp(20px, 3.5vw, 42px);
+}
+
+.layer {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: clamp(10px, 1.5vw, 16px);
+  height: clamp(10px, 1.5vw, 16px);
+  border-radius: 50%;
+  background-color: rgba(255, 255, 255, 0.15);
+  z-index: 0;
+  pointer-events: none;
+}
+
+.displayTextRowLayer {
+  position: absolute;
+  left: 0;
+  right: 0;
+  z-index: 1;
+  background: linear-gradient(to bottom, #d5d5d5 0%, #8a8a8a 40%, #505050 100%);
+  box-shadow: 0 1px 2px rgba(0,0,0,0.5);
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.layer3 {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  width: clamp(14px, 2.5vw, 24px);
+  background-color: rgba(196, 181, 253, 0.4);
+  z-index: 2;
+  pointer-events: none;
+}
+
+.row7 {
+  width: clamp(12px, 2.5vw, 26px);
+  height: clamp(12px, 2.5vw, 26px);
+  border-radius: 50%;
+  font-size: clamp(6px, 1vw, 11px);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 3;
+  transition: transform 0.1s;
+}
+
+/* Note dots: mirrored in lefty mode, grow on hover when they can be played */
+.lefty {
+  transform: scaleX(-1);
+}
+
+.playable:hover {
+  transform: scale(1.15);
+}
+
+.lefty.playable:hover {
+  transform: scaleX(-1) scale(1.15);
+}

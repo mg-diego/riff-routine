@@ -1,10 +1,11 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { Radar, RadarChart, PolarGrid, PolarAngleAxis, PolarRadiusAxis, ResponsiveContainer, Tooltip } from 'recharts';
-import { formatTime, getStartDate } from '../../lib/utils';
+import { formatTime, getStartDate } from '@/lib/utils';
 import { useTranslations } from 'next-intl';
+import styles from './SkillsRadar.module.css';
 
 interface Props { dateFilter: string; }
 
@@ -112,16 +113,16 @@ export function SkillsRadar({ dateFilter }: Props) {
       const techs = groupedTechniques[label] || [];
 
       return (
-        <div style={{ background: '#111', border: `1px solid ${PILLAR_COLORS[label] || mainColor}`, padding: '0.8rem', borderRadius: '8px', minWidth: '180px', boxShadow: '0 10px 25px rgba(0,0,0,0.5)' }}>
-          <p style={{ margin: '0 0 0.3rem 0', fontWeight: 700, color: PILLAR_COLORS[label] || mainColor, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div className={styles.tooltipLabelBox} style={{ border: `1px solid ${PILLAR_COLORS[label] || mainColor}` }}>
+          <p className={styles.text} style={{ color: PILLAR_COLORS[label] || mainColor }}>
             {label}
           </p>
-          <p style={{ margin: '0 0 0.8rem 0', color: 'var(--text)', fontWeight: 600 }}>
+          <p className={styles.tooltipLabelText}>
             {timeStr} {t('tooltipLabel')}
           </p>
           <div>
-            <span style={{ fontSize: '0.65rem', color: 'var(--gold)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 700 }}>Técnicas:</span>
-            <p style={{ margin: '0.2rem 0 0 0', fontSize: '0.8rem', color: 'var(--muted)', lineHeight: 1.4 }}>
+            <span className={styles.label}>Técnicas:</span>
+            <p className={styles.tooltipLabelBoxText}>
               {techs.join(', ')}
             </p>
           </div>
@@ -132,29 +133,27 @@ export function SkillsRadar({ dateFilter }: Props) {
   };
 
   if (loading) return (
-    <div style={{ background: 'var(--surface)', borderRadius: '12px', height: 450, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className={styles.row}>
       <span className="loader" />
     </div>
   );
 
   const isEmpty = data.every(d => d.A === 0);
   if (isEmpty) return (
-    <div style={{ background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: 450, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}>
-      <span style={{ fontSize: '2rem' }}>🎸</span>
-      <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: 0 }}>{t('noData')}</p>
+    <div className={styles.noDataStack}>
+      <span className={styles.noDataStackLabel}>🎸</span>
+      <p className={styles.noDataText}>{t('noData')}</p>
     </div>
   );
 
   return (
-    <div style={{ background: 'var(--surface)', padding: '1.5rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.03)', height: 450, display: 'flex', flexDirection: 'column', position: 'relative' }}>
+    <div className={styles.titleStack}>
       
       {/* Botón de Información (Info / Cerrar) */}
       <button 
         onClick={() => setShowLegend(!showLegend)}
         title="Ver categorías"
-        style={{ position: 'absolute', top: '1.5rem', right: '1.5rem', width: '32px', height: '32px', borderRadius: '50%', border: '1px solid rgba(255,255,255,0.1)', background: showLegend ? 'rgba(255,255,255,0.1)' : 'transparent', color: 'var(--muted)', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', transition: 'all 0.2s', zIndex: 10 }}
-        onMouseEnter={e => e.currentTarget.style.color = 'var(--text)'}
-        onMouseLeave={e => e.currentTarget.style.color = 'var(--muted)'}
+        className={styles.button} style={{ background: showLegend ? 'rgba(255,255,255,0.1)' : 'transparent' }}
       >
         {showLegend ? (
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
@@ -163,26 +162,26 @@ export function SkillsRadar({ dateFilter }: Props) {
         )}
       </button>
 
-      <h3 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', marginBottom: '0.5rem', textAlign: 'center' }}>
+      <h3 className={styles.titleSubheading}>
         {showLegend ? 'Categorías de Práctica' : t('title')}
       </h3>
 
       {/* Alternamos entre el Gráfico y la Leyenda */}
       {showLegend ? (
-        <div className="logs-scroll" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '0.8rem', overflowY: 'auto', padding: '0.5rem 0.5rem 0.5rem 0', marginTop: '0.5rem' }}>
+        <div className={`logs-scroll ${styles.stack}`}>
           {Object.entries(groupedTechniques).map(([pillar, techs]) => (
-            <div key={pillar} style={{ background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', borderLeft: `3px solid ${PILLAR_COLORS[pillar] || 'var(--gold)'}` }}>
-              <h4 style={{ margin: '0 0 0.4rem 0', color: PILLAR_COLORS[pillar] || 'var(--gold)', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+            <div key={pillar} className={styles.box} style={{ borderLeft: `3px solid ${PILLAR_COLORS[pillar] || 'var(--gold)'}` }}>
+              <h4 className={styles.subheading} style={{ color: PILLAR_COLORS[pillar] || 'var(--gold)' }}>
                 {pillar}
               </h4>
-              <p style={{ margin: 0, fontSize: '0.85rem', color: 'var(--muted)', lineHeight: 1.5 }}>
+              <p className={styles.titleStackText}>
                 {techs.join(', ')}
               </p>
             </div>
           ))}
         </div>
       ) : (
-        <div style={{ flex: 1, width: '100%', position: 'relative' }}>
+        <div className={styles.tooltipLabel}>
           <ResponsiveContainer width="100%" height="100%">
             <RadarChart cx="50%" cy="50%" outerRadius="80%" data={data}>
               <PolarGrid stroke="rgba(255,255,255,0.1)" />
@@ -195,7 +194,7 @@ export function SkillsRadar({ dateFilter }: Props) {
         </div>
       )}
 
-      <p style={{ textAlign: 'center', fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.5rem', opacity: showLegend ? 0 : 1, transition: 'opacity 0.2s' }}>
+      <p className={styles.footerNoteText} style={{ opacity: showLegend ? 0 : 1 }}>
         {t('footerNote')}
       </p>
     </div>

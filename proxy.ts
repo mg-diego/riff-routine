@@ -2,15 +2,31 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import createIntlMiddleware from 'next-intl/middleware';
 import { createServerClient } from '@supabase/ssr';
+import { locales, defaultLocale } from './i18n/config';
+import { ADMIN_PANEL_CONFIGURED } from './lib/admin';
+import { TEACHER_MODE_ENABLED } from './lib/features';
 
 const intlMiddleware = createIntlMiddleware({
-  locales: ['es', 'en'],
-  defaultLocale: 'es',
+  locales: [...locales],
+  defaultLocale,
 });
 
-export async function middleware(request: NextRequest) {
-  let response = intlMiddleware(request);
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
+
+  // Bypass admin routes only when admins are configured — auth is handled inside the page itself.
+  // Otherwise they go through next-intl and end up in the admin layout's 404.
+  if (ADMIN_PANEL_CONFIGURED && (pathname === '/admin' || pathname.match(/^\/[a-z]{2}\/admin(\/.*)?$/))) {
+    return NextResponse.next();
+  }
+
+  // Teacher mode is hidden: send its routes back to home
+  const teacherRoute = pathname.match(/^\/([a-z]{2})\/teacher(\/.*)?$/);
+  if (!TEACHER_MODE_ENABLED && teacherRoute) {
+    return NextResponse.redirect(new URL(`/${teacherRoute[1]}/home`, request.url));
+  }
+
+  let response = intlMiddleware(request);
 
   const supabase = createServerClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -33,14 +49,11 @@ export async function middleware(request: NextRequest) {
 
   const { data: { user } } = await supabase.auth.getUser();
 
-  const isDemoUser = user?.email === 'demo@riffroutine.com';
+  const isDemoUser    = user?.email === 'demo@riffroutine.com';
   const isProfilePage = pathname.endsWith('/profile') || pathname.includes('/profile/');
 
-  console.log("Current user: ", user)
-  console.log("REQUEST user: ", request.nextUrl.pathname)
-
   if (isProfilePage && isDemoUser) {
-    const locale = pathname.split('/')[1] || 'es';
+    const locale = pathname.split('/')[1] || defaultLocale;
     return NextResponse.redirect(new URL(`/${locale}/home`, request.url));
   }
 
@@ -48,5 +61,5 @@ export async function middleware(request: NextRequest) {
 }
 
 export const config = {
-  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)']
+  matcher: ['/((?!api|_next|_vercel|.*\\..*).*)'],
 }

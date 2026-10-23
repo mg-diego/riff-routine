@@ -1,0 +1,48 @@
+.row {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.label {
+  display: inline-block;
+  width: 24px;
+  height: 24px;
+  border: 3px solid rgba(var(--gold-rgb), 0.3);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+.titleSubheading {
+  color: var(--muted);
+  margin-top: 0;
+  font-size: 0.9rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.unitRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.5rem;
+}
+
+.text {
+  font-size: 3rem;
+  margin: 0;
+  font-family: var(--font-display), sans-serif;
+  line-height: 1;
+}
+
+.unitLabel {
+  font-size: 1.2rem;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.descriptionText {
+  margin: 0.5rem 0 0 0;
+  font-size: 0.8rem;
+  color: var(--muted);
+}

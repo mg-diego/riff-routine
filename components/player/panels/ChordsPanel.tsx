@@ -1,12 +1,13 @@
 "use client";
 
 import React, { useState, useEffect, useMemo } from 'react';
-import { Fretboard } from '../Fretboard';
-import { MiniFretboard } from '../MiniFretboard';
+import { Fretboard } from '@/components/player/Fretboard';
+import { MiniFretboard } from '@/components/player/MiniFretboard';
 import { useTranslations } from 'next-intl';
 import { getChordData, getChordOptions } from '@/app/actions/chords';
 import { useAudioSynth } from '@/hooks/useAudioSynth';
 import { CHROMATIC_NOTES, STANDARD_TUNING, ENHARMONICS, BASIC_SUFFIXES } from '@/lib/constants';
+import styles from './ChordsPanel.module.css';
 
 const getChordTones = (root: string, suffix: string) => {
     const rootIdx = CHROMATIC_NOTES.indexOf(root);
@@ -247,94 +248,75 @@ export function ChordsPanel() {
     const currentChordData = chordPositions.length > 0 ? chordPositions[Math.min(positionIndex, chordPositions.length - 1)] : null;
 
     return (
-        <div style={{ padding: '2rem', background: 'var(--surface)', borderRadius: '12px', color: 'var(--text)', fontFamily: 'DM Sans, sans-serif' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <h2 style={{ color: 'var(--gold)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', margin: 0, letterSpacing: '0.04em' }}>
+        <div className={styles.titleBox}>
+            <div className={styles.titleRow}>
+                <h2 className={styles.titleHeading}>
                     {t('title')}
                 </h2>
 
-                <div style={{ display: 'flex', gap: '1rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                <div className={styles.rootRow}>
                     
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('root')}</span>
+                    <div className={styles.rootStack}>
+                        <span className={styles.rootLabel}>{t('root')}</span>
                         <select
                             value={rootNote}
                             onChange={handleRootChange}
                             disabled={rootKeys.length === 0}
-                            style={{
-                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                                color: 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px',
-                                fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem', outline: 'none', cursor: 'pointer'
-                            }}
+                            className={styles.select}
                         >
                             {rootKeys.map(note => (
-                                <option key={note} value={note} style={{ background: '#111' }}>{note}</option>
+                                <option key={note} value={note} className={styles.option}>{note}</option>
                             ))}
                         </select>
                     </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                        <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('type')}</span>
+                    <div className={styles.rootStack}>
+                        <span className={styles.rootLabel}>{t('type')}</span>
                         <select
                             value={baseSuffix}
                             onChange={handleBaseSuffixChange}
                             disabled={availableBaseSuffixes.length === 0}
-                            style={{
-                                background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)',
-                                color: 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px',
-                                fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem', outline: 'none', cursor: 'pointer',
-                                maxWidth: '150px'
-                            }}
+                            className={styles.rootStackSelect}
                         >
                             {availableBaseSuffixes.map(s => (
-                                <option key={s} value={s} style={{ background: '#111' }}>{s}</option>
+                                <option key={s} value={s} className={styles.option}>{s}</option>
                             ))}
                         </select>
                     </div>
 
                     {isAdvancedMode && (
                         <>
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('inversionLabel')}</span>
+                            <div className={styles.rootStack}>
+                                <span className={styles.rootLabel}>{t('inversionLabel')}</span>
                                 <select
                                     value={dd1Value}
                                     onChange={handleBassChange}
                                     disabled={inversionOptions.length <= 1}
-                                    style={{
-                                        background: 'rgba(59, 130, 246, 0.1)', border: '1px solid rgba(59, 130, 246, 0.3)',
-                                        color: '#93c5fd', padding: '0.5rem 1rem', borderRadius: '8px',
-                                        fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem', outline: 'none', cursor: 'pointer',
-                                        maxWidth: '180px'
-                                    }}
+                                    className={styles.select3}
                                 >
-                                    {dd1Value === 'custom' && <option value="custom" style={{ background: '#111' }}>--</option>}
+                                    {dd1Value === 'custom' && <option value="custom" className={styles.option}>--</option>}
                                     {inversionOptions.map(opt => (
-                                        <option key={opt.value} value={opt.value} style={{ background: '#111' }}>
+                                        <option key={opt.value} value={opt.value} className={styles.option}>
                                             {opt.label}
                                         </option>
                                     ))}
                                 </select>
                             </div>
 
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>{t('bass')}</span>
+                            <div className={styles.rootStack}>
+                                <span className={styles.rootLabel}>{t('bass')}</span>
                                 <select
                                     value={activeBass || 'fundamental'}
                                     onChange={handleBassChange}
                                     disabled={availableInversions.length === 0}
-                                    style={{
-                                        background: 'rgba(245, 158, 11, 0.1)', border: '1px solid rgba(245, 158, 11, 0.3)',
-                                        color: '#fcd34d', padding: '0.5rem 1rem', borderRadius: '8px',
-                                        fontFamily: 'DM Sans, sans-serif', fontSize: '0.9rem', outline: 'none', cursor: 'pointer',
-                                        maxWidth: '120px'
-                                    }}
+                                    className={styles.fundamentalShortSelect}
                                 >
-                                    <option value="fundamental" style={{ background: '#111' }}>{t('fundamentalShort')}</option>
+                                    <option value="fundamental" className={styles.option}>{t('fundamentalShort')}</option>
                                     {availableInversions.map(inv => {
                                         const bassNoteStr = inv.replace('/', '');
                                         const isNatural = naturalTones.includes(bassNoteStr) || naturalTones.includes(ENHARMONICS[bassNoteStr] || '');
                                         return (
-                                            <option key={inv} value={inv} style={{ background: '#111' }}>
+                                            <option key={inv} value={inv} className={styles.option}>
                                                 {inv}
                                             </option>
                                         );
@@ -344,63 +326,42 @@ export function ChordsPanel() {
                         </>
                     )}
 
-                    <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '1px' }}>
+                    <div className={styles.advancedModeOnRow}>
                         <button
                             onClick={handleModeToggle}
-                            style={{
-                                background: isAdvancedMode ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255,255,255,0.05)',
-                                color: isAdvancedMode ? '#fcd34d' : 'var(--muted)',
-                                border: `1px solid ${isAdvancedMode ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255,255,255,0.1)'}`,
-                                padding: '0.4rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '36px'
-                            }}
+                            className={styles.advancedModeOnButton} style={{ background: isAdvancedMode ? 'rgba(245, 158, 11, 0.2)' : 'rgba(255,255,255,0.05)', color: isAdvancedMode ? '#fcd34d' : 'var(--muted)', border: `1px solid ${isAdvancedMode ? 'rgba(245, 158, 11, 0.4)' : 'rgba(255,255,255,0.1)'}` }}
                         >
                             {isAdvancedMode ? t('advancedModeOn') : t('advancedModeOff')}
                         </button>
                     </div>
 
-                    <div style={{ width: '1px', height: '24px', background: 'rgba(255,255,255,0.1)', margin: '0 0.5rem', alignSelf: 'center', marginTop: '16px' }} />
+                    <div className={styles.box} />
 
-                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '0.2rem', alignSelf: 'flex-end', marginBottom: '1px' }}>
+                    <div className={styles.detailRow}>
                         <button
                             onClick={() => setIsGridView(false)}
-                            style={{
-                                background: !isGridView ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
-                                color: !isGridView ? '#34d399' : 'var(--muted)',
-                                border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '30px'
-                            }}
+                            className={styles.detailButton} style={{ background: !isGridView ? 'rgba(52, 211, 153, 0.2)' : 'transparent', color: !isGridView ? '#34d399' : 'var(--muted)' }}
                         >
                             {t('detail')}
                         </button>
                         <button
                             onClick={() => setIsGridView(true)}
-                            style={{
-                                background: isGridView ? 'rgba(52, 211, 153, 0.2)' : 'transparent',
-                                color: isGridView ? '#34d399' : 'var(--muted)',
-                                border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '30px'
-                            }}
+                            className={styles.detailButton} style={{ background: isGridView ? 'rgba(52, 211, 153, 0.2)' : 'transparent', color: isGridView ? '#34d399' : 'var(--muted)' }}
                         >
                             {t('positions')}
                         </button>
                     </div>
 
-                    <div style={{ display: 'flex', background: 'rgba(0,0,0,0.3)', borderRadius: '8px', padding: '0.2rem', alignSelf: 'flex-end', marginBottom: '1px' }}>
+                    <div className={styles.detailRow}>
                         <button
                             onClick={() => setChordDisplayMode('fingers')}
-                            style={{
-                                background: chordDisplayMode === 'fingers' ? 'rgba(167,139,250,0.2)' : 'transparent',
-                                color: chordDisplayMode === 'fingers' ? '#c4b5fd' : 'var(--muted)',
-                                border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '30px'
-                            }}
+                            className={styles.detailButton} style={{ background: chordDisplayMode === 'fingers' ? 'rgba(167,139,250,0.2)' : 'transparent', color: chordDisplayMode === 'fingers' ? '#c4b5fd' : 'var(--muted)' }}
                         >
                             {t('fingers')}
                         </button>
                         <button
                             onClick={() => setChordDisplayMode('notes')}
-                            style={{
-                                background: chordDisplayMode === 'notes' ? 'rgba(167,139,250,0.2)' : 'transparent',
-                                color: chordDisplayMode === 'notes' ? '#c4b5fd' : 'var(--muted)',
-                                border: 'none', padding: '0.3rem 0.8rem', borderRadius: '6px', fontSize: '0.8rem', fontWeight: 600, cursor: 'pointer', transition: 'all 0.2s', height: '30px'
-                            }}
+                            className={styles.detailButton} style={{ background: chordDisplayMode === 'notes' ? 'rgba(167,139,250,0.2)' : 'transparent', color: chordDisplayMode === 'notes' ? '#c4b5fd' : 'var(--muted)' }}
                         >
                             {t('notes')}
                         </button>
@@ -408,69 +369,43 @@ export function ChordsPanel() {
                 </div>
             </div>
 
-            <div style={{ background: 'rgba(0,0,0,0.2)', padding: '2rem', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)' }}>
+            <div className={styles.loadingBox}>
                 {loading ? (
-                    <div style={{ padding: '4rem 0', textAlign: 'center', color: 'var(--muted)' }}>{t('loading')}</div>
+                    <div className={styles.loading}>{t('loading')}</div>
                 ) : (
                     <>
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
+                        <div className={styles.notFoundRow}>
 
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '1.5rem', flexWrap: 'wrap' }}>
-                                <h3 style={{
-                                    fontFamily: 'Bebas Neue, sans-serif',
-                                    fontSize: '3rem',
-                                    margin: 0,
-                                    color: 'var(--text)',
-                                    lineHeight: 1,
-                                    textTransform: 'none'
-                                }}>
+                            <div className={styles.notFoundRow2}>
+                                <h3 className={styles.notFoundSubheading}>
                                     {currentChordData ? currentChordData.name : t('notFound')}
                                 </h3>
 
                                 {currentChordData?.isInversion && (
-                                    <span style={{
-                                        fontSize: '0.8rem', background: 'rgba(245, 158, 11, 0.15)', color: '#fcd34d',
-                                        padding: '0.4rem 0.8rem', borderRadius: '8px', fontWeight: 700, letterSpacing: '0.05em', border: '1px solid rgba(245, 158, 11, 0.3)'
-                                    }}>
+                                    <span className={styles.inversionLabel}>
                                         {t('inversion', { note: currentChordData.bassNoteName })}
                                     </span>
                                 )}
                             </div>
 
                             {!isGridView && chordPositions.length > 1 && (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', background: 'rgba(255,255,255,0.03)', padding: '0.4rem', borderRadius: '8px', border: '1px solid rgba(255,255,255,0.05)' }}>
+                                <div className={styles.positionRow}>
                                     <button
                                         onClick={() => setPositionIndex(p => Math.max(0, p - 1))}
                                         disabled={positionIndex === 0}
-                                        style={{
-                                            background: positionIndex === 0 ? 'transparent' : 'rgba(167,139,250,0.15)',
-                                            border: 'none', borderRadius: '6px', width: '32px', height: '32px',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: positionIndex === 0 ? 'rgba(255,255,255,0.2)' : '#c4b5fd',
-                                            cursor: positionIndex === 0 ? 'not-allowed' : 'pointer',
-                                            transition: 'all 0.2s',
-                                            fontSize: '1.2rem', lineHeight: 1
-                                        }}
+                                        className={styles.button} style={{ background: positionIndex === 0 ? 'transparent' : 'rgba(167,139,250,0.15)', color: positionIndex === 0 ? 'rgba(255,255,255,0.2)' : '#c4b5fd', cursor: positionIndex === 0 ? 'not-allowed' : 'pointer' }}
                                     >
                                         &#10094;
                                     </button>
 
-                                    <span style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 600, minWidth: '80px', textAlign: 'center' }}>
+                                    <span className={styles.positionLabel}>
                                         {t('position', { current: Math.min(positionIndex, chordPositions.length - 1) + 1, total: chordPositions.length })}
                                     </span>
 
                                     <button
                                         onClick={() => setPositionIndex(p => Math.min(chordPositions.length - 1, p + 1))}
                                         disabled={positionIndex === chordPositions.length - 1}
-                                        style={{
-                                            background: positionIndex === chordPositions.length - 1 ? 'transparent' : 'rgba(167,139,250,0.15)',
-                                            border: 'none', borderRadius: '6px', width: '32px', height: '32px',
-                                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                            color: positionIndex === chordPositions.length - 1 ? 'rgba(255,255,255,0.2)' : '#c4b5fd',
-                                            cursor: positionIndex === chordPositions.length - 1 ? 'not-allowed' : 'pointer',
-                                            transition: 'all 0.2s',
-                                            fontSize: '1.2rem', lineHeight: 1
-                                        }}
+                                        className={styles.button} style={{ background: positionIndex === chordPositions.length - 1 ? 'transparent' : 'rgba(167,139,250,0.15)', color: positionIndex === chordPositions.length - 1 ? 'rgba(255,255,255,0.2)' : '#c4b5fd', cursor: positionIndex === chordPositions.length - 1 ? 'not-allowed' : 'pointer' }}
                                     >
                                         &#10095;
                                     </button>
@@ -479,13 +414,13 @@ export function ChordsPanel() {
                         </div>
 
                         {chordPositions.length > 0 && (
-                            <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem', alignItems: 'flex-start', width: '100%' }}>
+                            <div className={styles.positionStack}>
                                 
                                 {isGridView ? (
-                                    <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1.5rem', width: '100%' }}>
+                                    <div className={styles.positionGrid}>
                                         {chordPositions.map((pos, idx) => (
-                                            <div key={idx} style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                                <div style={{ color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 'bold' }}>
+                                            <div key={idx} className={styles.positionStack2}>
+                                                <div className={styles.position}>
                                                     {t('position', { current: idx + 1, total: chordPositions.length })}
                                                 </div>
                                                 <MiniFretboard 
@@ -498,7 +433,7 @@ export function ChordsPanel() {
                                         ))}
                                     </div>
                                 ) : (
-                                    <div style={{ width: '100%', overflowX: 'auto' }}>
+                                    <div className={styles.block}>
                                         <Fretboard
                                             activeNotesList={currentChordData?.activeNotesList}
                                             rootNote={rootNote}
@@ -513,22 +448,22 @@ export function ChordsPanel() {
                                     </div>
                                 )}
 
-                                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', background: 'rgba(255,255,255,0.02)', padding: '1rem', borderRadius: '8px', width: '100%' }}>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1rem' }}>
-                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#3b82f6' }} />
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('fingerIndex')}</span>
+                                <div className={styles.fingerIndexRow}>
+                                    <div className={styles.fingerIndexRow2}>
+                                        <div className={styles.dot} />
+                                        <span className={styles.fingerIndexLabel}>{t('fingerIndex')}</span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1rem' }}>
-                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#10b981' }} />
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('fingerMiddle')}</span>
+                                    <div className={styles.fingerIndexRow2}>
+                                        <div className={styles.fingerIndexRowDot} />
+                                        <span className={styles.fingerIndexLabel}>{t('fingerMiddle')}</span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginRight: '1rem' }}>
-                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#f59e0b' }} />
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('fingerRing')}</span>
+                                    <div className={styles.fingerIndexRow2}>
+                                        <div className={styles.dot3} />
+                                        <span className={styles.fingerIndexLabel}>{t('fingerRing')}</span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                                        <div style={{ width: '12px', height: '12px', borderRadius: '50%', background: '#ef4444' }} />
-                                        <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>{t('fingerPinky')}</span>
+                                    <div className={styles.fingerPinkyRow}>
+                                        <div className={styles.fingerPinkyRowDot} />
+                                        <span className={styles.fingerIndexLabel}>{t('fingerPinky')}</span>
                                     </div>
                                 </div>
                             </div>

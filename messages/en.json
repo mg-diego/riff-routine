@@ -743,6 +743,10 @@
     "noScore": {
       "title": "Practice Without Sheet Music",
       "description": "This exercise has no associated file. Use the metronome, the drone pedal, and the top timer to guide your session freely."
+    },
+    "selectTrack": {
+      "routine": "Select a track for this routine step",
+      "improvise": "Select a track to improvise over"
     }
   },
   "ImprovPanel": {
@@ -811,7 +815,8 @@
       "chords": "Chords",
       "rhythm": "Rhythm",
       "earTraining": "Ear Training",
-      "harmonization": "Harmonization"
+      "harmonization": "Harmonization",
+      "speed": "Speed"
     },
     "alerts": {
       "unsavedTime": "You have unrecorded time. Are you sure you want to leave?"
@@ -1724,6 +1729,7 @@
     "sys_harmonization_title": "Harmonization",
     "sys_harmonization_technique": "Harmonization",
     "sys_harmonization_notes": "Explore diatonic chord matrices across multiple modes. Find pivot chords instantly to modulate or compose backing tracks from a bird's-eye view.",
+    "sys_speed_title": "Speed",
     "sys_3_notes_beat_title": "3 Notes per Beat",
     "sys_3_notes_beat_notes": "Rhythmic exercise based on triplets. Perfect for developing timing in compound meters or blues and rock licks.",
     "sys_4_notes_beat_title": "4 Notes per Beat",
@@ -1868,7 +1874,8 @@
       "sending": "Sending...",
       "limitReached": "You've reached your student limit. Upgrade to Lifetime for unlimited students.",
       "alreadyInvited": "This student has already been invited.",
-      "error": "Could not send the invite. Please try again."
+      "error": "Could not send the invite. Please try again.",
+      "cannotInviteSelf": "You can't invite yourself."
     },
     "time": {
       "today": "Today",
@@ -2044,5 +2051,24 @@
     "tetrads": "Tetrads (Sevenths)",
     "searchPlaceholder": "Search pivot chord (e.g., Dm7)...",
     "scaleOrMode": "SCALE / MODE"
+  },
+  "SpeedPanel": {
+    "calculatorTitle": "Speed Translation Calculator",
+    "baseBpm": "Current Metronome (BPM)",
+    "baseSubdivision": "Playing in...",
+    "targetSubdivision": "To play in...",
+    "equivalentBpm": "Set metronome to",
+    "sub": {
+      "quarter": "Quarter notes (1)",
+      "eighth": "Eighth notes (2)",
+      "triplet": "Triplets (3)",
+      "sixteenth": "Sixteenth notes (4)",
+      "quintuplet": "Quintuplets (5)",
+      "sextuplet": "Sextuplets (6)",
+      "thirtysecond": "32nd notes (8)"
+    },
+    "generatorTitle": "16-Note Lick Generator",
+    "generateBtn": "New Pattern",
+    "generatorDesc": "Apply the speed you just calculated using these 16-note licks. Loop them continuously focusing on the synchronization of both hands."
   }
 }

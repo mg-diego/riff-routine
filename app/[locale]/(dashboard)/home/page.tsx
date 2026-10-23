@@ -2,8 +2,9 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useTranslations } from 'next-intl';
+import { formatKpiTime } from '@/lib/utils';
 import { useOnboarding } from '@/hooks/useOnboarding'; // Asegúrate de ajustar la ruta si es necesario
 
 const Icons = {
@@ -19,19 +20,15 @@ const Icons = {
   Upload: () => <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="17 8 12 3 7 8" /><line x1="12" y1="3" x2="12" y2="15" /></svg>,
   Info: () => <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 16v-4" /><path d="M12 8h.01" /></svg>
 };
+import styles from './page.module.css';
+import { TEACHER_MODE_ENABLED } from '@/lib/features';
+import { cx } from '@/lib/cx';
 
 interface PendingInvite {
   id: string;
   teacher_id: string;
   teacher_name: string | null;
   teacher_avatar: string | null;
-}
-
-function formatKpiTime(totalSecs: number, minLabel: string) {
-  if (!totalSecs) return `0 ${minLabel}`;
-  const h = Math.floor(totalSecs / 3600);
-  const m = Math.floor((totalSecs % 3600) / 60);
-  return h > 0 ? `${h}h ${m}m` : `${m} ${minLabel}`;
 }
 
 function timeAgo(isoString: string, t: any) {
@@ -64,68 +61,40 @@ function InviteCard({ invite, onAccept, onDecline }: {
   };
 
   return (
-    <div style={{
-      background: 'rgba(167,139,250,0.06)',
-      border: '1px solid rgba(167,139,250,0.2)',
-      borderRadius: '12px',
-      padding: '1.1rem 1.25rem',
-      display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap',
-    }}>
+    <div className={styles.badgeRow}>
       {/* Teacher avatar */}
-      <div style={{
-        width: '40px', height: '40px', borderRadius: '50%', flexShrink: 0,
-        background: invite.teacher_avatar ? 'transparent' : 'rgba(167,139,250,0.15)',
-        border: '1px solid rgba(167,139,250,0.25)',
-        overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      }}>
+      <div className={styles.row} style={{ background: invite.teacher_avatar ? 'transparent' : 'rgba(167,139,250,0.15)' }}>
         {invite.teacher_avatar
-          ? <img src={invite.teacher_avatar} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-          : <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1rem', color: '#c4b5fd' }}>{initials}</span>
+          ? <img src={invite.teacher_avatar} alt={name} className={styles.image} />
+          : <span className={styles.label}>{initials}</span>
         }
       </div>
 
       {/* Text */}
-      <div style={{ flex: 1, minWidth: '160px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.15rem' }}>
-          <span style={{
-            fontSize: '0.6rem', fontWeight: 700, letterSpacing: '0.1em',
-            background: 'rgba(167,139,250,0.15)', color: '#c4b5fd',
-            padding: '1px 6px', borderRadius: '4px', textTransform: 'uppercase',
-          }}>
+      <div className={styles.badge}>
+        <div className={styles.badgeRow2}>
+          <span className={styles.badgeLabel}>
             {t('invites.badge')}
           </span>
         </div>
-        <p style={{ margin: 0, fontSize: '0.875rem', fontWeight: 600, color: 'var(--text)' }}>
+        <p className={styles.messageText}>
           {t('invites.message', { teacher: name })}
         </p>
       </div>
 
       {/* Actions */}
-      <div style={{ display: 'flex', gap: '0.5rem', flexShrink: 0 }}>
+      <div className={styles.declineRow}>
         <button
           onClick={() => handle('decline')}
           disabled={!!loading}
-          style={{
-            padding: '0.45rem 0.85rem', background: 'transparent',
-            border: '1px solid rgba(255,255,255,0.1)', borderRadius: '7px',
-            color: 'var(--muted)', fontSize: '0.8rem', fontWeight: 600,
-            fontFamily: 'DM Sans, sans-serif', cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading === 'decline' ? 0.5 : 1, transition: 'all 0.15s',
-          }}
+          className={styles.declineButton} style={{ cursor: loading ? 'not-allowed' : 'pointer', opacity: loading === 'decline' ? 0.5 : 1 }}
         >
           {t('invites.decline')}
         </button>
         <button
           onClick={() => handle('accept')}
           disabled={!!loading}
-          style={{
-            padding: '0.45rem 0.85rem',
-            background: loading === 'accept' ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.2)',
-            border: '1px solid rgba(167,139,250,0.35)', borderRadius: '7px',
-            color: '#c4b5fd', fontSize: '0.8rem', fontWeight: 700,
-            fontFamily: 'DM Sans, sans-serif', cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading === 'accept' ? 0.6 : 1, transition: 'all 0.15s',
-          }}
+          className={styles.acceptingButton} style={{ background: loading === 'accept' ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.2)', cursor: loading ? 'not-allowed' : 'pointer', opacity: loading === 'accept' ? 0.6 : 1 }}
         >
           {loading === 'accept' ? t('invites.accepting') : t('invites.accept')}
         </button>
@@ -182,7 +151,7 @@ export default function HomePage() {
     setUserName(profile?.username || user.email?.split('@')[0] || t('defaultUser'));
 
     // ── Fetch pending invites ──────────────────────────────────────────────
-    if (user.email) {
+    if (TEACHER_MODE_ENABLED && user.email) {
       const { data: invites } = await supabase
         .from('teacher_students')
         .select('id, teacher_id, profiles:teacher_id(username, avatar_url)')
@@ -324,22 +293,22 @@ export default function HomePage() {
   const greeting = greetingHour < 13 ? t('greeting.morning') : greetingHour < 20 ? t('greeting.afternoon') : t('greeting.evening');
 
   return (
-    <div data-onboarding="home" style={{ maxWidth: 900, margin: '0 auto', paddingBottom: '4rem' }}>
+    <div data-onboarding="home" className={styles.streakActive}>
 
       {/* Header */}
-      <div style={{ marginBottom: '2.5rem' }}>
-        <p style={{ color: 'var(--muted)', fontSize: '0.9rem', margin: '0 0 0.25rem' }}>{greeting},</p>
-        <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3.5rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
+      <div className={styles.streakActive2}>
+        <p className={styles.text}>{greeting},</p>
+        <h1 className={styles.title}>
           {loading ? '...' : userName}
         </h1>
-        <p style={{ color: 'var(--muted)', margin: '0.6rem 0 0', fontSize: '0.95rem' }}>
+        <p className={styles.streakActiveText}>
           {streak > 1 ? t('hero.streakActive', { streak }) : t('hero.noStreak')}
         </p>
       </div>
 
       {/* ── Pending invites ── */}
       {pendingInvites.length > 0 && (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '1.5rem' }}>
+        <div className={styles.stack}>
           {pendingInvites.map(invite => (
             <InviteCard
               key={invite.id}
@@ -353,62 +322,31 @@ export default function HomePage() {
 
       {/* ── Onboarding CTA (Conditional) ── */}
       {onboardingEligible && (
-        <div style={{
-          background: 'linear-gradient(to right, rgba(52, 211, 153, 0.1), rgba(52, 211, 153, 0.02))',
-          border: '1px solid rgba(52, 211, 153, 0.3)',
-          borderRadius: '16px',
-          padding: '1.5rem 2rem',
-          marginBottom: '1.5rem',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          gap: '1.5rem',
-          flexWrap: 'wrap'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-            <div style={{
-              color: '#34d399',
-              background: 'rgba(52, 211, 153, 0.1)',
-              width: '48px',
-              height: '48px',
-              borderRadius: '50%',
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              flexShrink: 0
-            }}>
+        <div className={styles.titleRow}>
+          <div className={styles.titleRowInner}>
+            <div className={styles.titleRowInnerRow}>
               <Icons.Info />
             </div>
             <div>
-              <h3 style={{ margin: 0, fontSize: '1.2rem', color: 'var(--text)', fontWeight: 'bold' }}>
+              <h3 className={styles.titleSubheading}>
                 {t('onboarding.title', { defaultValue: '¿Quieres realizar el tutorial de la aplicación?' })}
               </h3>
-              <p style={{ margin: '0.3rem 0 0', fontSize: '0.9rem', color: 'var(--muted)' }}>
+              <p className={styles.descText}>
                 {t('onboarding.desc', { defaultValue: 'Descubre cómo sacarle el máximo partido a todas las herramientas.' })}
               </p>
             </div>
           </div>
 
-          <div style={{ display: 'flex', gap: '0.8rem' }}>
+          <div className={styles.btnStartRow}>
             <button
               onClick={startOnboarding}
-              style={{
-                background: '#34d399', color: '#111', border: 'none', borderRadius: '8px',
-                padding: '0.6rem 1.2rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer',
-                fontFamily: 'DM Sans, sans-serif'
-              }}
+              className={styles.btnStartButton}
             >
               {t('onboarding.btnStart', { defaultValue: 'Comenzar' })}
             </button>
             <button
               onClick={completeOnboarding}
-              style={{
-                background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: '8px', padding: '0.6rem 1.2rem', fontWeight: 600, cursor: 'pointer',
-                fontSize: '0.9rem', fontFamily: 'DM Sans, sans-serif', transition: 'background 0.2s'
-              }}
-              onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-              onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+              className={styles.btnSkipButton}
             >
               {t('onboarding.btnSkip', { defaultValue: 'Marcar como completado' })}
             </button>
@@ -417,115 +355,94 @@ export default function HomePage() {
       )}
 
       {/* Main CTA */}
-      <div style={{
-        background: 'linear-gradient(135deg, rgba(220,185,138,0.12) 0%, rgba(220,185,138,0.04) 100%)',
-        border: '1px solid rgba(220,185,138,0.25)', borderRadius: '16px',
-        padding: '1.75rem 2rem', marginBottom: '1.5rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        gap: '1.5rem', flexWrap: 'wrap', cursor: 'pointer', transition: 'border-color 0.2s',
-      }}
+      <div className={styles.continueRow}
         onClick={() => lastSession?.routineId ? router.push(`/practice?routine=${lastSession.routineId}`) : router.push('/practice')}
-        onMouseEnter={e => (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.5)')}
-        onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.25)')}
       >
         <div>
-          <span style={{ fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.6)', display: 'block', marginBottom: '0.3rem' }}>
+          <span className={styles.continueLabel}>
             {lastSession?.routineName ? t('mainCta.continue') : t('mainCta.startNow')}
           </span>
-          <h2 style={{ margin: 0, fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', color: 'var(--text)', lineHeight: 1 }}>
+          <h2 className={styles.freePracticeHeading}>
             {lastSession?.routineName || t('mainCta.freePractice')}
           </h2>
           {lastSession && (
-            <p style={{ margin: '0.4rem 0 0', fontSize: '0.82rem', color: 'var(--muted)' }}>
+            <p className={styles.lastSessionText}>
               {t('mainCta.lastSession', { time: timeAgo(lastSession.startedAt, t), duration: formatKpiTime(lastSession.durationSeconds, t('time.min')) })}
             </p>
           )}
         </div>
-        <button style={{
-          background: 'var(--gold)', color: '#111', border: 'none', borderRadius: '50px',
-          padding: '0.8rem 1.6rem', fontWeight: 800, fontSize: '0.95rem', cursor: 'pointer',
-          display: 'flex', alignItems: 'center', gap: '0.5rem', whiteSpace: 'nowrap',
-          fontFamily: 'DM Sans, sans-serif', flexShrink: 0,
-        }}>
+        <button className={styles.btnContinueButton}>
           <Icons.Play /> {lastSession?.routineName ? t('mainCta.btnContinue') : t('mainCta.btnOpenPlayer')}
         </button>
       </div>
 
       {/* KPIs */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '1rem', marginBottom: '1.5rem' }}>
-        <div style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
+      <div className={styles.streakGrid}>
+        <div className={styles.streakBox}>
+          <div className={styles.streakRow}>
             <span style={{ color: streak > 0 ? '#fb923c' : 'var(--muted)' }}><Icons.Fire /></span>
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)' }}>{t('kpis.streak')}</span>
+            <span className="section-label">{t('kpis.streak')}</span>
           </div>
-          <p style={{ margin: 0, fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', lineHeight: 1, color: streak > 0 ? '#fb923c' : 'var(--muted)' }}>
+          <p className={styles.daysText} style={{ color: streak > 0 ? '#fb923c' : 'var(--muted)' }}>
             {loading ? '—' : (streak === 1 ? t('kpis.days', { count: streak }) : t('kpis.daysPlural', { count: streak }))}
           </p>
         </div>
 
-        <div style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '1.25rem' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <span style={{ color: '#60a5fa' }}><Icons.Clock /></span>
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)' }}>{t('kpis.thisWeek')}</span>
+        <div className={styles.streakBox}>
+          <div className={styles.streakRow}>
+            <span className={styles.streakRowLabel}><Icons.Clock /></span>
+            <span className="section-label">{t('kpis.thisWeek')}</span>
           </div>
-          <p style={{ margin: 0, fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.2rem', lineHeight: 1, color: 'var(--text)' }}>
+          <p className={styles.minText}>
             {loading ? '—' : formatKpiTime(weekMinutes * 60, t('time.min'))}
           </p>
           {!loading && prevWeekMinutes > 0 && (
-            <p style={{ margin: '0.3rem 0 0', fontSize: '0.72rem', color: weekDelta >= 0 ? '#4ade80' : '#f87171', fontWeight: 600 }}>
+            <p className={styles.vsLastWeekText} style={{ color: weekDelta >= 0 ? '#4ade80' : '#f87171' }}>
               {weekDelta >= 0 ? '▲' : '▼'} {t('kpis.vsLastWeek', { delta: Math.abs(weekDelta) })}
             </p>
           )}
         </div>
 
         <div
-          style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)', borderRadius: '12px', padding: '1.25rem', cursor: closestExercise ? 'pointer' : 'default', transition: 'border-color 0.2s' }}
+          className={cx(styles.almostThereBox, closestExercise && styles.clickable)}
           onClick={() => closestExercise && router.push(`/library/${closestExercise.exerciseId}/history`)}
-          onMouseEnter={e => closestExercise && (e.currentTarget.style.borderColor = 'rgba(220,185,138,0.3)')}
-          onMouseLeave={e => (e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)')}
         >
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.5rem' }}>
-            <span style={{ color: '#4ade80' }}><Icons.Target /></span>
-            <span style={{ fontSize: '0.68rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)' }}>{t('kpis.almostThere')}</span>
+          <div className={styles.streakRow}>
+            <span className={styles.label3}><Icons.Target /></span>
+            <span className="section-label">{t('kpis.almostThere')}</span>
           </div>
           {loading ? (
-            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.85rem' }}>—</p>
+            <p className={styles.almostThereBoxText}>—</p>
           ) : closestExercise ? (
             <>
-              <p style={{ margin: 0, fontWeight: 700, fontSize: '0.9rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{closestExercise.title}</p>
-              <div style={{ marginTop: '0.5rem', height: 4, background: 'rgba(255,255,255,0.06)', borderRadius: 99, overflow: 'hidden' }}>
-                <div style={{ height: '100%', width: `${closestExercise.pct}%`, background: '#4ade80', borderRadius: 99 }} />
+              <p className={styles.text3}>{closestExercise.title}</p>
+              <div className={styles.box}>
+                <div className={styles.almostThereBoxInner} style={{ width: `${closestExercise.pct}%` }} />
               </div>
-              <p style={{ margin: '0.3rem 0 0', fontSize: '0.72rem', color: 'var(--muted)' }}>
-                {closestExercise.lastBpm} / {closestExercise.targetBpm} BPM · <span style={{ color: '#4ade80', fontWeight: 700 }}>{closestExercise.pct}%</span>
+              <p className={styles.lastBpmText}>
+                {closestExercise.lastBpm} / {closestExercise.targetBpm} BPM · <span className={styles.almostThereBoxLabel}>{closestExercise.pct}%</span>
               </p>
             </>
           ) : (
-            <p style={{ margin: 0, color: 'var(--muted)', fontSize: '0.82rem', lineHeight: 1.4 }}>{t('kpis.addBpmGoal')}</p>
+            <p className={styles.addBpmGoalText}>{t('kpis.addBpmGoal')}</p>
           )}
         </div>
       </div>
 
       {/* Secondary CTA */}
-      <div style={{
-        background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px',
-        padding: '1.25rem 1.5rem', marginBottom: '2.5rem',
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-          <div style={{ background: 'rgba(220,185,138,0.08)', borderRadius: '10px', padding: '0.7rem', color: 'var(--gold)' }}>
+      <div className={styles.streakActiveRow}>
+        <div className={styles.titleRowInner}>
+          <div className={styles.streakActiveBox}>
             <Icons.Upload />
           </div>
           <div>
-            <p style={{ margin: 0, fontWeight: 700, color: 'var(--text)', fontSize: '0.95rem' }}>{t('secondaryCta.title')}</p>
-            <p style={{ margin: '0.1rem 0 0', fontSize: '0.8rem', color: 'var(--muted)' }}>{t('secondaryCta.desc')}</p>
+            <p className={styles.titleText}>{t('secondaryCta.title')}</p>
+            <p className={styles.descText2}>{t('secondaryCta.desc')}</p>
           </div>
         </div>
         <button
           onClick={() => router.push('/practice')}
-          style={{ background: 'transparent', color: 'var(--text)', border: '1px solid rgba(255,255,255,0.15)', borderRadius: '8px', padding: '0.6rem 1.2rem', fontWeight: 600, cursor: 'pointer', fontSize: '0.88rem', fontFamily: 'DM Sans, sans-serif', transition: 'border-color 0.2s', whiteSpace: 'nowrap' }}
-          onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.35)'}
-          onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.15)'}
+          className={styles.btnButton}
         >
           {t('secondaryCta.btn')}
         </button>
@@ -533,25 +450,19 @@ export default function HomePage() {
 
       {/* Quick access */}
       <div>
-        <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.4rem', color: 'var(--muted)', letterSpacing: '0.08em', margin: '0 0 1rem' }}>{t('quickAccess')}</h2>
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '0.75rem' }}>
+        <h2 className={styles.quickAccessHeading}>{t('quickAccess')}</h2>
+        <div className={styles.grid}>
           {navSections.map(({ label, href, icon: Icon, desc, accent }) => (
             <button
               key={href}
               onClick={() => router.push(href)}
-              style={{
-                background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.04)',
-                borderRadius: '12px', padding: '1.1rem 1rem', textAlign: 'left',
-                cursor: 'pointer', transition: 'border-color 0.2s, background 0.2s',
-                display: 'flex', flexDirection: 'column', gap: '0.6rem',
-              }}
-              onMouseEnter={e => { e.currentTarget.style.borderColor = `${accent}40`; e.currentTarget.style.background = `color-mix(in srgb, ${accent} 5%, var(--surface))`; }}
-              onMouseLeave={e => { e.currentTarget.style.borderColor = 'rgba(255,255,255,0.04)'; e.currentTarget.style.background = 'var(--surface)'; }}
+              className={styles.button}
+              style={{ '--accent': accent } as React.CSSProperties}
             >
-              <span style={{ color: accent }}><Icon /></span>
+              <span className={styles.accentIcon}><Icon /></span>
               <div>
-                <p style={{ margin: 0, fontWeight: 700, fontSize: '0.88rem', color: 'var(--text)' }}>{label}</p>
-                <p style={{ margin: '0.2rem 0 0', fontSize: '0.72rem', color: 'var(--muted)', lineHeight: 1.3 }}>{desc}</p>
+                <p className={styles.text5}>{label}</p>
+                <p className={styles.text6}>{desc}</p>
               </div>
             </button>
           ))}

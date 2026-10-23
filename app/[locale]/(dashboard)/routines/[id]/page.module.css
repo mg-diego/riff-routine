@@ -1,0 +1,83 @@
+.notFound {
+  color: var(--text);
+}
+
+.row {
+  margin-bottom: 1.5rem;
+  display: flex;
+  justify-content: space-between;
+}
+
+.labelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background: rgba(var(--gold-rgb), 0.07);
+  border: 1px solid rgba(var(--gold-rgb), 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+  gap: 1rem;
+}
+
+.label {
+  font-size: 0.88rem;
+  color: var(--gold);
+  font-weight: 600;
+}
+
+.discardRow {
+  display: flex;
+  gap: 0.75rem;
+}
+
+.discardButton {
+  padding: 0.45rem 1rem;
+  border-radius: 8px;
+  border: 1px solid rgba(255,255,255,0.1);
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-family: var(--font-body), sans-serif;
+}
+
+.savingButton {
+  padding: 0.45rem 1.25rem;
+  border-radius: 8px;
+  border: none;
+  color: #111;
+  font-size: 0.85rem;
+  font-weight: 700;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.2s;
+}
+
+.savedBox {
+  background: rgba(var(--success-rgb), 0.08);
+  border: 1px solid rgba(var(--success-rgb), 0.25);
+  border-radius: 10px;
+  padding: 0.75rem 1.25rem;
+  margin-bottom: 1.5rem;
+  color: var(--success);
+  font-size: 0.88rem;
+  font-weight: 600;
+}
+
+.titleText {
+  color: var(--text);
+  margin: 0 0 0.5rem;
+  font-weight: 600;
+}
+
+.subtitleText {
+  color: var(--muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}

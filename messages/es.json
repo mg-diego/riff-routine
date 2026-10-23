@@ -743,6 +743,10 @@
     "noScore": {
       "title": "Práctica Sin Partitura",
       "description": "Este ejercicio no tiene un archivo asociado. Utiliza el metrónomo, el drone pedal y el temporizador superior para guiar tu sesión libremente."
+    },
+    "selectTrack": {
+      "routine": "Selecciona una pista para este paso de la rutina",
+      "improvise": "Selecciona una pista para improvisar"
     }
   },
   "ImprovPanel": {
@@ -811,7 +815,8 @@
       "chords": "Acordes",
       "rhythm": "Rítmica",
       "earTraining": "Entrenamiento Auditivo",
-      "harmonization": "Armonización"
+      "harmonization": "Armonización",
+      "speed": "Velocidad"
     },
     "alerts": {
       "unsavedTime": "Tienes tiempo sin registrar. ¿Seguro que quieres salir?"
@@ -1724,6 +1729,7 @@
     "sys_harmonization_title": "Armonización",
     "sys_harmonization_technique": "Armonización",
     "sys_harmonization_notes": "Explora matrices de acordes diatónicos a través de múltiples modos. Encuentra acordes pivote al instante para modular o componer pistas desde una perspectiva global.",
+    "sys_speed_title": "Velocidad",
     "sys_3_notes_beat_title": "3 Notas por Beat",
     "sys_3_notes_beat_notes": "Ejercicio rítmico basado en tresillos. Ideal para desarrollar el sentido del tiempo en compases compuestos o licks de blues y rock.",
     "sys_4_notes_beat_title": "4 Notas por Beat",
@@ -1868,7 +1874,8 @@
       "sending": "Enviando...",
       "limitReached": "Has alcanzado el límite de alumnos. Mejora a Lifetime para tener alumnos ilimitados.",
       "alreadyInvited": "Este alumno ya ha sido invitado.",
-      "error": "No se pudo enviar la invitación. Inténtalo de nuevo."
+      "error": "No se pudo enviar la invitación. Inténtalo de nuevo.",
+      "cannotInviteSelf": "No puedes invitarte a ti mismo."
     },
     "time": {
       "today": "Hoy",
@@ -2044,5 +2051,24 @@
     "tetrads": "Tétradas (Séptimas)",
     "searchPlaceholder": "Buscar acorde pivote (ej: Dm7)...",
     "scaleOrMode": "ESCALA / MODO"
+  },
+  "SpeedPanel": {
+    "calculatorTitle": "Speed Translation Calculator",
+    "baseBpm": "Current Metronome (BPM)",
+    "baseSubdivision": "Playing in...",
+    "targetSubdivision": "To play in...",
+    "equivalentBpm": "Set metronome to",
+    "sub": {
+      "quarter": "Quarter notes (1)",
+      "eighth": "Eighth notes (2)",
+      "triplet": "Triplets (3)",
+      "sixteenth": "Sixteenth notes (4)",
+      "quintuplet": "Quintuplets (5)",
+      "sextuplet": "Sextuplets (6)",
+      "thirtysecond": "32nd notes (8)"
+    },
+    "generatorTitle": "16-Note Lick Generator",
+    "generateBtn": "New Pattern",
+    "generatorDesc": "Apply the speed you just calculated using these 16-note licks. Loop them continuously focusing on the synchronization of both hands."
   }
 }

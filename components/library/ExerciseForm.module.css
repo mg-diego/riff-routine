@@ -1,0 +1,87 @@
+/* Base styles (element-specific classes below override them) */
+.input {
+  width: 100%;
+  padding: 0.7rem 0.9rem;
+  border-radius: 7px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.93rem;
+  outline: none;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.selectedLabel {
+  color: var(--gold);
+  margin-left: 0.5rem;
+  font-size: 0.75rem;
+}
+
+.grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.button {
+  padding: 0.5rem 0.25rem;
+  border-radius: 8px;
+  font-size: 0.75rem;
+  font-family: var(--font-body), sans-serif;
+  font-weight: 600;
+  transition: all 0.15s;
+  border: 1px solid;
+  text-align: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.bpmSuggestedGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1rem;
+}
+
+.difficultyLevelLabel {
+  margin-left: 0.6rem;
+  font-weight: 700;
+}
+
+.row {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+
+.button2 {
+  flex: 1;
+  padding: 0.6rem 0;
+  border-radius: 6px;
+  border: none;
+  font-weight: 700;
+  font-size: 1rem;
+  font-family: var(--font-body), sans-serif;
+  transition: all 0.15s;
+}
+
+.notesPlaceholderTextarea {
+  resize: vertical;
+  line-height: 1.6;
+}
+
+.inputFocusable:focus {
+  border-color: var(--gold);
+}
+
+.bpmGoalPlaceholderFocusable:focus {
+  border-color: var(--gold);
+}
+
+.nameInput:focus:not([readonly]),
+.notesPlaceholderTextarea:focus {
+  border-color: var(--gold);
+}

@@ -6,21 +6,29 @@ import { useSearchParams, useRouter } from 'next/navigation';
 import { PlayerHeader } from './PlayerHeader';
 import { SidebarControls } from './SidebarControls';
 import { ScalesPanel } from './panels/ScalesPanel';
-import { BackingTrack, ImprovPanel } from './panels/ImprovPanel';
+import { ImprovPanel } from './panels/ImprovPanel';
+import { BackingTrack } from '@/lib/types';
 import { AlphaTabContainer } from './AlphaTabContainer';
-import { usePlayerContext } from '../../hooks/usePlayerContext';
-import { useAlphaTab } from '../../hooks/useAlphaTab';
-import { usePracticeSession } from '../../hooks/usePracticeSession';
+import { usePlayerContext } from '@/hooks/usePlayerContext';
+import { useAlphaTab } from '@/hooks/useAlphaTab';
+import { usePracticeSession } from '@/hooks/usePracticeSession';
 import { useTranslations } from 'next-intl';
 import { CompositionPanel } from './panels/CompositionPanel';
-import { useTranslatedExercise } from '../../hooks/useTranslatedExercise';
+import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
 import { ChordsPanel } from './panels/ChordsPanel';
 import { supabase } from '@/lib/supabase';
-import { BackingTracksLibrary } from '../backing-tracks/BackingTracksLibrary';
+import { ALPHATAB_SCRIPT_URL } from '@/lib/constants';
+import { matchesSpecialMode, resolveSpecialMode } from '@/lib/practiceModes';
+import { BackingTracksLibrary } from '@/components/backing-tracks/BackingTracksLibrary';
 import { RhythmPanel } from './panels/RhythmPanel';
 import { EarTrainingPanel } from './panels/EarTrainingPanel';
-import { PdfViewer } from './PdfViewer'; 
+import { PdfViewer } from './PdfViewer';
+import { Spinner } from '@/components/ui/Spinner';
 import { HarmonizationPanel } from './panels/HarmonizationPanel';
+import { SpeedPanel } from './panels/SpeedPanel';
+import styles from './GuitarPlayer.module.css';
+
+const NEW_TRACK: BackingTrack = { id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null };
 
 export default function GuitarPlayer() {
     const t = useTranslations('GuitarPlayer');
@@ -37,10 +45,6 @@ export default function GuitarPlayer() {
 
     const [improvTrack, setImprovTrack] = useState<BackingTrack | null>(null);
     const [isLoadingTrack, setIsLoadingTrack] = useState(false);
-
-    useEffect(() => {
-        return () => console.log('[GuitarPlayer] UNMOUNTED');
-    }, []);
 
     const {
         isReady,
@@ -59,12 +63,12 @@ export default function GuitarPlayer() {
         toggleTimer, saveExerciseLog, handleEndSession,
     } = usePracticeSession(mode, routineList[currentIndex]?.routine_id || null, activeExercise?.id || null);
 
-    // 2. CORRECCIÓN: Doble validación. Si el file_type no vino en el context, usamos la extensión de la URL
+    // file_type may be missing (e.g. routine exercises), so fall back to the URL extension
     const isPdf = activeExercise?.file_type === 'pdf' || !!(activeExercise?.file_url?.toLowerCase().includes('.pdf'));
 
     useEffect(() => {
         const fetchTrack = async () => {
-            if (mode !== 'improvisation' && activeExercise?.title !== 'sys_improvisation_title') return;
+            if (!matchesSpecialMode('improvisation', mode, activeExercise?.title)) return;
 
             if (trackIdFromUrl && trackIdFromUrl !== 'new') {
                 setIsLoadingTrack(true);
@@ -72,20 +76,20 @@ export default function GuitarPlayer() {
                 if (data) setImprovTrack(data);
                 setIsLoadingTrack(false);
             } else if (trackIdFromUrl === 'new') {
-                setImprovTrack({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null });
+                setImprovTrack(NEW_TRACK);
             }
         };
         fetchTrack();
     }, [mode, trackIdFromUrl, activeExercise]);
 
-    // 3. CORRECCIÓN: Evitamos estrictamente enviar PDFs a AlphaTab
+    // Never send PDFs to alphaTab
     useEffect(() => {
         if (scriptReady && initialUrlToLoad) {
             const isPdfUrl = initialUrlToLoad.toLowerCase().includes('.pdf');
             if (!isPdf && !isPdfUrl) {
                 loadUrl(initialUrlToLoad);
             } else if (apiRef.current) {
-                // Si pasamos de un ejercicio GP5 a un PDF en la rutina, silenciamos/pausamos el GP5 anterior
+                // Switching from a GP file to a PDF inside a routine: pause the previous score
                 apiRef.current.pause();
             }
         }
@@ -94,102 +98,85 @@ export default function GuitarPlayer() {
     const { formatExercise } = useTranslatedExercise();
     const translatedExercise = activeExercise ? formatExercise(activeExercise) : null;
 
-    const isSpecialMode =
-        mode === 'scales' || activeExercise?.title === 'sys_scales_title' ||
-        mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title' ||
-        mode === 'composition' || activeExercise?.title === 'sys_composition_title' ||
-        mode === 'chords' || activeExercise?.title === 'sys_chords_title' ||
-        mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title' ||
-        mode === 'earTraining' || activeExercise?.title === 'sys_ear_training_title' ||
-        mode === 'harmonization' || activeExercise?.title === 'sys_harmonization_title';
+    const specialMode = resolveSpecialMode(mode, activeExercise?.title);
+    const isSpecialMode = specialMode !== null;
+    const isRhythmMode = matchesSpecialMode('rhythm', mode, activeExercise?.title);
 
-    const specialPanel = (() => {
-        if (mode === 'scales' || activeExercise?.title === 'sys_scales_title') return <ScalesPanel />;
-        if (mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title') return <RhythmPanel apiRef={apiRef} />;
-        if (mode === 'earTraining' || activeExercise?.title === 'sys_ear_training_title') return <EarTrainingPanel />;
+    const renderImprovPanel = () => {
+        if (isLoadingTrack) {
+            return <div className={styles.row}><span className="loader" /></div>;
+        }
 
-        if (mode === 'improvisation' || activeExercise?.title === 'sys_improvisation_title') {
-            if (isLoadingTrack) {
-                return <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}><span className="loader" /></div>;
-            }
-
-            if (improvTrack) {
-                return (
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', width: '100%' }}>
-                        <ImprovPanel
-                            initialTrack={improvTrack}
-                            onBack={() => {
-                                if (mode === 'routine') {
-                                    setImprovTrack(null);
-                                } else {
-                                    router.push('/backing-tracks');
-                                }
-                            }}
-                            onSaved={() => { }}
-                        />
-                    </div>
-                );
-            }
-
+        if (improvTrack) {
             return (
-                <div style={{ padding: '1.5rem', background: 'var(--surface)', borderRadius: '12px', border: '1px solid rgba(255,255,255,0.05)', width: '100%' }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '1rem' }}>
-                        <h3 style={{ color: 'var(--gold)', margin: 0, fontSize: '1.2rem', fontFamily: 'Bebas Neue' }}>
-                            {mode === 'routine' ? 'Selecciona una pista para este paso de la rutina' : 'Selecciona una pista para improvisar'}
-                        </h3>
-
-                        <button
-                            onClick={() => setImprovTrack({ id: 'new', title: '', youtube_url: '', tonality_note: '', tonality_type: '', chords: [], user_id: '', bpm: null })}
-                            style={{ background: 'var(--gold)', border: 'none', color: '#111', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 700, fontSize: '0.85rem', transition: 'transform 0.15s ease' }}
-                            onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.01)'}
-                            onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-                        >
-                            {im('newTrack')}
-                        </button>
-                    </div>
-
-                    <BackingTracksLibrary
-                        isMiniMode={true}
-                        onPlayTrack={(track) => {
-                            setImprovTrack(track);
+                <div className={styles.stack}>
+                    <ImprovPanel
+                        initialTrack={improvTrack}
+                        onBack={() => {
+                            if (mode === 'routine') {
+                                setImprovTrack(null);
+                            } else {
+                                router.push('/backing-tracks');
+                            }
                         }}
+                        onSaved={() => { }}
                     />
                 </div>
             );
         }
 
-        if (mode === 'composition' || activeExercise?.title === 'sys_composition_title') return <CompositionPanel />;
-        if (mode === 'chords' || activeExercise?.title === 'sys_chords_title') return <ChordsPanel />;
-        if (mode === 'harmonization' || activeExercise?.title === 'sys_harmonization_title') return <HarmonizationPanel />;
+        return (
+            <div className={styles.routineBox}>
+                <div className={styles.routineRow}>
+                    <h3 className={styles.routineSubheading}>
+                        {mode === 'routine' ? t('selectTrack.routine') : t('selectTrack.improvise')}
+                    </h3>
 
-        return null;
+                    <button
+                        onClick={() => setImprovTrack(NEW_TRACK)}
+                        className={styles.newTrackButton}
+                    >
+                        {im('newTrack')}
+                    </button>
+                </div>
+
+                <BackingTracksLibrary
+                    isMiniMode={true}
+                    onPlayTrack={(track) => {
+                        setImprovTrack(track);
+                    }}
+                />
+            </div>
+        );
+    };
+
+    const specialPanel = (() => {
+        switch (specialMode) {
+            case 'scales': return <ScalesPanel />;
+            case 'rhythm': return <RhythmPanel apiRef={apiRef} />;
+            case 'earTraining': return <EarTrainingPanel />;
+            case 'improvisation': return renderImprovPanel();
+            case 'composition': return <CompositionPanel />;
+            case 'chords': return <ChordsPanel />;
+            case 'harmonization': return <HarmonizationPanel />;
+            case 'speed': return <SpeedPanel />;
+            default: return null;
+        }
     })();
 
-    const hasNoScore = mode !== 'free' && mode !== 'rhythm' && activeExercise?.title !== 'sys_rhythm_title' && activeExercise && !activeExercise.file_url;
-    const isRhythmMode = mode === 'rhythm' || activeExercise?.title === 'sys_rhythm_title';
-    
-    // 4. Deshabilitamos el Sidebar lateral si estamos mostrando un PDF
-    const isSidebarDisabled = (isSpecialMode && !isRhythmMode) || !!hasNoScore || isPdf; 
+    const hasNoScore = mode !== 'free' && !isRhythmMode && activeExercise && !activeExercise.file_url;
+
+    // The sidebar (playback controls) only makes sense for alphaTab scores
+    const isSidebarDisabled = (isSpecialMode && !isRhythmMode) || !!hasNoScore || isPdf;
     const isBpmDisabled = mode === 'free' && !isLoaded;
 
     const [localSessionLogs, setLocalSessionLogs] = useState<Record<string, { bpm: number | null, seconds: number }>>({});
 
     if (!isReady) {
         return (
-            <div style={{
-                display: 'flex', width: '100%', height: '100%',
-                minHeight: '600px', borderRadius: '12px',
-                background: 'var(--surface)', overflow: 'hidden',
-                alignItems: 'center', justifyContent: 'center',
-            }}>
-                <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1rem' }}>
-                    <div style={{
-                        width: '40px', height: '40px', borderRadius: '50%',
-                        border: '2px solid rgba(220,185,138,0.15)',
-                        borderTopColor: 'var(--gold)',
-                        animation: 'gp-spin 0.8s linear infinite',
-                    }} />
-                    <style>{`@keyframes gp-spin { to { transform: rotate(360deg); } }`}</style>
+            <div className={styles.row2}>
+                <div className={styles.stack2}>
+                    <Spinner size={40} />
                 </div>
             </div>
         );
@@ -198,28 +185,14 @@ export default function GuitarPlayer() {
     return (
         <>
             <Script
-                src="https://cdn.jsdelivr.net/npm/@coderline/alphatab@1.3.0/dist/alphaTab.js"
+                src={ALPHATAB_SCRIPT_URL}
                 strategy="afterInteractive"
                 onReady={() => setScriptReady(true)}
             />
 
             {/* CAJA PRINCIPAL UNIFICADA Y EXPANDIDA */}
-            <div style={{
-                display: 'flex',
-                width: '100%',
-                minHeight: 'calc(100vh - 180px)',
-                borderRadius: '12px',
-                background: 'var(--surface)',
-                border: '1px solid rgba(255,255,255,0.06)',
-                boxShadow: '0 10px 40px rgba(0,0,0,0.2)',
-                overflow: 'hidden',
-                position: 'relative',
-            }}>
-                <main className="main-panel" style={{
-                    flex: 1, width: 0, minWidth: 0,
-                    display: 'flex', flexDirection: 'column',
-                    overflow: 'hidden', position: 'relative',
-                }}>
+            <div className={styles.titleRow}>
+                <main className={`main-panel ${styles.titleMain}`}>
                     <PlayerHeader
                         mode={mode}
                         routineList={routineList}
@@ -266,61 +239,29 @@ export default function GuitarPlayer() {
                         }}
                     />
 
-                    <div ref={mainScrollRef} style={{
-                        flex: 1,
-                        overflowX: 'hidden',
-                        overflowY: 'auto',
-                        display: 'flex',
-                        flexDirection: 'column',
-                        position: 'relative',
-                        width: '100%',
-                    }}>
+                    <div ref={mainScrollRef} className={styles.titleStack}>
                         {isSpecialMode && (
-                            <div style={{
-                                padding: '1.5rem 2rem',
-                                flex: '1 0 auto',
-                                minHeight: 'min-content',
-                                display: 'flex',
-                                flexDirection: 'column'
-                            }}>
+                            <div className={styles.specialPanelStack}>
                                 {specialPanel}
                             </div>
                         )}
 
-                        <div style={{
-                            position: 'relative',
-                            width: '100%',
-                            display: (isSpecialMode && mode !== 'rhythm' && activeExercise?.title !== 'sys_rhythm_title') ? 'none' : 'flex',
-                            flexDirection: 'column',
-                            flex: 1,
-                            padding: '1.5rem 1.75rem',
-                        }}>
-                            
-                            {/* 5. Si es PDF, inyectamos el componente (y evitamos el AlphaTab) */}
+                        <div className={styles.title} style={{ display: (isSpecialMode && !isRhythmMode) ? 'none' : 'flex' }}>
+
                             {isPdf && activeExercise?.file_url && (
-                                <div style={{ flex: 1, minHeight: '60vh', display: 'flex', flexDirection: 'column' }}>
+                                <div className={styles.titleStackInner}>
                                     <PdfViewer url={activeExercise.file_url} />
                                 </div>
                             )}
 
-                            {/* 6. Mantenemos el ref en el DOM pero lo ocultamos si es un PDF para que no estorbe visualmente ni crashee */}
-                            <div style={{ display: isPdf ? 'none' : 'block', flex: 1 }}>
+                            {/* Keep the alphaTab container mounted (its ref is required) but hidden for PDFs */}
+                            <div className={styles.block} style={{ display: isPdf ? 'none' : 'block' }}>
                                 <AlphaTabContainer wrapperRef={wrapperRef} hasNoScore={!!hasNoScore} isLoaded={isLoaded} />
                             </div>
 
                             {hasNoScore && !isSpecialMode && !isPdf && (
-                                <div style={{
-                                    position: 'absolute', inset: 0,
-                                    display: 'flex', flexDirection: 'column',
-                                    alignItems: 'center', justifyContent: 'center',
-                                    color: 'var(--muted)', gap: '1.5rem', padding: '2rem',
-                                    textAlign: 'center', background: 'var(--surface)', zIndex: 10,
-                                }}>
-                                    <div style={{
-                                        width: '80px', height: '80px', borderRadius: '50%',
-                                        background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.2)',
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--gold)',
-                                    }}>
+                                <div className={styles.titleStack2}>
+                                    <div className={styles.titleStackRow}>
                                         <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                             <path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3Z" />
                                             <path d="M19 10v2a7 7 0 0 1-14 0v-2" />
@@ -328,13 +269,10 @@ export default function GuitarPlayer() {
                                         </svg>
                                     </div>
                                     <div>
-                                        <h2 style={{
-                                            fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem',
-                                            margin: '0 0 0.5rem 0', color: 'var(--text)', letterSpacing: '0.05em',
-                                        }}>
+                                        <h2 className={styles.titleHeading}>
                                             {t('noScore.title')}
                                         </h2>
-                                        <p style={{ margin: 0, maxWidth: '420px', lineHeight: 1.6, fontSize: '0.95rem' }}>
+                                        <p className={styles.descriptionText}>
                                             {t('noScore.description')}
                                         </p>
                                     </div>

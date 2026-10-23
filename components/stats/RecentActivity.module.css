@@ -1,0 +1,207 @@
+.label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  padding: 0.2rem 0.55rem;
+  border-radius: 100px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.row {
+  display: flex;
+  justify-content: center;
+  padding: 3rem;
+}
+
+.emptyBox {
+  background: var(--surface);
+  padding: 3rem;
+  border-radius: 12px;
+  border: 1px dashed rgba(255,255,255,0.08);
+  text-align: center;
+}
+
+.emptyText {
+  color: var(--muted);
+  margin: 0;
+}
+
+.titleRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  margin-bottom: 1.25rem;
+}
+
+.titleHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.6rem;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.05em;
+}
+
+.totalCountLabel {
+  font-size: 0.78rem;
+  color: var(--muted);
+}
+
+.unknownExerciseStack {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.dateLabelRow {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.6rem;
+}
+
+.dateLabel {
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.box {
+  flex: 1;
+  height: 1px;
+  background: rgba(255,255,255,0.05);
+}
+
+.unknownExerciseStack2 {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.unknownExerciseGrid {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 1rem;
+  background: var(--surface);
+  padding: 0.9rem 1.25rem;
+  border-radius: 100px;
+  border: 1px solid rgba(255,255,255,0.03);
+  transition: border-color 0.2s, background 0.2s;
+  cursor: default;
+}
+
+.unknownExercise {
+  min-width: 0;
+}
+
+.unknownExerciseRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  flex-wrap: wrap;
+}
+
+.unknownExerciseLabel {
+  font-weight: 600;
+  font-size: 0.92rem;
+  color: var(--text);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.label3 {
+  font-size: 0.75rem;
+  color: var(--muted);
+  margin-top: 0.15rem;
+  display: block;
+}
+
+.timeLabelRow {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.timeLabel {
+  text-align: right;
+}
+
+.timeLabelLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.25);
+  display: block;
+}
+
+.durationSecondsLabel {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.bpmLabel {
+  text-align: right;
+  min-width: 52px;
+}
+
+.bpmLabelLabel {
+  font-size: 0.62rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  color: rgba(var(--gold-rgb), 0.5);
+  display: block;
+}
+
+.bpmUsedLabel {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.5rem;
+  color: var(--gold);
+  line-height: 1;
+}
+
+.paginationRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+}
+
+.paginationLabel {
+  font-size: 0.8rem;
+  color: var(--muted);
+}
+
+.prevRow {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.prevButton {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  font-family: var(--font-body), sans-serif;
+  font-size: 0.88rem;
+  transition: border-color 0.2s;
+}
+
+.unknownExerciseGrid:hover {
+  border-color: rgba(255,255,255,0.08);
+}
+
+.clickable {
+  cursor: pointer;
+}
+
+.clickable:hover {
+  background: rgba(255,255,255,0.02);
+}

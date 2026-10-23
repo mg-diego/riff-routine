@@ -1,0 +1,255 @@
+.ph-root { display: flex; flex-direction: column; width: 100%; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: var(--font-body), sans-serif; }
+.ph-row1 { display: flex; align-items: center; gap: 0.75rem; width: 100%; box-sizing: border-box; padding: 0 1.75rem; background: #0e0e0e; border-bottom: 1px solid rgba(255,255,255,0.04); min-height: 56px; overflow: hidden; }
+.ph-title-stack { display: flex; flex-direction: column; justify-content: center; flex: 1; min-width: 0; gap: 0.1rem; }
+.ph-routine-name { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem; }
+.ph-routine-name-val { color: var(--violet); }
+.ph-title { font-family: var(--font-display), sans-serif; font-size: 1.5rem; color: var(--text); margin: 0; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ph-badge { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.65rem; border-radius: 100px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); flex-shrink: 0; white-space: nowrap; }
+.ph-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.07); flex-shrink: 0; }
+.ph-diff { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
+.ph-routine-nav { display: flex; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; flex-shrink: 0; }
+.ph-nav-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; cursor: pointer; background: transparent; border: none; color: var(--text); transition: background 0.2s; flex-shrink: 0; }
+.ph-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.06); }
+.ph-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
+.ph-nav-counter { font-size: 0.72rem; font-weight: 700; color: var(--muted); padding: 0 0.6rem; letter-spacing: 0.04em; white-space: nowrap; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); }
+.ph-close-btn { padding: 0.4rem 0.9rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; white-space: nowrap; font-family: var(--font-body), sans-serif; max-width: 160px; overflow: hidden; text-overflow: ellipsis; background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
+.ph-close-btn:hover { background: rgba(var(--danger-rgb), 0.2); color: var(--danger); border-color: rgba(var(--danger-rgb), 0.5); }
+.ph-row2 { display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); min-height: 64px; position: relative; }
+.ph-bpm-section { display: flex; align-items: center; gap: 1.5rem; padding: 0.75rem 1.75rem; border-right: 1px solid rgba(255,255,255,0.04); flex-wrap: nowrap; }
+.ph-bpm-block { display: flex; flex-direction: column; gap: 2px; }
+.ph-bpm-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(var(--gold-rgb), 0.5); }
+.ph-bpm-val { font-family: var(--font-display), sans-serif; font-size: 1.6rem; line-height: 1; letter-spacing: 0.02em; color: var(--text); }
+.ph-bpm-input { width: 56px; padding: 0; background: transparent; border: none; border-bottom: 1px solid rgba(var(--gold-rgb), 0.3); font-family: var(--font-display), sans-serif; font-size: 1.6rem; line-height: 1; outline: none; letter-spacing: 0.02em; color: var(--gold); transition: border-color 0.2s; }
+.ph-bpm-input:focus { border-color: var(--gold); }
+.ph-bpm-input:disabled { opacity: 0.3; cursor: not-allowed; border-bottom: none; }
+.ph-bpm-sep { width: 1px; height: 32px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
+.ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; flex: 1; }
+.ph-timer-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: all 0.2s; flex-shrink: 0; }
+.ph-timer-btn:hover { opacity: 0.85; }
+.ph-timer-display { display: flex; flex-direction: column; align-items: flex-start; }
+.ph-timer-status { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.3s; }
+.ph-timer-val { font-family: var(--font-display), sans-serif; font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; transition: color 0.3s; }
+.ph-timer-target { color: var(--muted); font-size: 1.2rem; }
+.ph-timer-track { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.05); }
+.ph-timer-fill { height: 100%; transition: width 1s linear, background 0.5s; }
+.ph-right-section { display: flex; align-items: center; justify-content: flex-end; gap: 1.5rem; padding: 0.75rem 1.75rem; }
+.ph-steps { display: flex; align-items: center; gap: 5px; }
+.ph-step { height: 4px; border-radius: 99px; transition: all 0.3s ease; background: rgba(255,255,255,0.1); flex: 1; min-width: 15px; max-width: 40px; }
+.ph-step.done   { background: rgba(var(--violet-rgb), 0.5); }
+.ph-step.active { background: var(--violet); box-shadow: 0 0 6px rgba(var(--violet-rgb), 0.6); }
+.ph-save-btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; font-family: var(--font-body), sans-serif; border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+.ph-save-btn.normal { background: var(--gold); color: #111; }
+.ph-save-btn.normal:hover { background: var(--gold-dark); }
+.ph-save-btn.saved  { background: var(--success); color: #111; }
+.ph-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+@keyframes ph-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(var(--success-rgb), 0.5); } 70% { box-shadow: 0 0 0 10px rgba(var(--success-rgb), 0); } }
+.ph-timer-btn.done { animation: ph-pulse 0.7s ease 3; }
+.ph-timer-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: rgba(var(--violet-rgb), 0.15); border: 1px solid rgba(var(--violet-rgb), 0.35); border-radius: 8px; padding: 0.45rem 0.75rem; white-space: nowrap; font-size: 0.72rem; font-weight: 600; color: var(--violet-light); pointer-events: none; display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(6px); z-index: 20; }
+.ph-timer-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(var(--violet-rgb), 0.35); }
+@keyframes ph-tooltip-in  { from { opacity:0; transform:translateX(-50%) translateY(4px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
+@keyframes ph-tooltip-out { from { opacity:1; } to { opacity:0; } }
+.ph-timer-tooltip.entering { animation: ph-tooltip-in  0.25s ease forwards; }
+.ph-timer-tooltip.leaving  { animation: ph-tooltip-out 0.4s ease 3.1s forwards; }
+
+.label {
+  font-size: 0.8rem;
+}
+
+.block {
+  flex: 1;
+}
+
+.noFileRow {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.noFileRowLabel {
+  padding: 0.15rem 0.4rem;
+  border-radius: 4px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+}
+
+.currentBpm {
+  position: relative;
+}
+
+.targetBpmLabel {
+  color: rgba(255,255,255,0.3);
+}
+
+.currentBpmLabel {
+  color: rgba(255,255,255,0.4);
+}
+
+.input {
+  color: rgba(255,255,255,0.6);
+  border-bottom-color: rgba(255,255,255,0.1);
+}
+
+.suggestedBpm {
+  margin-left: 0.5rem;
+  font-size: 0.65rem;
+  color: rgba(255,255,255,0.3);
+  max-width: 80px;
+  line-height: 1.2;
+}
+
+.strong {
+  color: rgba(255,255,255,0.5);
+}
+
+.messageRow {
+  position: absolute;
+  top: 100%;
+  left: 1.75rem;
+  margin-top: 0.5rem;
+  background: rgba(var(--gold-rgb), 0.1);
+  border: 1px solid rgba(var(--gold-rgb), 0.3);
+  padding: 0.5rem 0.8rem;
+  border-radius: 8px;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  white-space: nowrap;
+}
+
+.messageLabel {
+  font-size: 0.75rem;
+  color: var(--gold);
+}
+
+.buttonButton {
+  background: var(--gold);
+  color: #111;
+  border: none;
+  padding: 0.3rem 0.6rem;
+  border-radius: 4px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+}
+
+.metronome {
+  border-right: none;
+}
+
+.metronomeRow {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.metronomeLabel {
+  color: var(--gold);
+  opacity: 0.9;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.metronomeRowInput {
+  width: 60px;
+  text-align: center;
+  border-bottom: none;
+  background: rgba(0,0,0,0.25);
+  border-radius: 6px;
+  padding: 0.2rem;
+}
+
+.metronomeRowLabel {
+  font-size: 1.1rem;
+  color: rgba(255,255,255,0.4);
+  font-family: var(--font-display), sans-serif;
+}
+
+.metronome2 {
+  align-items: center;
+}
+
+.metronomeLabel2 {
+  color: var(--gold);
+  opacity: 0.9;
+  margin-bottom: 4px;
+}
+
+.pauseMetronomeButton {
+  width: 42px;
+  height: 42px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  flex-shrink: 0;
+}
+
+.timerAutoStarted {
+  border-left: 1px solid rgba(255,255,255,0.04);
+}
+
+.timerAutoStarted2 {
+  position: relative;
+  flex-shrink: 0;
+}
+
+.button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon {
+  margin-left: 3px;
+}
+
+.routineTargetDurationRow {
+  display: flex;
+  align-items: baseline;
+  gap: 0.2rem;
+}
+
+.progressStack {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  width: 100%;
+  max-width: 200px;
+}
+
+.progressLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: rgba(255,255,255,0.4);
+  text-transform: uppercase;
+}
+
+.progressStackBlock {
+  width: 100%;
+}
+
+.errorMsgLabel {
+  color: var(--danger);
+  font-size: 0.75rem;
+  font-weight: 600;
+}
+
+.pauseMetronomeButton:hover {
+  opacity: 0.85;
+}

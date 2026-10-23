@@ -3,11 +3,17 @@
 import Link from 'next/link';
 import Image from 'next/image';
 import { usePathname, useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useEffect, useState, useRef, useCallback } from 'react';
 import { useLocale, useTranslations } from 'next-intl';
+import { useAppEvent } from '@/hooks/useAppEvent';
+import { APP_EVENTS } from '@/lib/events';
+import { isAdminEmail } from '@/lib/admin';
+import { TEACHER_MODE_ENABLED } from '@/lib/features';
+import { SubscriptionTier } from '@/lib/constants';
+import styles from './Navbar.module.css';
 
-type Tier = 'free' | 'pro' | 'lifetime';
+type Tier = SubscriptionTier;
 type AppMode = 'student' | 'teacher';
 
 const TIER_STYLES: Record<Tier, { label: string; bg: string; color: string; border: string }> = {
@@ -19,17 +25,7 @@ const TIER_STYLES: Record<Tier, { label: string; bg: string; color: string; bord
 function TierBadge({ tier }: { tier: Tier }) {
     const s = TIER_STYLES[tier];
     return (
-        <div style={{
-            position: 'absolute', bottom: '-4px', right: '-6px',
-            background: s.bg, color: s.color,
-            border: `1px solid ${s.border}`,
-            fontSize: '0.48rem', fontWeight: 800,
-            letterSpacing: '0.06em', lineHeight: 1,
-            padding: '2px 4px', borderRadius: '4px',
-            fontFamily: 'DM Sans, sans-serif',
-            pointerEvents: 'none', whiteSpace: 'nowrap',
-            boxShadow: '0 1px 4px rgba(0,0,0,0.4)',
-        }}>
+        <div className={styles.layer} style={{ background: s.bg, color: s.color, border: `1px solid ${s.border}` }}>
             {s.label}
         </div>
     );
@@ -38,31 +34,18 @@ function TierBadge({ tier }: { tier: Tier }) {
 function ModeSwitchToggle({ mode, onChange }: { mode: AppMode; onChange: (m: AppMode) => void }) {
     const t = useTranslations('Navbar');
     return (
-        <div style={{
-            display: 'flex',
-            background: 'rgba(255,255,255,0.04)',
-            border: '1px solid rgba(255,255,255,0.08)',
-            borderRadius: '8px', padding: '3px', gap: '2px',
-        }}>
+        <div className={styles.modeStudentRow}>
             {(['student', 'teacher'] as AppMode[]).map((m) => {
                 const isActive = mode === m;
                 return (
                     <button
                         key={m}
                         onClick={() => onChange(m)}
-                        style={{
-                            padding: '0.3rem 0.75rem', borderRadius: '6px', border: 'none',
-                            cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600,
-                            fontFamily: 'DM Sans, sans-serif', letterSpacing: '0.02em',
-                            transition: 'all 0.18s ease',
-                            background: isActive
+                        className={styles.modeStudentButton} style={{ background: isActive
                                 ? m === 'teacher' ? 'rgba(167,139,250,0.2)' : 'rgba(220,185,138,0.15)'
-                                : 'transparent',
-                            color: isActive
+                                : 'transparent', color: isActive
                                 ? m === 'teacher' ? '#c4b5fd' : 'var(--gold)'
-                                : 'rgba(255,255,255,0.35)',
-                            boxShadow: isActive ? 'inset 0 0 0 1px rgba(255,255,255,0.06)' : 'none',
-                        }}
+                                : 'rgba(255,255,255,0.35)', boxShadow: isActive ? 'inset 0 0 0 1px rgba(255,255,255,0.06)' : 'none' }}
                     >
                         {m === 'student' ? t('modeStudent') : t('modeTeacher')}
                     </button>
@@ -102,13 +85,15 @@ export default function Navbar() {
         if (profile?.avatar_url) setAvatarUrl(profile.avatar_url);
         if (profile?.subscription_tier) setTier(profile.subscription_tier as Tier);
 
-        // Only active teacher profiles show the toggle
-        const { data: teacherProfile } = await supabase
-            .from('teacher_profiles')
-            .select('id')
-            .eq('id', user.id)
-            .eq('is_active', true)
-            .maybeSingle();
+        // Only active teacher profiles show the toggle (and only while teacher mode is enabled)
+        const { data: teacherProfile } = TEACHER_MODE_ENABLED
+            ? await supabase
+                .from('teacher_profiles')
+                .select('id')
+                .eq('id', user.id)
+                .eq('is_active', true)
+                .maybeSingle()
+            : { data: null };
 
         if (teacherProfile) {
             setIsTeacher(true);
@@ -125,11 +110,7 @@ export default function Navbar() {
     useEffect(() => { getUser(); }, [getUser]);
 
     // Listen for teacher mode activation/deactivation from Profile page
-    useEffect(() => {
-        const handleTeacherModeChanged = () => getUser();
-        window.addEventListener('teacher-mode-changed', handleTeacherModeChanged);
-        return () => window.removeEventListener('teacher-mode-changed', handleTeacherModeChanged);
-    }, [getUser]);
+    useAppEvent(APP_EVENTS.TEACHER_MODE_CHANGED, getUser);
 
     // Close dropdown on outside click
     useEffect(() => {
@@ -175,43 +156,29 @@ export default function Navbar() {
     const locale = useLocale();
 
     return (
-        <nav style={{
-            display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-            padding: '1.25rem 3rem',
-            background: 'rgba(13,13,13,0.92)', backdropFilter: 'blur(12px)',
-            borderBottom: appMode === 'teacher'
+        <nav className={styles.activateTeacherNav} style={{ borderBottom: appMode === 'teacher'
                 ? '1px solid rgba(167,139,250,0.2)'
-                : '1px solid rgba(220,185,138,0.1)',
-            position: 'sticky', top: 0, zIndex: 100,
-        }}>
+                : '1px solid rgba(220,185,138,0.1)' }}>
 
             {/* ── Logo ── */}
-            <Link href="/home" style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <div style={{ width: '28px', height: '28px', position: 'relative' }}>
+            <Link href="/home" className={styles.rowLink}>
+                <div className={styles.block}>
                     <Image src="/favicon.ico" alt="Logo" fill style={{ objectFit: 'contain' }} />
                 </div>
-                <div style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.6rem', color: 'var(--gold, #dcb98a)', letterSpacing: '0.05em' }}>
-                    Riff<span style={{ color: 'var(--text, #f0e8dc)' }}>Routine</span>
+                <div className={styles.rowLinkBlock}>
+                    Riff<span className={styles.label}>Routine</span>
                 </div>
             </Link>
 
             {/* ── Nav links ── */}
-            <ul style={{
-                display: 'flex', gap: '2.5rem', listStyle: 'none',
-                margin: 0, padding: 0, fontFamily: 'DM Sans, sans-serif', alignItems: 'center',
-            }}>
+            <ul className={styles.list}>
                 {navLinks.map((link) => {
                     const pathSegments = pathname.split('/');
                     const currentPathWithoutLocale = '/' + (pathSegments[2] || pathSegments[1] || '');
                     const isActive = currentPathWithoutLocale === link.path || pathname.includes(link.path);
                     return (
                         <li key={link.name}>
-                            <Link data-onboarding={link.onboarding} href={link.path} style={{
-                                textDecoration: 'none', fontSize: '0.9rem',
-                                color: isActive ? 'var(--text, #f0e8dc)' : 'var(--muted, rgba(240,232,220,0.45))',
-                                fontWeight: isActive ? '600' : '500',
-                                transition: 'color 0.2s ease',
-                            }}>
+                            <Link data-onboarding={link.onboarding} href={link.path} className={styles.link} style={{ color: isActive ? 'var(--text, #f0e8dc)' : 'var(--muted, rgba(240,232,220,0.45))', fontWeight: isActive ? '600' : '500' }}>
                                 {link.name}
                             </Link>
                         </li>
@@ -220,7 +187,7 @@ export default function Navbar() {
             </ul>
 
             {/* ── Right side ── */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div className={styles.activateTeacherRow}>
 
                 {/* Mode toggle — only when teacher profile is active */}
                 {isProOrLifetime && isTeacher && (
@@ -228,51 +195,26 @@ export default function Navbar() {
                 )}
 
                 {/* Activate teacher CTA — pro/lifetime but no active teacher profile */}
-                {isProOrLifetime && !isTeacher && (
+                {TEACHER_MODE_ENABLED && isProOrLifetime && !isTeacher && (
                     <Link
                         href="/profile#teacher"
-                        style={{
-                            fontSize: '0.75rem', fontWeight: 600,
-                            color: 'rgba(167,139,250,0.8)', textDecoration: 'none',
-                            padding: '0.3rem 0.75rem',
-                            border: '1px solid rgba(167,139,250,0.2)',
-                            borderRadius: '6px', transition: 'all 0.2s',
-                            fontFamily: 'DM Sans, sans-serif', whiteSpace: 'nowrap',
-                        }}
-                        onMouseEnter={e => {
-                            e.currentTarget.style.background = 'rgba(167,139,250,0.08)';
-                            e.currentTarget.style.borderColor = 'rgba(167,139,250,0.4)';
-                        }}
-                        onMouseLeave={e => {
-                            e.currentTarget.style.background = 'transparent';
-                            e.currentTarget.style.borderColor = 'rgba(167,139,250,0.2)';
-                        }}
+                        className={styles.activateTeacherBox}
                     >
                         {t('activateTeacher')}
                     </Link>
                 )}
 
                 {/* ── Avatar + dropdown ── */}
-                <div style={{ position: 'relative' }} ref={dropdownRef}>
+                <div className={styles.profile} ref={dropdownRef}>
                     <div
                         onClick={() => setShowDropdown(!showDropdown)}
-                        style={{
-                            width: '38px', height: '38px', borderRadius: '50%',
-                            background: avatarUrl ? 'transparent' : 'rgba(220,185,138,0.15)',
-                            border: '1px solid rgba(220,185,138,0.3)',
-                            color: 'var(--gold, #dcb98a)',
-                            display: 'flex', justifyContent: 'center', alignItems: 'center',
-                            fontFamily: 'Bebas Neue, sans-serif', cursor: 'pointer',
-                            fontSize: '1.1rem', textTransform: 'uppercase',
-                            transition: 'all 0.2s ease',
-                            position: 'relative', overflow: 'visible',
-                        }}
+                        className={styles.row} style={{ background: avatarUrl ? 'transparent' : 'rgba(220,185,138,0.15)' }}
                     >
-                        <div style={{ width: '38px', height: '38px', borderRadius: '50%', overflow: 'hidden', position: 'relative', flexShrink: 0 }}>
+                        <div className={styles.dot}>
                             {avatarUrl ? (
                                 <Image src={avatarUrl} alt="Avatar" fill style={{ objectFit: 'cover' }} />
                             ) : (
-                                <div style={{ width: '100%', height: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                                <div className={styles.profileRow}>
                                     {email ? email[0] : 'U'}
                                 </div>
                             )}
@@ -281,27 +223,13 @@ export default function Navbar() {
                     </div>
 
                     {showDropdown && (
-                        <div style={{
-                            position: 'absolute', top: 'calc(100% + 0.75rem)', right: '0',
-                            background: 'var(--surface, #141414)', border: '1px solid rgba(255,255,255,0.05)',
-                            borderRadius: '12px', padding: '0.5rem',
-                            display: 'flex', flexDirection: 'column',
-                            minWidth: '220px', zIndex: 50,
-                            boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
-                            fontFamily: 'DM Sans, sans-serif',
-                        }}>
+                        <div className={styles.profileStack}>
                             {/* User info + tier pill */}
-                            <div style={{ padding: '0.75rem 0.5rem', borderBottom: '1px solid rgba(255,255,255,0.05)', marginBottom: '0.25rem', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                                <span style={{ fontSize: '0.75rem', color: 'var(--muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
+                            <div className={styles.emailRow}>
+                                <span className={styles.emailLabel}>
                                     {email}
                                 </span>
-                                <span style={{
-                                    fontSize: '0.6rem', fontWeight: 800, letterSpacing: '0.07em',
-                                    padding: '2px 6px', borderRadius: '5px', flexShrink: 0, marginLeft: '0.5rem',
-                                    background: TIER_STYLES[tier].bg,
-                                    color: TIER_STYLES[tier].color,
-                                    border: `1px solid ${TIER_STYLES[tier].border}`,
-                                }}>
+                                <span className={styles.profileStackLabel} style={{ background: TIER_STYLES[tier].bg, color: TIER_STYLES[tier].color, border: `1px solid ${TIER_STYLES[tier].border}` }}>
                                     {tier === 'lifetime' ? 'LIFETIME' : tier.toUpperCase()}
                                 </span>
                             </div>
@@ -310,14 +238,7 @@ export default function Navbar() {
                                 <Link
                                     href="/profile"
                                     onClick={() => setShowDropdown(false)}
-                                    style={{
-                                        textDecoration: 'none', color: 'var(--text)',
-                                        padding: '0.6rem 0.5rem', borderRadius: '6px',
-                                        fontSize: '0.85rem', fontWeight: '500',
-                                        transition: 'background 0.2s ease', display: 'block',
-                                    }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(255,255,255,0.05)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    className={styles.profileLink}
                                 >
                                     {t('profile')}
                                 </Link>
@@ -327,16 +248,7 @@ export default function Navbar() {
                                 <Link
                                     href="/pro"
                                     onClick={() => setShowDropdown(false)}
-                                    style={{
-                                        textDecoration: 'none',
-                                        padding: '0.6rem 0.5rem', borderRadius: '6px',
-                                        fontSize: '0.85rem', fontWeight: '700',
-                                        transition: 'background 0.2s ease', display: 'flex',
-                                        alignItems: 'center', gap: '0.4rem',
-                                        color: 'var(--gold)',
-                                    }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(220,185,138,0.07)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    className={styles.upgradeProRow}
                                 >
                                     <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                         <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2" />
@@ -345,20 +257,12 @@ export default function Navbar() {
                                 </Link>
                             )}
 
-                            {/* --- ENLACE OCULTO DE ADMIN (Solo visible para ti) --- */}
-                            {email === 'diego.mg.umh@gmail.com' && (
+                            {/* Admin link: only when the panel is enabled for this environment */}
+                            {isAdminEmail(email) && (
                                 <Link
                                     href={`/${locale}/admin`}
                                     onClick={() => setShowDropdown(false)}
-                                    style={{
-                                        textDecoration: 'none', color: '#a855f7', // Color morado/distintivo para diferenciarlo
-                                        padding: '0.6rem 0.5rem', borderRadius: '6px',
-                                        fontSize: '0.85rem', fontWeight: '700',
-                                        transition: 'background 0.2s ease', display: 'flex',
-                                        alignItems: 'center', gap: '0.4rem',
-                                    }}
-                                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(168,85,247,0.1)'}
-                                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                    className={styles.profileRowLink}
                                 >
                                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
                                         <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
@@ -368,18 +272,11 @@ export default function Navbar() {
                                 </Link>
                             )}
 
-                            <div style={{ height: '1px', background: 'rgba(255,255,255,0.05)', margin: '0.25rem 0' }} />
+                            <div className={styles.box} />
 
                             <button
                                 onClick={handleLogout}
-                                style={{
-                                    background: 'transparent', border: 'none', color: 'var(--red, #e74c3c)',
-                                    textAlign: 'left', padding: '0.6rem 0.5rem', cursor: 'pointer',
-                                    borderRadius: '6px', fontSize: '0.85rem', fontWeight: '600',
-                                    transition: 'background 0.2s ease',
-                                }}
-                                onMouseEnter={e => e.currentTarget.style.background = 'rgba(231,76,60,0.1)'}
-                                onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                className={styles.logoutButton}
                             >
                                 {t('logout')}
                             </button>

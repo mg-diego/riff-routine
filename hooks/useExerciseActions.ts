@@ -1,9 +1,14 @@
 import { useState } from 'react';
 import { supabase } from '@/lib/supabase';
 import { Exercise } from '@/lib/types';
-import { SUBSCRIPTION_TIERS, SubscriptionTier } from '@/lib/constants';
+import { canAddExercises } from '@/lib/subscription';
+import { APP_EVENTS, emitAppEvent } from '@/lib/events';
 
-const MAX_FREE_EXERCISES = 10;
+interface BulkExerciseInput {
+    title: string;
+    technique: string;
+    bpm_goal: string;
+}
 
 interface CreateExerciseParams {
     name: string;
@@ -20,43 +25,31 @@ export function useExerciseActions() {
     const [saving, setSaving] = useState(false);
     const [error, setError] = useState<string | null>(null);
 
-    const checkTierLimits = async (userId: string, countToAdd: number = 1): Promise<boolean> => {
+    // Returns true when the user can add `countToAdd` exercises; otherwise opens the pro modal
+    const ensureWithinLimit = async (userId: string, countToAdd: number = 1): Promise<boolean> => {
+        let canProceed = false;
         try {
-            const { data: profile } = await supabase.from('profiles').select('subscription_tier').eq('id', userId).single();
-            const userTier = (profile?.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE;
-
-            if (userTier === SUBSCRIPTION_TIERS.FREE) {
-                const { count } = await supabase.from('exercises').select('*', { count: 'exact', head: true }).eq('user_id', userId);
-                if (count !== null && (count + countToAdd) > MAX_FREE_EXERCISES) return false;
-            }
-            return true;
+            canProceed = await canAddExercises(userId, countToAdd);
         } catch (err) {
-            console.error(err); return false;
+            console.error(err);
         }
+        if (!canProceed) emitAppEvent(APP_EVENTS.SHOW_PRO_MODAL);
+        return canProceed;
     };
 
     const validateLimit = async (countToAdd: number = 1): Promise<boolean> => {
         const { data: { user } } = await supabase.auth.getUser();
         if (!user) return false;
-        const canProceed = await checkTierLimits(user.id, countToAdd);
-        if (!canProceed) {
-            window.dispatchEvent(new CustomEvent('app:show-pro-modal'));
-            return false;
-        }
-        return true;
+        return ensureWithinLimit(user.id, countToAdd);
     };
 
-    const importBulkExercises = async (parsedData: any[]): Promise<boolean> => {
+    const importBulkExercises = async (parsedData: BulkExerciseInput[]): Promise<boolean> => {
         setSaving(true); setError(null);
         try {
             const { data: { user }, error: authError } = await supabase.auth.getUser();
             if (authError || !user) throw new Error('Auth required');
 
-            const canProceed = await checkTierLimits(user.id, parsedData.length);
-            if (!canProceed) {
-                window.dispatchEvent(new CustomEvent('app:show-pro-modal'));
-                return false;
-            }
+            if (!(await ensureWithinLimit(user.id, parsedData.length))) return false;
 
             const payload = parsedData.map(ex => ({
                 user_id: user.id,
@@ -69,7 +62,7 @@ export function useExerciseActions() {
             const { error: insertError } = await supabase.from('exercises').insert(payload);
             if (insertError) throw insertError;
 
-            window.dispatchEvent(new CustomEvent('app:exercise-created'));
+            emitAppEvent(APP_EVENTS.EXERCISE_CREATED);
             return true;
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
@@ -87,12 +80,7 @@ export function useExerciseActions() {
             const { data: { user }, error: authError } = await supabase.auth.getUser();
             if (authError || !user) throw new Error('Auth required');
 
-            const canProceed = await checkTierLimits(user.id);
-            if (!canProceed) {
-                window.dispatchEvent(new CustomEvent('app:show-pro-modal'));
-                setSaving(false);
-                return null;
-            }
+            if (!(await ensureWithinLimit(user.id))) return null;
 
             let currentFileUrl = null;
 
@@ -122,7 +110,7 @@ export function useExerciseActions() {
 
             if (dbError) throw dbError;
 
-            window.dispatchEvent(new CustomEvent('app:exercise-created'));
+            emitAppEvent(APP_EVENTS.EXERCISE_CREATED);
             return newExercise.id;
         } catch (err) {
             setError(err instanceof Error ? err.message : String(err));
@@ -151,12 +139,7 @@ export function useExerciseActions() {
                 return existingCopy.id;
             }
 
-            const canProceed = await checkTierLimits(user.id);
-            if (!canProceed) {
-                window.dispatchEvent(new CustomEvent('app:show-pro-modal'));
-                setSaving(false);
-                return null;
-            }
+            if (!(await ensureWithinLimit(user.id))) return null;
 
             const { data: newExercise, error: dbError } = await supabase
                 .from('exercises')
@@ -179,7 +162,7 @@ export function useExerciseActions() {
 
             if (dbError) throw dbError;
 
-            window.dispatchEvent(new CustomEvent('app:exercise-created'));
+            emitAppEvent(APP_EVENTS.EXERCISE_CREATED);
             return newExercise.id;
 
         } catch (err) {

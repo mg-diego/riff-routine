@@ -2,11 +2,13 @@
 
 import React, { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '../../lib/supabase';
-import { getStartDate } from '../../lib/utils';
+import { supabase } from '@/lib/supabase';
+import { getStartDate } from '@/lib/utils';
 import { useTranslations, useLocale } from 'next-intl';
 import { Exercise } from '@/lib/types';
 import { useTranslatedExercise } from '@/hooks/useTranslatedExercise';
+import styles from './RecentActivity.module.css';
+import { cx } from '@/lib/cx';
 
 interface Props { dateFilter: string; }
 
@@ -36,7 +38,7 @@ function TechniqueTag({ technique }: { technique: string }) {
   };
   const color = colors[technique] || { bg: 'rgba(255,255,255,0.07)', text: 'var(--muted)' };
   return (
-    <span style={{ background: color.bg, color: color.text, fontSize: '0.65rem', fontWeight: 700, padding: '0.2rem 0.55rem', borderRadius: '100px', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+    <span className={styles.label} style={{ background: color.bg, color: color.text }}>
       {technique}
     </span>
   );
@@ -126,37 +128,37 @@ export function RecentActivity({ dateFilter }: Props) {
   const totalPages = Math.ceil(totalCount / ITEMS_PER_PAGE);
 
   if (loading) return (
-    <div style={{ display: 'flex', justifyContent: 'center', padding: '3rem' }}>
+    <div className={styles.row}>
       <span className="loader" />
     </div>
   );
 
   if (logs.length === 0 && page === 1) return (
-    <div style={{ background: 'var(--surface)', padding: '3rem', borderRadius: '12px', border: '1px dashed rgba(255,255,255,0.08)', textAlign: 'center' }}>
-      <p style={{ color: 'var(--muted)', margin: 0 }}>{t('empty')}</p>
+    <div className={styles.emptyBox}>
+      <p className={styles.emptyText}>{t('empty')}</p>
     </div>
   );
 
   return (
     <div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: '1.25rem' }}>
-        <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.6rem', color: 'var(--text)', margin: 0, letterSpacing: '0.05em' }}>
+      <div className={styles.titleRow}>
+        <h2 className={styles.titleHeading}>
           {t('title')}
         </h2>
-        <span style={{ fontSize: '0.78rem', color: 'var(--muted)' }}>{t('totalCount', { count: totalCount })}</span>
+        <span className={styles.totalCountLabel}>{t('totalCount', { count: totalCount })}</span>
       </div>
 
-      <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+      <div className={styles.unknownExerciseStack}>
         {grouped.map(group => (
           <div key={group.dateLabel}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.6rem' }}>
-              <span style={{ fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--muted)', whiteSpace: 'nowrap' }}>
+            <div className={styles.dateLabelRow}>
+              <span className={styles.dateLabel}>
                 {group.dateLabel}
               </span>
-              <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.05)' }} />
+              <div className={styles.box} />
             </div>
 
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div className={styles.unknownExerciseStack2}>
               {group.logs.map(log => {
                 const isClickable = log.bpm_used != null && log.exercises?.id;
 
@@ -167,48 +169,29 @@ export function RecentActivity({ dateFilter }: Props) {
                         router.push(`/library/${log.exercises.id}/history`);
                       }
                     }}
-                    style={{
-                      display: 'grid', gridTemplateColumns: '1fr auto',
-                      alignItems: 'center', gap: '1rem',
-                      background: 'var(--surface)', padding: '0.9rem 1.25rem',
-                      borderRadius: '100px', border: '1px solid rgba(255,255,255,0.03)',
-                      transition: 'border-color 0.2s, background 0.2s',
-                      cursor: isClickable ? 'pointer' : 'default',
-                    }}
-                    onMouseEnter={e => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.08)';
-                      if (isClickable) {
-                        e.currentTarget.style.background = 'rgba(255,255,255,0.02)';
-                      }
-                    }}
-                    onMouseLeave={e => {
-                      e.currentTarget.style.borderColor = 'rgba(255,255,255,0.03)';
-                      if (isClickable) {
-                        e.currentTarget.style.background = 'var(--surface)';
-                      }
-                    }}
+                    className={cx(styles.unknownExerciseGrid, isClickable && styles.clickable)}
                   >
-                    <div style={{ minWidth: 0 }}>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexWrap: 'wrap' }}>
-                        <span style={{ fontWeight: 600, fontSize: '0.92rem', color: 'var(--text)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div className={styles.unknownExercise}>
+                      <div className={styles.unknownExerciseRow}>
+                        <span className={styles.unknownExerciseLabel}>
                           {log.exercises?.title || t('unknownExercise')}
                         </span>
                         {log.exercises?.technique && <TechniqueTag technique={log.exercises.technique} />}
                       </div>
-                      <span style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.15rem', display: 'block' }}>
+                      <span className={styles.label3}>
                         {new Date(log.created_at).toLocaleTimeString(locale === 'es' ? 'es-ES' : 'en-US', { hour: '2-digit', minute: '2-digit' })}
                       </span>
                     </div>
 
-                    <div style={{ display: 'flex', gap: '1.5rem', alignItems: 'center', flexShrink: 0 }}>
-                      <div style={{ textAlign: 'right' }}>
-                        <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(255,255,255,0.25)', display: 'block' }}>{t('timeLabel')}</span>
-                        <span style={{ fontSize: '0.88rem', fontWeight: 600, color: 'var(--text)' }}>{formatDuration(log.duration_seconds)}</span>
+                    <div className={styles.timeLabelRow}>
+                      <div className={styles.timeLabel}>
+                        <span className={styles.timeLabelLabel}>{t('timeLabel')}</span>
+                        <span className={styles.durationSecondsLabel}>{formatDuration(log.duration_seconds)}</span>
                       </div>
                       {log.bpm_used != null && (
-                        <div style={{ textAlign: 'right', minWidth: '52px' }}>
-                          <span style={{ fontSize: '0.62rem', fontWeight: 700, letterSpacing: '0.07em', textTransform: 'uppercase', color: 'rgba(220,185,138,0.5)', display: 'block' }}>{t('bpmLabel')}</span>
-                          <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.5rem', color: 'var(--gold)', lineHeight: 1 }}>{log.bpm_used}</span>
+                        <div className={styles.bpmLabel}>
+                          <span className={styles.bpmLabelLabel}>{t('bpmLabel')}</span>
+                          <span className={styles.bpmUsedLabel}>{log.bpm_used}</span>
                         </div>
                       )}
                     </div>
@@ -221,22 +204,22 @@ export function RecentActivity({ dateFilter }: Props) {
       </div>
 
       {totalPages > 1 && (
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.5rem' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+        <div className={styles.paginationRow}>
+          <span className={styles.paginationLabel}>
             {t('pagination', { current: page, total: totalPages })}
           </span>
-          <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <div className={styles.prevRow}>
             <button
               onClick={() => setPage(p => Math.max(1, p - 1))}
               disabled={page === 1}
-              style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: page === 1 ? 'rgba(255,255,255,0.2)' : 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: page === 1 ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem', transition: 'border-color 0.2s' }}
+              className={styles.prevButton} style={{ color: page === 1 ? 'rgba(255,255,255,0.2)' : 'var(--text)', cursor: page === 1 ? 'not-allowed' : 'pointer' }}
             >
               {t('prev')}
             </button>
             <button
               onClick={() => setPage(p => Math.min(totalPages, p + 1))}
               disabled={page === totalPages}
-              style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.1)', color: page === totalPages ? 'rgba(255,255,255,0.2)' : 'var(--text)', padding: '0.5rem 1rem', borderRadius: '8px', cursor: page === totalPages ? 'not-allowed' : 'pointer', fontFamily: 'DM Sans, sans-serif', fontSize: '0.88rem', transition: 'border-color 0.2s' }}
+              className={styles.prevButton} style={{ color: page === totalPages ? 'rgba(255,255,255,0.2)' : 'var(--text)', cursor: page === totalPages ? 'not-allowed' : 'pointer' }}
             >
               {t('next')}
             </button>

@@ -1,0 +1,66 @@
+.logoAltFooter {
+  background: var(--bg);
+  border-top: 1px solid rgba(255,255,255,0.05);
+  padding: 3rem;
+  margin-top: auto;
+  color: var(--muted, rgba(240,232,220,0.45));
+  font-family: var(--font-body), sans-serif;
+  position: relative;
+  z-index: 2;
+}
+
+.logoAltRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.logoAltRow2 {
+  width: 20px;
+  height: 20px;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  opacity: 0.8;
+}
+
+.block {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.2rem;
+  color: var(--gold);
+  letter-spacing: 0.05em;
+}
+
+.label {
+  color: var(--text);
+}
+
+.privacyRow {
+  display: flex;
+  gap: 2rem;
+  font-size: 0.82rem;
+}
+
+.copyright {
+  font-size: 0.82rem;
+}
+
+.logoAltRowLink {
+  text-decoration: none;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.privacyLink {
+  color: var(--muted);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.privacyLink:hover {
+  color: var(--text);
+}

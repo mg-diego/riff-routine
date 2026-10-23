@@ -6,6 +6,12 @@ export const TECHNIQUES = [
 
 export const VALID_FILE_TYPES = ".gp,.gp3,.gp4,.gp5,.gpx,.pdf"
 
+// alphaTab is loaded from the CDN at runtime; the npm package (devDependency) only provides types.
+// Keep this version in sync with @coderline/alphatab in package.json.
+export const ALPHATAB_VERSION = '1.8.4';
+export const ALPHATAB_CDN_URL = `https://cdn.jsdelivr.net/npm/@coderline/alphatab@${ALPHATAB_VERSION}/dist`;
+export const ALPHATAB_SCRIPT_URL = `${ALPHATAB_CDN_URL}/alphaTab.min.js`;
+
 export const DIFFICULTY_COLORS: { [key: number]: string } = {
     1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171'
 };
@@ -39,6 +45,9 @@ export const PREDEFINED_COLORS: Record<string, string> = {
     '#f1c40f': 'Amarillo', '#9b59b6': 'Morado', '#e67e22': 'Naranja', '#e84393': 'Rosa'
 };
 export const DEFAULT_INTERVAL_COLORS: Record<number, string> = { 0: '#e74c3c', 3: '#3498db', 4: '#3498db', 7: '#f1c40f' };
+const FALLBACK_INTERVAL_COLOR = '#7f8c8d';
+export const getIntervalColor = (interval: number, customColors: Record<number, string> = {}) =>
+    customColors[interval] || DEFAULT_INTERVAL_COLORS[interval] || FALLBACK_INTERVAL_COLOR;
 
 export const CHORD_INTERVALS: Record<string, number[]> = {
     'Maj': [0, 4, 7], 'm': [0, 3, 7], 'dim': [0, 3, 6], 'aug': [0, 4, 8], '5': [0, 7],
@@ -451,7 +460,8 @@ export type Role = typeof ROLES[keyof typeof ROLES];
 
 export const SUBSCRIPTION_TIERS = {
     FREE: 'free',
-    PRO: 'pro'
+    PRO: 'pro',
+    LIFETIME: 'lifetime'
 } as const;
 export type SubscriptionTier = typeof SUBSCRIPTION_TIERS[keyof typeof SUBSCRIPTION_TIERS];
 

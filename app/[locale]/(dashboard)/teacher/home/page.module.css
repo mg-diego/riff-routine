@@ -1,0 +1,262 @@
+.box {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+}
+
+.text {
+  color: var(--muted);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  margin: 0 0 0.35rem;
+}
+
+.text2 {
+  font-family: var(--font-display), sans-serif;
+  font-size: 2rem;
+  color: var(--text);
+  margin: 0;
+  line-height: 1;
+}
+
+.text3 {
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin: 0.3rem 0 0;
+}
+
+.labelStack {
+  max-width: 1200px;
+  display: flex;
+  flex-direction: column;
+  gap: 1.75rem;
+  font-family: var(--font-body), sans-serif;
+}
+
+.labelRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-end;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.inviteStudentButton {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.65rem 1.25rem;
+  background: rgba(var(--violet-rgb), 0.15);
+  border: 1px solid rgba(var(--violet-rgb), 0.35);
+  border-radius: 8px;
+  color: var(--violet-light);
+  font-weight: 700;
+  font-size: 0.875rem;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.inviteStudentButton:hover {
+  background: rgba(var(--violet-rgb), 0.22);
+}
+
+.activeStudentsGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 0.75rem;
+}
+
+.titleGrid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 1.25rem;
+  align-items: start;
+}
+
+.titleBox {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.titleRow {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.titleHeading {
+  font-family: var(--font-display), sans-serif;
+  font-size: 1.2rem;
+  color: var(--text);
+  margin: 0;
+  letter-spacing: 0.04em;
+}
+
+.seeAllButton {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 0.78rem;
+  cursor: pointer;
+  font-family: var(--font-body), sans-serif;
+  font-weight: 600;
+}
+
+.empty {
+  padding: 2.5rem 1.25rem;
+  text-align: center;
+}
+
+.emptyText {
+  color: var(--muted);
+  font-size: 0.85rem;
+  margin: 0 0 1rem;
+}
+
+.inviteStudentButton2 {
+  padding: 0.5rem 1rem;
+  background: rgba(var(--violet-rgb), 0.12);
+  border: 1px solid rgba(var(--violet-rgb), 0.25);
+  border-radius: 7px;
+  color: var(--violet-light);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+}
+
+.stack {
+  display: flex;
+  flex-direction: column;
+}
+
+.row {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.85rem 1.25rem;
+  transition: background 0.15s;
+}
+
+.block {
+  flex: 1;
+  min-width: 0;
+}
+
+.titleBoxText {
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.lastSessionText {
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin: 1px 0 0;
+}
+
+.label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  padding: 2px 7px;
+  border-radius: 5px;
+}
+
+.createButton {
+  padding: 0.5rem 1rem;
+  background: rgba(var(--gold-rgb), 0.1);
+  border: 1px solid rgba(var(--gold-rgb), 0.2);
+  border-radius: 7px;
+  color: var(--gold);
+  font-size: 0.8rem;
+  font-weight: 600;
+  font-family: var(--font-body), sans-serif;
+  cursor: pointer;
+}
+
+.doneStack {
+  padding: 0.85rem 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.doneRow {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 0.5rem;
+}
+
+.routineTitleText {
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  flex: 1;
+}
+
+.doneLabel {
+  font-size: 0.65rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  padding: 2px 7px;
+  border-radius: 5px;
+  flex-shrink: 0;
+}
+
+.dueRow {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+
+.dueRowText {
+  color: var(--muted);
+  font-size: 0.72rem;
+  margin: 0;
+}
+
+.dueRowLabel {
+  color: rgba(255,255,255,0.15);
+  font-size: 0.65rem;
+}
+
+.dueText {
+  color: rgba(255,255,255,0.3);
+  font-size: 0.72rem;
+  margin: 0;
+}
+
+.studentRow {
+  border-bottom: 1px solid rgba(255,255,255,0.04);
+  cursor: default;
+}
+
+.studentRow:last-child {
+  border-bottom: none;
+}
+
+.linked {
+  cursor: pointer;
+}
+
+.linked:hover {
+  background: rgba(255,255,255,0.02);
+}

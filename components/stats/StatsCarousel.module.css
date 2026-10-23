@@ -1,0 +1,54 @@
+.block {
+  position: relative;
+  width: 100%;
+  overflow: hidden;
+}
+
+.row {
+  display: flex;
+  transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.componentBlock {
+  min-width: 100%;
+  box-sizing: border-box;
+}
+
+.row2 {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.button {
+  background: var(--surface);
+  border: 1px solid rgba(255,255,255,0.1);
+  color: var(--text);
+  padding: 0.5rem 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+
+.row3 {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.buttonHoverable:hover {
+  border-color: rgba(255,255,255,0.25);
+}
+
+.buttonHoverable2:hover {
+  border-color: rgba(255,255,255,0.25);
+}

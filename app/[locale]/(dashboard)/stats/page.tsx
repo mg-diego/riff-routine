@@ -1,14 +1,16 @@
 "use client";
 
 import React, { useState, useEffect } from 'react';
-import { supabase } from '../../../../lib/supabase';
-import { GlobalKpis } from '../../../../components/stats/GlobalKpis';
+import { supabase } from '@/lib/supabase';
+import { GlobalKpis } from '@/components/stats/GlobalKpis';
 import { RecentActivity } from '@/components/stats/RecentActivity';
 import { ConsistencyHeatmap } from '@/components/stats/ConsistencyHeatmap';
 import { StatsCarousel } from '@/components/stats/StatsCarousel';
 import { useTranslations } from 'next-intl';
-import { SUBSCRIPTION_TIERS, SubscriptionTier } from '../../../../lib/constants';
+import { SUBSCRIPTION_TIERS, SubscriptionTier } from '@/lib/constants';
+import { fetchSubscriptionTier } from '@/lib/subscription';
 import { BecomeProModal } from '@/components/ui/BecomeProModal';
+import styles from './page.module.css';
 
 export default function StatsPage() {
   const t = useTranslations('StatsPage');
@@ -37,15 +39,7 @@ export default function StatsPage() {
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) { setLoading(false); return; }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('subscription_tier')
-      .eq('id', user.id)
-      .single();
-
-    if (profile) {
-      setUserTier((profile.subscription_tier as SubscriptionTier) || SUBSCRIPTION_TIERS.FREE);
-    }
+    setUserTier(await fetchSubscriptionTier(user.id));
 
     const { data: sessionsData } = await supabase
       .from('practice_sessions')
@@ -111,14 +105,14 @@ export default function StatsPage() {
   const isPro = userTier !== SUBSCRIPTION_TIERS.FREE;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', width: '100%', paddingBottom: '4rem', overflowX: 'hidden' }}>
+    <div className={styles.titleStack}>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '2.5rem', gap: '1rem', flexWrap: 'wrap' }}>
+      <div className={styles.titleRow}>
         <div>
-          <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '3rem', color: 'var(--gold)', margin: 0, lineHeight: 1 }}>
+          <h1 className="page-title">
             {t('title')}
           </h1>
-          <p style={{ color: 'var(--muted)', margin: '0.5rem 0 0', fontSize: '0.9rem' }}>
+          <p className="page-subtitle">
             {t('subtitle')}
           </p>
         </div>
@@ -131,20 +125,20 @@ export default function StatsPage() {
         loading={loading}
       />
 
-      <div style={{ marginTop: '2rem', marginBottom: '3rem' }}>
+      <div className={styles.block}>
         <ConsistencyHeatmap />
       </div>
 
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem', marginBottom: '2rem' }}>
+      <div className={styles.detailedAnalysisTitleRow}>
         <div>
-          <h2 style={{ color: 'var(--text)', fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', margin: 0, lineHeight: 1 }}>
+          <h2 className={styles.detailedAnalysisTitleHeading}>
             {t('detailedAnalysisTitle')}
           </h2>
-          <p style={{ color: 'var(--muted)', margin: '0.3rem 0 0', fontSize: '0.85rem' }}>
+          <p className={styles.detailedAnalysisSubtitleText}>
             {t('detailedAnalysisSubtitle')}
           </p>
         </div>
-        <div style={{ display: 'flex', background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.07)', borderRadius: '10px', padding: '0.3rem', gap: '0.25rem' }}>
+        <div className={styles.row}>
           {DATE_OPTIONS.map(opt => {
             const isLocked = !isPro && (opt.value === '90' || opt.value === 'all');
             
@@ -152,27 +146,11 @@ export default function StatsPage() {
               <button
                 key={opt.value}
                 onClick={() => isLocked ? setShowProModal(true) : setDateFilter(opt.value)}
-                style={{
-                  background: dateFilter === opt.value ? 'rgba(255,255,255,0.08)' : 'transparent',
-                  color: isLocked ? 'var(--muted)' : (dateFilter === opt.value ? 'var(--text)' : 'var(--muted)'),
-                  border: 'none',
-                  padding: '0.45rem 0.9rem',
-                  borderRadius: '7px',
-                  cursor: 'pointer',
-                  fontSize: '0.82rem',
-                  fontFamily: 'DM Sans, sans-serif',
-                  fontWeight: dateFilter === opt.value ? 700 : 400,
-                  transition: 'all 0.15s',
-                  whiteSpace: 'nowrap',
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.3rem',
-                  opacity: isLocked ? 0.6 : 1
-                }}
+                className={styles.button} style={{ background: dateFilter === opt.value ? 'rgba(255,255,255,0.08)' : 'transparent', color: isLocked ? 'var(--muted)' : (dateFilter === opt.value ? 'var(--text)' : 'var(--muted)'), fontWeight: dateFilter === opt.value ? 700 : 400, opacity: isLocked ? 0.6 : 1 }}
               >
                 {opt.label}
                 {isLocked && (
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--gold)' }}>
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className={styles.icon}>
                     <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
                     <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
                   </svg>
@@ -183,11 +161,11 @@ export default function StatsPage() {
         </div>
       </div>
 
-      <div data-onboarding="stats-02" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(340px, 1fr))', gap: '2.5rem', alignItems: 'start' }}>
-        <div style={{ minWidth: 0 }}>
+      <div data-onboarding="stats-02" className={styles.grid}>
+        <div className={styles.titleStackBlock}>
           <StatsCarousel dateFilter={dateFilter} />
         </div>
-        <div style={{ minWidth: 0 }}>
+        <div className={styles.titleStackBlock}>
           <RecentActivity dateFilter={dateFilter} />
         </div>
       </div>

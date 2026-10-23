@@ -1,8 +1,9 @@
 import { useState, useEffect } from 'react';
-import { supabase } from '../lib/supabase';
+import { supabase } from '@/lib/supabase';
 import { useRouter } from 'next/navigation';
+import { PracticeMode, SYSTEM_EXERCISE_TITLES, isSpecialMode } from '@/lib/practiceModes';
 
-export function usePracticeSession(mode: string, routineId: string | null, activeExerciseId: string | null = null) {
+export function usePracticeSession(mode: PracticeMode, routineId: string | null, activeExerciseId: string | null = null) {
   const [exerciseTimes, setExerciseTimes] = useState<Record<string, number>>({});
   const [isTimerRunning, setIsTimerRunning] = useState(false);
   const [routineName, setRoutineName] = useState<string>('');
@@ -97,28 +98,15 @@ export function usePracticeSession(mode: string, routineId: string | null, activ
   ) => {
     let finalExerciseId = providedExerciseId;
 
-    if (!finalExerciseId) {
-      const sysTitles: Record<string, string> = {
-        scales: 'sys_scales_title',
-        chords: 'sys_chords_title',
-        improvisation: 'sys_improvisation_title',
-        composition: 'sys_composition_title',
-        rhythm: 'sys_rhythm_title',
-        earTraining: 'sys_ear_training_title'
-      };
+    if (!finalExerciseId && isSpecialMode(mode)) {
+      const { data } = await supabase
+        .from('exercises')
+        .select('id')
+        .eq('is_system', true)
+        .eq('title', SYSTEM_EXERCISE_TITLES[mode])
+        .maybeSingle();
 
-      const targetTitle = sysTitles[mode];
-
-      if (targetTitle) {
-        const { data } = await supabase
-          .from('exercises')
-          .select('id')
-          .eq('is_system', true)
-          .eq('title', targetTitle)
-          .maybeSingle();
-
-        if (data) finalExerciseId = data.id;
-      }
+      if (data) finalExerciseId = data.id;
     }
 
     if (!finalExerciseId) throw new Error("Error BD: Ejercicio de sistema no encontrado");

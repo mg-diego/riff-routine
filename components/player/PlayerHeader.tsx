@@ -1,15 +1,21 @@
 "use client";
 
 import { useMemo, useState } from 'react';
-import { Exercise } from '../../lib/types';
+import { Exercise } from '@/lib/types';
+import { DIFFICULTY_COLORS } from '@/lib/constants';
+import { PracticeMode } from '@/lib/practiceModes';
+import { formatClock } from '@/lib/utils';
 import { DropZone } from './DropZone';
 import { EndSessionModal } from './EndSessionModal';
 import { useTranslations } from 'next-intl';
-import { usePlayerHeader } from '../../hooks/usePlayerHeader';
+import { usePlayerHeader } from '@/hooks/usePlayerHeader';
+import { RoutineListItem } from '@/hooks/usePlayerContext';
+import styles from './PlayerHeader.module.css';
+import { cx } from '@/lib/cx';
 
 interface PlayerHeaderProps {
-    mode: 'free' | 'library' | 'routine' | 'scales' | 'improvisation' | 'composition' | 'chords' | 'rhythm' | 'earTraining'| 'harmonization';
-    routineList: any[];
+    mode: PracticeMode;
+    routineList: RoutineListItem[];
     routineLength: number;
     currentIndex: number;
     onPrev: () => void;
@@ -32,19 +38,10 @@ interface PlayerHeaderProps {
     localSessionLogs: Record<string, { bpm: number | null, seconds: number }>;
 }
 
-const DIFF_COLORS: Record<number, string> = {
-    1: '#4ade80', 2: '#a3e635', 3: '#facc15', 4: '#fb923c', 5: '#f87171',
-};
-
-function formatTime(s: number) {
-    const m = Math.floor(s / 60);
-    return `${m}:${(s % 60).toString().padStart(2, '0')}`;
-}
-
 function ModeBadge({ cfg }: { cfg: { icon: string; label: string; color: string } }) {
     return (
-        <div className="ph-badge" style={{ color: cfg.color }}>
-            <span style={{ fontSize: '0.8rem' }}>{cfg.icon}</span>
+        <div className={styles['ph-badge']} style={{ color: cfg.color }}>
+            <span className={styles.label}>{cfg.icon}</span>
             {cfg.label}
         </div>
     );
@@ -52,7 +49,7 @@ function ModeBadge({ cfg }: { cfg: { icon: string; label: string; color: string 
 
 function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFileLoaded, t, isPdf }: any) {
     if (isFree) return (
-        <div style={{ flex: 1 }}>
+        <div className={styles.block}>
             <DropZone onFileLoaded={onFileLoaded ?? (() => { })} fileName={fileName ?? null} />
         </div>
     );
@@ -61,39 +58,26 @@ function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFi
 
     return (
         <>
-            <div className="ph-title-stack">
+            <div className={styles['ph-title-stack']}>
                 {isRoutine && routineName && (
-                    <div className="ph-routine-name">
-                        {t('labels.routine')} <span className="ph-routine-name-val">{routineName}</span>
+                    <div className={styles['ph-routine-name']}>
+                        {t('labels.routine')} <span className={styles['ph-routine-name-val']}>{routineName}</span>
                     </div>
                 )}
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                    <h1 className="ph-title" title={exercise?.title || fileName || t('labels.noFile')}>
+                <div className={styles.noFileRow}>
+                    <h1 className={styles['ph-title']} title={exercise?.title || fileName || t('labels.noFile')}>
                         {exercise?.title || fileName || t('labels.loading')}
                     </h1>
                     
                     {hasFile && (
-                        <span style={{
-                            background: isPdf ? 'rgba(231, 76, 60, 0.15)' : 'rgba(52, 152, 219, 0.15)',
-                            color: isPdf ? '#e74c3c' : '#3498db',
-                            padding: '0.15rem 0.4rem',
-                            borderRadius: '4px',
-                            fontSize: '0.6rem',
-                            fontWeight: 800,
-                            textTransform: 'uppercase',
-                            letterSpacing: '0.05em',
-                            lineHeight: 1,
-                            display: 'flex',
-                            alignItems: 'center',
-                            flexShrink: 0
-                        }}>
+                        <span className={styles.noFileRowLabel} style={{ background: isPdf ? 'rgba(231, 76, 60, 0.15)' : 'rgba(52, 152, 219, 0.15)', color: isPdf ? '#e74c3c' : '#3498db' }}>
                             {isPdf ? '📄 PDF' : '🎵 GP5'}
                         </span>
                     )}
                 </div>
             </div>
             {exercise?.difficulty && (
-                <div className="ph-diff" style={{ color: DIFF_COLORS[exercise.difficulty] }}>
+                <div className={styles['ph-diff']} style={{ color: DIFFICULTY_COLORS[exercise.difficulty] }}>
                     {t('labels.level', { diff: exercise.difficulty })}
                 </div>
             )}
@@ -103,12 +87,12 @@ function TitleSection({ isFree, isRoutine, routineName, exercise, fileName, onFi
 
 function RoutineNavigation({ currentIndex, routineLength, onPrev, onNext }: any) {
     return (
-        <div data-onboarding="practice-03" className="ph-routine-nav">
-            <button className="ph-nav-btn" onClick={onPrev} disabled={currentIndex === 0}>
+        <div data-onboarding="practice-03" className={styles['ph-routine-nav']}>
+            <button className={styles['ph-nav-btn']} onClick={onPrev} disabled={currentIndex === 0}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6" /></svg>
             </button>
-            <div className="ph-nav-counter">{currentIndex + 1} / {routineLength}</div>
-            <button className="ph-nav-btn" onClick={onNext} disabled={currentIndex === routineLength - 1}>
+            <div className={styles['ph-nav-counter']}>{currentIndex + 1} / {routineLength}</div>
+            <button className={styles['ph-nav-btn']} onClick={onNext} disabled={currentIndex === routineLength - 1}>
                 <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6" /></svg>
             </button>
         </div>
@@ -118,38 +102,38 @@ function RoutineNavigation({ currentIndex, routineLength, onPrev, onNext }: any)
 function BpmInputs({ isPreviewMode, disableBpmInputs, bpmCurrent, bpmGoal, setBpmCurrent, setBpmGoal, onBpmChange, isRoutine, bpmSuggested, handleSaveToLibrary, t }: any) {
     const disabled = isPreviewMode || disableBpmInputs;
     return (
-        <div className="ph-bpm-section" style={{ position: 'relative' }}>
-            <div className="ph-bpm-block">
-                <span className="ph-bpm-label">{t('labels.currentBpm')}</span>
+        <div className={cx(styles['ph-bpm-section'], styles.currentBpm)}>
+            <div className={styles['ph-bpm-block']}>
+                <span className={styles['ph-bpm-label']}>{t('labels.currentBpm')}</span>
                 <input
-                    type={disabled ? 'text' : 'number'} className="ph-bpm-input"
+                    type={disabled ? 'text' : 'number'} className={styles['ph-bpm-input']}
                     value={disabled ? '---' : bpmCurrent} disabled={disabled}
                     onChange={e => { if (disabled) return; setBpmCurrent(e.target.value); const v = parseInt(e.target.value); if (!isNaN(v) && v > 0) onBpmChange(v); }}
                     placeholder="---"
                 />
             </div>
-            <div className="ph-bpm-sep" />
-            <div className="ph-bpm-block">
-                <span className="ph-bpm-label" style={{ color: 'rgba(255,255,255,0.3)' }}>{t('labels.targetBpm')}</span>
+            <div className={styles['ph-bpm-sep']} />
+            <div className={styles['ph-bpm-block']}>
+                <span className={cx(styles['ph-bpm-label'], styles.targetBpmLabel)}>{t('labels.targetBpm')}</span>
                 {isRoutine || disabled ? (
-                    <span className="ph-bpm-val" style={{ color: 'rgba(255,255,255,0.4)', opacity: disabled ? 0.3 : 1 }}>
+                    <span className={cx(styles['ph-bpm-val'], styles.currentBpmLabel)} style={{ opacity: disabled ? 0.3 : 1 }}>
                         {disabled ? '---' : (bpmGoal || '---')}
                     </span>
                 ) : (
-                    <input type="number" className="ph-bpm-input" style={{ color: 'rgba(255,255,255,0.6)', borderBottomColor: 'rgba(255,255,255,0.1)' }}
+                    <input type="number" className={cx(styles['ph-bpm-input'], styles.input)}
                         value={bpmGoal} onChange={e => setBpmGoal(e.target.value)} placeholder="---" />
                 )}
             </div>
             {bpmSuggested && !disabled && (
-                <div style={{ marginLeft: '0.5rem', fontSize: '0.65rem', color: 'rgba(255,255,255,0.3)', maxWidth: '80px', lineHeight: 1.2 }}>
+                <div className={styles.suggestedBpm}>
                     {t('labels.suggestedBpm')}<br />
-                    <strong style={{ color: 'rgba(255,255,255,0.5)' }}>{bpmSuggested} BPM</strong>
+                    <strong className={styles.strong}>{bpmSuggested} BPM</strong>
                 </div>
             )}
             {isPreviewMode && (
-                <div style={{ position: 'absolute', top: '100%', left: '1.75rem', marginTop: '0.5rem', background: 'rgba(220,185,138,0.1)', border: '1px solid rgba(220,185,138,0.3)', padding: '0.5rem 0.8rem', borderRadius: '8px', zIndex: 10, display: 'flex', alignItems: 'center', gap: '1rem', whiteSpace: 'nowrap' }}>
-                    <span style={{ fontSize: '0.75rem', color: 'var(--gold)' }}>{t('previewMode.message')}</span>
-                    <button onClick={handleSaveToLibrary} style={{ background: 'var(--gold)', color: '#111', border: 'none', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 700, cursor: 'pointer', fontFamily: 'DM Sans, sans-serif' }}>
+                <div className={styles.messageRow}>
+                    <span className={styles.messageLabel}>{t('previewMode.message')}</span>
+                    <button onClick={handleSaveToLibrary} className={styles.buttonButton}>
                         {t('previewMode.button')}
                     </button>
                 </div>
@@ -167,7 +151,7 @@ export function PlayerHeader({
 }: PlayerHeaderProps) {
     const t = useTranslations('PlayerHeader');
 
-    const MODE_CONFIG = useMemo(() => ({
+    const MODE_CONFIG: Record<PracticeMode, { label: string; icon: string; color: string }> = useMemo(() => ({
         free: { label: t('modes.free'), icon: '🎸', color: '#7dd3fc' },
         library: { label: t('modes.library'), icon: '📚', color: 'var(--gold)' },
         routine: { label: t('modes.routine'), icon: '🔁', color: '#a78bfa' },
@@ -177,7 +161,8 @@ export function PlayerHeader({
         chords: { label: t('modes.chords'), icon: '🎵', color: 'var(--gold)' },
         rhythm: { label: t('modes.rhythm'), icon: '🥁', color: 'var(--gold)' },        
         earTraining: { label: t('modes.earTraining'), icon: '👂', color: 'var(--gold)' },
-        harmonization: { label: t('modes.harmonization'), icon: '🎸', color: 'var(--gold)' }
+        harmonization: { label: t('modes.harmonization'), icon: '🎸', color: 'var(--gold)' },        
+        speed: { label: t('modes.speed'), icon: '🎸', color: 'var(--gold)' }
     }), [t]);
 
     const cfg = MODE_CONFIG[mode] ?? MODE_CONFIG.free;
@@ -207,65 +192,11 @@ export function PlayerHeader({
 
     return (
         <>
-            <style>{`
-                .ph-root { display: flex; flex-direction: column; width: 100%; flex-shrink: 0; border-bottom: 1px solid rgba(255,255,255,0.06); font-family: 'DM Sans', sans-serif; }
-                .ph-row1 { display: flex; align-items: center; gap: 0.75rem; width: 100%; box-sizing: border-box; padding: 0 1.75rem; background: #0e0e0e; border-bottom: 1px solid rgba(255,255,255,0.04); min-height: 56px; overflow: hidden; }
-                .ph-title-stack { display: flex; flex-direction: column; justify-content: center; flex: 1; min-width: 0; gap: 0.1rem; }
-                .ph-routine-name { font-size: 0.62rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #6a5f52); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: flex; align-items: center; gap: 0.4rem; }
-                .ph-routine-name-val { color: #a78bfa; }
-                .ph-title { font-family: 'Bebas Neue', sans-serif; font-size: 1.5rem; color: var(--text, #f0e8dc); margin: 0; line-height: 1.05; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-                .ph-badge { display: flex; align-items: center; gap: 0.4rem; padding: 0.2rem 0.65rem; border-radius: 100px; font-size: 0.62rem; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; border: 1px solid rgba(255,255,255,0.06); background: rgba(255,255,255,0.03); flex-shrink: 0; white-space: nowrap; }
-                .ph-divider { width: 1px; height: 16px; background: rgba(255,255,255,0.07); flex-shrink: 0; }
-                .ph-diff { font-size: 0.62rem; font-weight: 800; text-transform: uppercase; letter-spacing: 0.05em; display: flex; align-items: center; gap: 0.25rem; flex-shrink: 0; }
-                .ph-routine-nav { display: flex; align-items: center; background: rgba(255,255,255,0.03); border: 1px solid rgba(255,255,255,0.06); border-radius: 100px; overflow: hidden; flex-shrink: 0; }
-                .ph-nav-btn { display: flex; align-items: center; justify-content: center; width: 30px; height: 30px; cursor: pointer; background: transparent; border: none; color: var(--text, #f0e8dc); transition: background 0.2s; flex-shrink: 0; }
-                .ph-nav-btn:hover:not(:disabled) { background: rgba(255,255,255,0.06); }
-                .ph-nav-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-                .ph-nav-counter { font-size: 0.72rem; font-weight: 700; color: var(--muted, #6a5f52); padding: 0 0.6rem; letter-spacing: 0.04em; white-space: nowrap; border-left: 1px solid rgba(255,255,255,0.06); border-right: 1px solid rgba(255,255,255,0.06); }
-                .ph-close-btn { padding: 0.4rem 0.9rem; border-radius: 100px; font-size: 0.75rem; font-weight: 600; cursor: pointer; transition: all 0.2s; flex-shrink: 0; white-space: nowrap; font-family: 'DM Sans', sans-serif; max-width: 160px; overflow: hidden; text-overflow: ellipsis; background: rgba(255,255,255,0.05); color: var(--text); border: 1px solid rgba(255,255,255,0.1); }
-                .ph-close-btn:hover { background: rgba(231,76,60,0.2); color: #e74c3c; border-color: rgba(231,76,60,0.5); }
-                .ph-row2 { display: flex; align-items: center; justify-content: space-between; width: 100%; box-sizing: border-box; background: rgba(0,0,0,0.25); min-height: 64px; position: relative; }
-                .ph-bpm-section { display: flex; align-items: center; gap: 1.5rem; padding: 0.75rem 1.75rem; border-right: 1px solid rgba(255,255,255,0.04); flex-wrap: nowrap; }
-                .ph-bpm-block { display: flex; flex-direction: column; gap: 2px; }
-                .ph-bpm-label { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: rgba(220,185,138,0.5); }
-                .ph-bpm-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; letter-spacing: 0.02em; color: var(--text); }
-                .ph-bpm-input { width: 56px; padding: 0; background: transparent; border: none; border-bottom: 1px solid rgba(220,185,138,0.3); font-family: 'Bebas Neue', sans-serif; font-size: 1.6rem; line-height: 1; outline: none; letter-spacing: 0.02em; color: var(--gold); transition: border-color 0.2s; }
-                .ph-bpm-input:focus { border-color: var(--gold); }
-                .ph-bpm-input:disabled { opacity: 0.3; cursor: not-allowed; border-bottom: none; }
-                .ph-bpm-sep { width: 1px; height: 32px; background: rgba(255,255,255,0.06); flex-shrink: 0; }
-                .ph-timer-section { display: flex; align-items: center; gap: 1rem; padding: 0.75rem 2rem; border-right: 1px solid rgba(255,255,255,0.04); justify-content: center; flex: 1; }
-                .ph-timer-btn { width: 42px; height: 42px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; transition: all 0.2s; flex-shrink: 0; }
-                .ph-timer-btn:hover { opacity: 0.85; }
-                .ph-timer-display { display: flex; flex-direction: column; align-items: flex-start; }
-                .ph-timer-status { font-size: 0.58rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; transition: color 0.3s; }
-                .ph-timer-val { font-family: 'Bebas Neue', sans-serif; font-size: 1.8rem; line-height: 1; font-variant-numeric: tabular-nums; transition: color 0.3s; }
-                .ph-timer-target { color: var(--muted, #6a5f52); font-size: 1.2rem; }
-                .ph-timer-track { position: absolute; bottom: 0; left: 0; right: 0; height: 2px; background: rgba(255,255,255,0.05); }
-                .ph-timer-fill { height: 100%; transition: width 1s linear, background 0.5s; }
-                .ph-right-section { display: flex; align-items: center; justify-content: flex-end; gap: 1.5rem; padding: 0.75rem 1.75rem; }
-                .ph-steps { display: flex; align-items: center; gap: 5px; }
-                .ph-step { height: 4px; border-radius: 99px; transition: all 0.3s ease; background: rgba(255,255,255,0.1); flex: 1; min-width: 15px; max-width: 40px; }
-                .ph-step.done   { background: rgba(167,139,250,0.5); }
-                .ph-step.active { background: #a78bfa; box-shadow: 0 0 6px rgba(167,139,250,0.6); }
-                .ph-save-btn { padding: 0.5rem 1rem; border-radius: 8px; font-size: 0.8rem; font-weight: 700; font-family: 'DM Sans', sans-serif; border: none; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
-                .ph-save-btn.normal { background: var(--gold); color: #111; }
-                .ph-save-btn.normal:hover { background: var(--gold-dark, #c9a676); }
-                .ph-save-btn.saved  { background: #4ade80; color: #111; }
-                .ph-save-btn:disabled { opacity: 0.5; cursor: not-allowed; }
-                @keyframes ph-pulse { 0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,0.5); } 70% { box-shadow: 0 0 0 10px rgba(74,222,128,0); } }
-                .ph-timer-btn.done { animation: ph-pulse 0.7s ease 3; }
-                .ph-timer-tooltip { position: absolute; bottom: calc(100% + 10px); left: 50%; transform: translateX(-50%); background: rgba(167,139,250,0.15); border: 1px solid rgba(167,139,250,0.35); border-radius: 8px; padding: 0.45rem 0.75rem; white-space: nowrap; font-size: 0.72rem; font-weight: 600; color: #c4b5fd; pointer-events: none; display: flex; align-items: center; gap: 0.4rem; backdrop-filter: blur(6px); z-index: 20; }
-                .ph-timer-tooltip::after { content: ''; position: absolute; top: 100%; left: 50%; transform: translateX(-50%); border: 5px solid transparent; border-top-color: rgba(167,139,250,0.35); }
-                @keyframes ph-tooltip-in  { from { opacity:0; transform:translateX(-50%) translateY(4px); } to { opacity:1; transform:translateX(-50%) translateY(0); } }
-                @keyframes ph-tooltip-out { from { opacity:1; } to { opacity:0; } }
-                .ph-timer-tooltip.entering { animation: ph-tooltip-in  0.25s ease forwards; }
-                .ph-timer-tooltip.leaving  { animation: ph-tooltip-out 0.4s ease 3.1s forwards; }
-            `}</style>
 
-            <div data-onboarding="practice-01" className="ph-root">
-                <div className="ph-row1">
+            <div data-onboarding="practice-01" className={styles['ph-root']}>
+                <div className={styles['ph-row1']}>
                     <ModeBadge cfg={cfg} />
-                    <div className="ph-divider" />
+                    <div className={styles['ph-divider']} />
                     <TitleSection isFree={isFree} isRoutine={isRoutine} routineName={routineName}
                         exercise={exercise} fileName={fileName} onFileLoaded={onFileLoaded} t={t} isPdf={isPdf} />
 
@@ -274,14 +205,14 @@ export function PlayerHeader({
                             onPrev={() => handlePrev(onPrev)} onNext={() => handleNext(onNext)} />
                     )}
 
-                    <button data-onboarding="practice-04" className="ph-close-btn"
+                    <button data-onboarding="practice-04" className={styles['ph-close-btn']}
                         onClick={() => handleCloseClick(onEndSession)}>
                         {isRoutine ? t('labels.endRoutine') : t('labels.closeExercise')}
                     </button>
                 </div>
 
                 {!isFree && (
-                    <div className="ph-row2">
+                    <div className={styles['ph-row2']}>
                         {showBpmInputs && (
                             <BpmInputs
                                 isPreviewMode={isPreviewMode} disableBpmInputs={disableBpmInputs}
@@ -294,27 +225,24 @@ export function PlayerHeader({
                         )}
 
                         {shouldShowMetronome && (
-                            <div className="ph-bpm-section" style={{ borderRight: 'none', paddingLeft: showBpmInputs ? 0 : '1.75rem' }}>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div className={cx(styles['ph-bpm-section'], styles.metronome)} style={{ paddingLeft: showBpmInputs ? 0 : '1.75rem' }}>
+                                <div className={styles.metronomeRow}>
                                     {!showBpmInputs && (
-                                        <div className="ph-bpm-block">
-                                            <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9 }}>{t('labels.metronome')}</span>
-                                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                                <input type="number" min="30" max="240" className="ph-bpm-input" value={metronomeBpm || ''}
+                                        <div className={styles['ph-bpm-block']}>
+                                            <span className={cx(styles['ph-bpm-label'], styles.metronomeLabel)}>{t('labels.metronome')}</span>
+                                            <div className={styles.row}>
+                                                <input type="number" min="30" max="240" className={cx(styles['ph-bpm-input'], styles.metronomeRowInput)} value={metronomeBpm || ''}
                                                     onChange={e => setMetronomeBpm(isNaN(parseInt(e.target.value)) ? 0 : parseInt(e.target.value))}
                                                     onBlur={() => setMetronomeBpm(Math.min(240, Math.max(30, metronomeBpm || 30)))}
-                                                    style={{ width: '60px', textAlign: 'center', borderBottom: 'none', background: 'rgba(0,0,0,0.25)', borderRadius: '6px', padding: '0.2rem' }}
                                                 />
-                                                <span style={{ fontSize: '1.1rem', color: 'rgba(255,255,255,0.4)', fontFamily: 'Bebas Neue, sans-serif' }}>BPM</span>
+                                                <span className={styles.metronomeRowLabel}>BPM</span>
                                             </div>
                                         </div>
                                     )}
-                                    <div className="ph-bpm-block" style={{ alignItems: 'center' }}>
-                                        {showBpmInputs && <span className="ph-bpm-label" style={{ color: 'var(--gold)', opacity: 0.9, marginBottom: '4px' }}>{t('labels.metronome')}</span>}
+                                    <div className={cx(styles['ph-bpm-block'], styles.metronome2)}>
+                                        {showBpmInputs && <span className={cx(styles['ph-bpm-label'], styles.metronomeLabel2)}>{t('labels.metronome')}</span>}
                                         <button onClick={handleToggleMetronome} title={isMetronomePlaying ? t('tooltips.pauseMetronome') : t('tooltips.startMetronome')}
-                                            style={{ width: '42px', height: '42px', borderRadius: '50%', background: isMetronomePlaying ? 'rgba(231,76,60,0.15)' : 'var(--gold)', color: isMetronomePlaying ? '#e74c3c' : '#111', border: isMetronomePlaying ? '1px solid rgba(231,76,60,0.4)' : 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: 'all 0.2s', boxShadow: isMetronomePlaying ? 'none' : '0 4px 12px rgba(220,185,138,0.25)', flexShrink: 0 }}
-                                            onMouseEnter={e => { e.currentTarget.style.opacity = '0.85'; }}
-                                            onMouseLeave={e => { e.currentTarget.style.opacity = '1'; }}
+                                            className={styles.pauseMetronomeButton} style={{ background: isMetronomePlaying ? 'rgba(231,76,60,0.15)' : 'var(--gold)', color: isMetronomePlaying ? '#e74c3c' : '#111', border: isMetronomePlaying ? '1px solid rgba(231,76,60,0.4)' : 'none', boxShadow: isMetronomePlaying ? 'none' : '0 4px 12px rgba(220,185,138,0.25)' }}
                                         >
                                             {isMetronomePlaying ? (
                                                 <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
@@ -331,10 +259,10 @@ export function PlayerHeader({
                             </div>
                         )}
 
-                        <div className="ph-timer-section" style={{ borderLeft: '1px solid rgba(255,255,255,0.04)' }}>
-                            <div style={{ position: 'relative', flexShrink: 0 }}>
+                        <div className={cx(styles['ph-timer-section'], styles.timerAutoStarted)}>
+                            <div className={styles.timerAutoStarted2}>
                                 {showTimerTooltip && (
-                                    <div className="ph-timer-tooltip entering leaving">
+                                    <div className={`${styles['ph-timer-tooltip']} ${styles.entering} ${styles.leaving}`}>
                                         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                                             <circle cx="12" cy="12" r="10" /><polyline points="12 6 12 12 16 14" />
                                         </svg>
@@ -342,56 +270,51 @@ export function PlayerHeader({
                                     </div>
                                 )}
                                 <button
-                                    className={`ph-timer-btn${timerDone ? ' done' : ''}`}
+                                    className={cx(`${styles['ph-timer-btn']}${timerDone ? ` ${styles.done}` : ''}`, styles.button)}
                                     onClick={onToggleTimer}
-                                    style={{
-                                        color: timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80',
-                                        background: timerDone ? 'rgba(74,222,128,0.12)' : isTimerRunning ? 'rgba(231,76,60,0.1)' : 'rgba(255,255,255,0.05)',
-                                        border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}`,
-                                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    }}
+                                    style={{ color: timerDone ? '#4ade80' : isTimerRunning ? '#e74c3c' : '#4ade80', background: timerDone ? 'rgba(74,222,128,0.12)' : isTimerRunning ? 'rgba(231,76,60,0.1)' : 'rgba(255,255,255,0.05)', border: `1px solid ${timerDone ? 'rgba(74,222,128,0.3)' : isTimerRunning ? 'rgba(231,76,60,0.2)' : 'rgba(255,255,255,0.07)'}` }}
                                 >
                                     {timerDone ? (
                                         <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12" /></svg>
                                     ) : isTimerRunning ? (
                                         <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor"><rect x="4" y="3" width="6" height="18" rx="1" /><rect x="14" y="3" width="6" height="18" rx="1" /></svg>
                                     ) : (
-                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" style={{ marginLeft: '3px' }}><path d="M5 3L19 12L5 21V3Z" /></svg>
+                                        <svg width="26" height="26" viewBox="0 0 24 24" fill="currentColor" className={styles.icon}><path d="M5 3L19 12L5 21V3Z" /></svg>
                                     )}
                                 </button>
                             </div>
 
-                            <div className="ph-timer-display">
-                                <span className="ph-timer-status" style={{ color: timerDone ? '#4ade80' : isTimerRunning ? 'var(--gold)' : 'rgba(255,255,255,0.3)' }}>
+                            <div className={styles['ph-timer-display']}>
+                                <span className={styles['ph-timer-status']} style={{ color: timerDone ? '#4ade80' : isTimerRunning ? 'var(--gold)' : 'rgba(255,255,255,0.3)' }}>
                                     {timerDone ? t('labels.timerCompleted') : isTimerRunning ? t('labels.timerRunning') : t('labels.timerPaused')}
                                 </span>
-                                <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.2rem' }}>
-                                    <span className="ph-timer-val" style={{ color: timerDone ? '#4ade80' : 'var(--text, #f0e8dc)' }}>
-                                        {formatTime(displaySeconds || 0)}
+                                <div className={styles.routineTargetDurationRow}>
+                                    <span className={styles['ph-timer-val']} style={{ color: timerDone ? '#4ade80' : 'var(--text, #f0e8dc)' }}>
+                                        {formatClock(displaySeconds || 0)}
                                     </span>
                                     {routineTargetDuration && (
-                                        <span className="ph-timer-target">/ {formatTime(routineTargetDuration)}</span>
+                                        <span className={styles['ph-timer-target']}>/ {formatClock(routineTargetDuration)}</span>
                                     )}
                                 </div>
                             </div>
                         </div>
 
-                        <div className="ph-right-section">
+                        <div className={styles['ph-right-section']}>
                             {isRoutine ? (
-                                <div data-onboarding="practice-03" style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '0.4rem', width: '100%', maxWidth: '200px' }}>
-                                    <span style={{ fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.05em', color: 'rgba(255,255,255,0.4)', textTransform: 'uppercase' }}>
+                                <div data-onboarding="practice-03" className={styles.progressStack}>
+                                    <span className={styles.progressLabel}>
                                         {t('labels.progress')}
                                     </span>
-                                    <div className="ph-steps" style={{ width: '100%' }}>
+                                    <div className={cx(styles['ph-steps'], styles.progressStackBlock)}>
                                         {Array.from({ length: routineLength }).map((_, i) => (
-                                            <div key={i} className={`ph-step ${i < currentIndex ? 'done' : i === currentIndex ? 'active' : ''}`} />
+                                            <div key={i} className={`${styles['ph-step']} ${i < currentIndex ? styles.done : i === currentIndex ? styles.active : ''}`} />
                                         ))}
                                     </div>
                                 </div>
                             ) : (
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                                    {errorMsg && <span style={{ color: '#e74c3c', fontSize: '0.75rem', fontWeight: 600 }}>{errorMsg}</span>}
-                                    <button className={`ph-save-btn ${saved ? 'saved' : 'normal'}`}
+                                <div className={styles.metronomeRow}>
+                                    {errorMsg && <span className={styles.errorMsgLabel}>{errorMsg}</span>}
+                                    <button className={`${styles['ph-save-btn']} ${saved ? styles.saved : styles.normal}`}
                                         onClick={handleSave} disabled={isSaving || saved || isPreviewMode}>
                                         {isSaving ? t('labels.saving') : saved ? t('labels.saved') : t('labels.saveProgress')}
                                     </button>
@@ -400,8 +323,8 @@ export function PlayerHeader({
                         </div>
 
                         {timerPct !== null && (
-                            <div className="ph-timer-track">
-                                <div className="ph-timer-fill" style={{ width: `${timerPct}%`, background: timerDone ? '#4ade80' : '#a78bfa' }} />
+                            <div className={styles['ph-timer-track']}>
+                                <div className={styles['ph-timer-fill']} style={{ width: `${timerPct}%`, background: timerDone ? '#4ade80' : '#a78bfa' }} />
                             </div>
                         )}
                     </div>

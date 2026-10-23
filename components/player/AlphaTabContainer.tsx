@@ -2,6 +2,7 @@
 
 import React, { RefObject, useEffect, useRef } from 'react';
 import { useTranslations } from 'next-intl';
+import styles from './AlphaTabContainer.module.css';
 
 interface AlphaTabContainerProps {
     wrapperRef: RefObject<HTMLDivElement | null>;
@@ -47,28 +48,20 @@ export function AlphaTabContainer({ wrapperRef, hasNoScore, isLoaded }: AlphaTab
         <>
             <div
                 ref={containerRef}
-                className="alphatab-wrapper"
-                style={{
-                    padding: '0 2rem',
-                    display: hasNoScore ? 'none' : 'block',
-                    width: '100%',
-                    overflow: 'visible'
-                }}
+                className={`alphatab-wrapper ${styles.block}`}
+                style={{ display: hasNoScore ? 'none' : 'block' }}
             >
                 <div
-                    className="alphatab-container"
-                    style={{ position: 'relative', minHeight: isLoaded ? 0 : '300px', width: '100%' }}
+                    className={`alphatab-container ${styles.block2}`}
+                    style={{ minHeight: isLoaded ? 0 : '300px' }}
                 >
-                    <div ref={wrapperRef} style={{ width: '100%' }} />
+                    <div ref={wrapperRef} className={styles.block3} />
                 </div>
             </div>
 
             {hasNoScore && (
-                <div style={{
-                    flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    color: 'var(--muted)', flexDirection: 'column', gap: '1rem'
-                }}>
-                    <div style={{ fontSize: '3rem' }}>🎸</div>
+                <div className={styles.noScoreMessageStack}>
+                    <div className={styles.noScoreMessageStackBlock}>🎸</div>
                     <p>{t('noScoreMessage')}</p>
                 </div>
             )}

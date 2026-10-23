@@ -4,6 +4,12 @@ import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLocale, useTranslations } from 'next-intl';
 import { supabase } from '@/lib/supabase';
+import { PageSpinner } from '@/components/ui/Spinner';
+import { InviteStudentModal } from '@/components/teacher/InviteStudentModal';
+import { StudentAvatar } from '@/components/teacher/StudentAvatar';
+import styles from './page.module.css';
+import { cx } from '@/lib/cx';
+import ui from '@/components/ui/ui.module.css';
 
 type StudentStatus = 'active' | 'pending' | 'suspended';
 
@@ -33,166 +39,12 @@ const STATUS_CONFIG: Record<StudentStatus, { label: string; color: string; bg: s
     suspended: { label: 'Paused', color: 'rgba(255,255,255,0.3)', bg: 'rgba(255,255,255,0.05)' },
 };
 
-function Avatar({ name, url, size = 36 }: { name: string; url: string | null; size?: number }) {
-    const initials = name ? name.slice(0, 2).toUpperCase() : '??';
-    return (
-        <div style={{
-            width: size, height: size, borderRadius: '50%', flexShrink: 0,
-            background: url ? 'transparent' : 'rgba(167,139,250,0.15)',
-            border: '1px solid rgba(167,139,250,0.2)',
-            overflow: 'hidden', display: 'flex', alignItems: 'center', justifyContent: 'center',
-        }}>
-            {url
-                ? <img src={url} alt={name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-                : <span style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: size * 0.38, color: '#c4b5fd', letterSpacing: '0.03em' }}>{initials}</span>
-            }
-        </div>
-    );
-}
-
 function StatCard({ label, value, sub }: { label: string; value: string | number; sub?: string }) {
     return (
-        <div style={{
-            background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)',
-            borderRadius: '10px', padding: '1.1rem 1.25rem',
-        }}>
-            <p style={{ color: 'var(--muted)', fontSize: '0.7rem', fontWeight: 700, letterSpacing: '0.1em', textTransform: 'uppercase', margin: '0 0 0.35rem' }}>{label}</p>
-            <p style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2rem', color: 'var(--text)', margin: 0, lineHeight: 1 }}>{value}</p>
-            {sub && <p style={{ color: 'var(--muted)', fontSize: '0.72rem', margin: '0.3rem 0 0' }}>{sub}</p>}
-        </div>
-    );
-}
-
-function InviteModal({ onClose, onInvited }: { onClose: () => void; onInvited: () => void }) {
-    const t = useTranslations('TeacherDashboard');
-    const [email, setEmail] = useState('');
-    const [loading, setLoading] = useState(false);
-    const [error, setError] = useState('');
-
-    const handleInvite = async () => {
-        if (!email.trim()) return;
-        setLoading(true); setError('');
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (!user) return;
-            const normalizedEmail = email.trim().toLowerCase();
-
-            if (user.email && normalizedEmail === user.email.toLowerCase()) {
-                setError(t('invite.cannotInviteSelf')); 
-                setLoading(false); 
-                return;
-            }
-
-            // Check student limit
-            const { count } = await supabase
-                .from('teacher_students')
-                .select('*', { count: 'exact', head: true })
-                .eq('teacher_id', user.id)
-                .in('status', ['active', 'pending']);
-
-            const { data: profile } = await supabase
-                .from('profiles')
-                .select('subscription_tier')
-                .eq('id', user.id)
-                .single();
-
-            const maxStudents = profile?.subscription_tier === 'lifetime' ? 999999 : 5;
-            if ((count ?? 0) >= maxStudents) {
-                setError(t('invite.limitReached'));
-                setLoading(false); return;
-            }
-
-            // Check if already invited
-            const { data: existing } = await supabase
-                .from('teacher_students')
-                .select('id')
-                .eq('teacher_id', user.id)
-                .eq('invite_email', email.trim().toLowerCase())
-                .maybeSingle();
-
-            if (existing) { setError(t('invite.alreadyInvited')); setLoading(false); return; }
-
-            // Insert as pending — student_id resolved later when they accept
-            const token = crypto.randomUUID();
-            const { error: insertError } = await supabase
-                .from('teacher_students')
-                .insert({
-                    teacher_id: user.id,
-                    student_id: null,
-                    invite_email: email.trim().toLowerCase(),
-                    invite_token: token,
-                    status: 'pending',
-                });
-
-            if (insertError) { setError(t('invite.error')); return; }
-
-            onInvited();
-            onClose();
-        } catch {
-            setError(t('invite.error'));
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    return (
-        <div style={{
-            position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.7)',
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            zIndex: 200, padding: '1rem',
-        }}>
-            <div style={{
-                background: 'var(--surface)', border: '1px solid rgba(167,139,250,0.2)',
-                borderRadius: '14px', padding: '1.75rem', width: '100%', maxWidth: '420px',
-                fontFamily: 'DM Sans, sans-serif',
-            }}>
-                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
-                    <div>
-                        <h3 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.6rem', color: '#c4b5fd', margin: '0 0 0.2rem', letterSpacing: '0.04em' }}>
-                            {t('invite.title')}
-                        </h3>
-                        <p style={{ color: 'var(--muted)', fontSize: '0.8rem', margin: 0 }}>{t('invite.subtitle')}</p>
-                    </div>
-                    <button onClick={onClose} style={{ background: 'none', border: 'none', color: 'var(--muted)', cursor: 'pointer', padding: '2px' }}>
-                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                            <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                        </svg>
-                    </button>
-                </div>
-
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                    <input
-                        type="email"
-                        value={email}
-                        onChange={e => setEmail(e.target.value)}
-                        onKeyDown={e => e.key === 'Enter' && handleInvite()}
-                        placeholder={t('invite.emailPlaceholder')}
-                        style={{
-                            background: 'rgba(255,255,255,0.04)', border: '1px solid rgba(255,255,255,0.1)',
-                            borderRadius: '8px', padding: '0.65rem 0.85rem', color: 'var(--text)',
-                            fontSize: '0.875rem', fontFamily: 'DM Sans, sans-serif', outline: 'none', width: '100%',
-                            boxSizing: 'border-box',
-                        }}
-                        onFocus={e => e.target.style.borderColor = 'rgba(167,139,250,0.4)'}
-                        onBlur={e => e.target.style.borderColor = 'rgba(255,255,255,0.1)'}
-                        autoFocus
-                    />
-                    {error && <p style={{ color: '#e74c3c', fontSize: '0.78rem', margin: 0 }}>{error}</p>}
-                    <button
-                        onClick={handleInvite}
-                        disabled={loading || !email.trim()}
-                        style={{
-                            padding: '0.65rem', background: loading ? 'rgba(167,139,250,0.3)' : 'rgba(167,139,250,0.2)',
-                            border: '1px solid rgba(167,139,250,0.35)', borderRadius: '8px',
-                            color: '#c4b5fd', fontWeight: 700, fontSize: '0.875rem',
-                            fontFamily: 'DM Sans, sans-serif', cursor: loading ? 'not-allowed' : 'pointer',
-                            transition: 'all 0.2s', opacity: !email.trim() ? 0.5 : 1,
-                        }}
-                    >
-                        {loading ? t('invite.sending') : t('invite.send')}
-                    </button>
-                </div>
-            </div>
+        <div className={styles.box}>
+            <p className={styles.text}>{label}</p>
+            <p className={styles.text2}>{value}</p>
+            {sub && <p className={styles.text3}>{sub}</p>}
         </div>
     );
 }
@@ -325,40 +177,25 @@ export default function TeacherDashboardPage() {
     };
 
     if (loading) return (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: '40vh' }}>
-            <div style={{
-                width: '32px', height: '32px', borderRadius: '50%',
-                border: '2px solid rgba(167,139,250,0.15)', borderTopColor: '#c4b5fd',
-                animation: 'spin 0.8s linear infinite',
-            }} />
-            <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
-        </div>
+        <PageSpinner color="#c4b5fd" trackColor="rgba(167,139,250,0.15)" />
     );
 
     return (
-        <div style={{ maxWidth: '1200px', display: 'flex', flexDirection: 'column', gap: '1.75rem', fontFamily: 'DM Sans, sans-serif' }}>
+        <div className={styles.labelStack}>
 
             {/* Header */}
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', flexWrap: 'wrap', gap: '1rem' }}>
+            <div className={styles.labelRow}>
                 <div>
-                    <p style={{ color: '#c4b5fd', fontSize: '0.72rem', fontWeight: 700, letterSpacing: '0.12em', textTransform: 'uppercase', margin: '0 0 0.3rem', opacity: 0.7 }}>
+                    <p className={ui.teacherEyebrow}>
                         {t('label')}
                     </p>
-                    <h1 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '2.5rem', color: '#c4b5fd', margin: 0, lineHeight: 1 }}>
+                    <h1 className={ui.teacherTitle}>
                         {t('title')}
                     </h1>
                 </div>
                 <button
                     onClick={() => setShowInvite(true)}
-                    style={{
-                        display: 'flex', alignItems: 'center', gap: '0.5rem',
-                        padding: '0.65rem 1.25rem',
-                        background: 'rgba(167,139,250,0.15)', border: '1px solid rgba(167,139,250,0.35)',
-                        borderRadius: '8px', color: '#c4b5fd', fontWeight: 700, fontSize: '0.875rem',
-                        fontFamily: 'DM Sans, sans-serif', cursor: 'pointer', transition: 'all 0.2s',
-                    }}
-                    onMouseEnter={e => e.currentTarget.style.background = 'rgba(167,139,250,0.22)'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'rgba(167,139,250,0.15)'}
+                    className={styles.inviteStudentButton}
                 >
                     <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                         <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" />
@@ -369,7 +206,7 @@ export default function TeacherDashboardPage() {
             </div>
 
             {/* Stats */}
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>
+            <div className={styles.activeStudentsGrid}>
                 <StatCard label={t('stats.activeStudents')} value={activeStudents} sub={pendingStudents > 0 ? t('stats.pending', { count: pendingStudents }) : undefined} />
                 <StatCard label={t('stats.practicedWeek')} value={practicedThisWeek} sub={t('stats.outOf', { total: activeStudents })} />
                 <StatCard label={t('stats.assignments')} value={activeAssignments} sub={t('stats.active')} />
@@ -377,72 +214,55 @@ export default function TeacherDashboardPage() {
             </div>
 
             {/* Main split */}
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.25rem', alignItems: 'start' }}>
+            <div className={styles.titleGrid}>
 
                 {/* Students */}
-                <div style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.2rem', color: 'var(--text)', margin: 0, letterSpacing: '0.04em' }}>
+                <div className={styles.titleBox}>
+                    <div className={styles.titleRow}>
+                        <h2 className={styles.titleHeading}>
                             {t('students.title')}
                         </h2>
                         <button
                             onClick={() => router.push(`/${locale}/teacher/students`)}
-                            style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}
+                            className={styles.seeAllButton}
                         >
                             {t('seeAll')} →
                         </button>
                     </div>
 
                     {students.length === 0 ? (
-                        <div style={{ padding: '2.5rem 1.25rem', textAlign: 'center' }}>
-                            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 1rem' }}>{t('students.empty')}</p>
+                        <div className={styles.empty}>
+                            <p className={styles.emptyText}>{t('students.empty')}</p>
                             <button
                                 onClick={() => setShowInvite(true)}
-                                style={{
-                                    padding: '0.5rem 1rem', background: 'rgba(167,139,250,0.12)',
-                                    border: '1px solid rgba(167,139,250,0.25)', borderRadius: '7px',
-                                    color: '#c4b5fd', fontSize: '0.8rem', fontWeight: 600,
-                                    fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
-                                }}
+                                className={styles.inviteStudentButton2}
                             >
                                 {t('inviteStudent')}
                             </button>
                         </div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
-                            {students.slice(0, 6).map((s, i) => {
+                        <div className={styles.stack}>
+                            {students.slice(0, 6).map((s) => {
                                 const name = s.username ?? s.invite_email.split('@')[0];
                                 const sc = STATUS_CONFIG[s.status];
                                 return (
                                     <div
                                         key={s.id}
                                         onClick={() => s.student_id && router.push(`/${locale}/teacher/students/${s.student_id}`)}
-                                        style={{
-                                            display: 'flex', alignItems: 'center', gap: '0.85rem',
-                                            padding: '0.85rem 1.25rem',
-                                            borderBottom: i < students.slice(0, 6).length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                                            cursor: s.student_id ? 'pointer' : 'default',
-                                            transition: 'background 0.15s',
-                                        }}
-                                        onMouseEnter={e => { if (s.student_id) e.currentTarget.style.background = 'rgba(255,255,255,0.02)'; }}
-                                        onMouseLeave={e => e.currentTarget.style.background = 'transparent'}
+                                        className={cx(styles.row, styles.studentRow, s.student_id && styles.linked)}
                                     >
-                                        <Avatar name={name} url={s.avatar_url} size={34} />
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <p style={{ color: 'var(--text)', fontSize: '0.85rem', fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                                        <StudentAvatar name={name} url={s.avatar_url} size={34} />
+                                        <div className={styles.block}>
+                                            <p className={styles.titleBoxText}>
                                                 {name}
                                             </p>
                                             {s.last_session && (
-                                                <p style={{ color: 'var(--muted)', fontSize: '0.72rem', margin: '1px 0 0' }}>
+                                                <p className={styles.lastSessionText}>
                                                     {formatRelative(s.last_session)}
                                                 </p>
                                             )}
                                         </div>
-                                        <span style={{
-                                            fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.07em',
-                                            padding: '2px 7px', borderRadius: '5px',
-                                            background: sc.bg, color: sc.color,
-                                        }}>
+                                        <span className={styles.label} style={{ background: sc.bg, color: sc.color }}>
                                             {sc.label}
                                         </span>
                                     </div>
@@ -453,66 +273,52 @@ export default function TeacherDashboardPage() {
                 </div>
 
                 {/* Assignments */}
-                <div style={{ background: 'var(--surface)', border: '1px solid rgba(255,255,255,0.05)', borderRadius: '12px', overflow: 'hidden' }}>
-                    <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid rgba(255,255,255,0.05)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <h2 style={{ fontFamily: 'Bebas Neue, sans-serif', fontSize: '1.2rem', color: 'var(--text)', margin: 0, letterSpacing: '0.04em' }}>
+                <div className={styles.titleBox}>
+                    <div className={styles.titleRow}>
+                        <h2 className={styles.titleHeading}>
                             {t('assignments.title')}
                         </h2>
                         <button
                             onClick={() => router.push(`/${locale}/teacher/assignments`)}
-                            style={{ background: 'none', border: 'none', color: 'var(--muted)', fontSize: '0.78rem', cursor: 'pointer', fontFamily: 'DM Sans, sans-serif', fontWeight: 600 }}
+                            className={styles.seeAllButton}
                         >
                             {t('seeAll')} →
                         </button>
                     </div>
 
                     {assignments.length === 0 ? (
-                        <div style={{ padding: '2.5rem 1.25rem', textAlign: 'center' }}>
-                            <p style={{ color: 'var(--muted)', fontSize: '0.85rem', margin: '0 0 1rem' }}>{t('assignments.empty')}</p>
+                        <div className={styles.empty}>
+                            <p className={styles.emptyText}>{t('assignments.empty')}</p>
                             <button
                                 onClick={() => router.push(`/${locale}/teacher/assignments/new`)}
-                                style={{
-                                    padding: '0.5rem 1rem', background: 'rgba(220,185,138,0.1)',
-                                    border: '1px solid rgba(220,185,138,0.2)', borderRadius: '7px',
-                                    color: 'var(--gold)', fontSize: '0.8rem', fontWeight: 600,
-                                    fontFamily: 'DM Sans, sans-serif', cursor: 'pointer',
-                                }}
+                                className={styles.createButton}
                             >
                                 {t('assignments.create')}
                             </button>
                         </div>
                     ) : (
-                        <div style={{ display: 'flex', flexDirection: 'column' }}>
+                        <div className={styles.stack}>
                             {assignments.slice(0, 6).map((a, i) => (
                                 <div
                                     key={a.id}
-                                    style={{
-                                        padding: '0.85rem 1.25rem',
-                                        borderBottom: i < assignments.slice(0, 6).length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none',
-                                        display: 'flex', flexDirection: 'column', gap: '0.2rem',
-                                    }}
+                                    className={styles.doneStack} style={{ borderBottom: i < assignments.slice(0, 6).length - 1 ? '1px solid rgba(255,255,255,0.04)' : 'none' }}
                                 >
-                                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', gap: '0.5rem' }}>
-                                        <p style={{ color: 'var(--text)', fontSize: '0.85rem', fontWeight: 600, margin: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1 }}>
+                                    <div className={styles.doneRow}>
+                                        <p className={styles.routineTitleText}>
                                             {a.routine_title}
                                         </p>
-                                        <span style={{
-                                            fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.06em',
-                                            padding: '2px 7px', borderRadius: '5px', flexShrink: 0,
-                                            background: a.status === 'completed' ? 'rgba(74,222,128,0.1)' : 'rgba(220,185,138,0.1)',
-                                            color: a.status === 'completed' ? '#4ade80' : 'var(--gold)',
-                                        }}>
+                                        <span className={styles.doneLabel} style={{ background: a.status === 'completed' ? 'rgba(74,222,128,0.1)' : 'rgba(220,185,138,0.1)', color: a.status === 'completed' ? '#4ade80' : 'var(--gold)' }}>
                                             {a.status === 'completed' ? t('assignments.done') : t('assignments.active')}
                                         </span>
                                     </div>
-                                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                                        <p style={{ color: 'var(--muted)', fontSize: '0.72rem', margin: 0 }}>
+                                    <div className={styles.dueRow}>
+                                        <p className={styles.dueRowText}>
                                             {a.student_name ?? a.student_email}
                                         </p>
                                         {a.due_date && (
                                             <>
-                                                <span style={{ color: 'rgba(255,255,255,0.15)', fontSize: '0.65rem' }}>·</span>
-                                                <p style={{ color: 'rgba(255,255,255,0.3)', fontSize: '0.72rem', margin: 0 }}>
+                                                <span className={styles.dueRowLabel}>·</span>
+                                                <p className={styles.dueText}>
                                                     {t('assignments.due')} {formatDate(a.due_date)}
                                                 </p>
                                             </>
@@ -526,7 +332,7 @@ export default function TeacherDashboardPage() {
             </div>
 
             {showInvite && (
-                <InviteModal
+                <InviteStudentModal
                     onClose={() => setShowInvite(false)}
                     onInvited={fetchData}
                 />
